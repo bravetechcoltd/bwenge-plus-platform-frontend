@@ -1,0 +1,698 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   COLOR-SCHEME LOCK
+   Pins the browser's native element rendering (inputs, selects,
+   scrollbars, checkboxes, etc.) to light mode by default.
+   This prevents the browser's automatic dark-mode UA stylesheet
+   from overriding native element backgrounds/borders and making
+   text invisible when the OS/browser is set to dark mode.
+   Dark mode is intentionally CLASS-based (.dark) — not system-based.
+   ============================================================ */
+:root {
+  color-scheme: light;          /* ← browser renders native elements in light mode */
+  forced-color-adjust: none;    /* ← prevent Windows High Contrast from breaking design */
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* Purple theme */
+  --primary: #5b4e96; /* Smooth purple for better contrast */
+  --primary-foreground: oklch(0.985 0 0); /* White text on primary background */
+  --secondary: oklch(0.556 0 0); /* Gray-500 */
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325); /* Red-500 */
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --success: oklch(0.649 0.169 162.4); /* Emerald-500 */
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.768 0.171 70.67); /* Amber-500 */
+  --warning-foreground: oklch(0.145 0 0);
+
+  --gamification-bronze: oklch(0.627 0.118 70.67);
+  --gamification-silver: oklch(0.756 0 0);
+  --gamification-gold: oklch(0.831 0.171 85.87);
+  --gamification-platinum: oklch(0.898 0 0);
+
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.62 0.15 285); /* Purple ring */
+  --chart-1: oklch(0.62 0.15 285); /* Purple */
+  --chart-2: oklch(0.649 0.169 162.4);
+  --chart-3: oklch(0.768 0.171 70.67);
+  --chart-4: oklch(0.577 0.245 27.325);
+  --chart-5: oklch(0.627 0.118 70.67);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.62 0.15 285); /* Purple */
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.62 0.15 285); /* Purple */
+}
+
+/* ============================================================
+   BULLETPROOF LIGHT-THEME LOCK FOR SYSTEM DARK MODE
+   When the OS/browser is in dark mode but the .dark class is
+   NOT active on <html>, force every CSS variable to stay at
+   the light-theme values.  This is the second layer of defence
+   on top of color-scheme:light — it handles browsers that still
+   try to recompute var() values through the UA dark stylesheet.
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root:not(.dark) {
+    color-scheme: light;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: #5b4e96;
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.556 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.985 0 0);
+    --success: oklch(0.649 0.169 162.4);
+    --success-foreground: oklch(0.985 0 0);
+    --warning: oklch(0.768 0.171 70.67);
+    --warning-foreground: oklch(0.145 0 0);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.62 0.15 285);
+    --chart-1: oklch(0.62 0.15 285);
+    --chart-2: oklch(0.649 0.169 162.4);
+    --chart-3: oklch(0.768 0.171 70.67);
+    --chart-4: oklch(0.577 0.245 27.325);
+    --chart-5: oklch(0.627 0.118 70.67);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.62 0.15 285);
+    --sidebar-primary-foreground: oklch(0.145 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.62 0.15 285);
+  }
+}
+
+.dark {
+  color-scheme: dark;           /* ← browser renders native elements in dark mode when .dark class is active */
+  forced-color-adjust: none;
+
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* Dark mode purple theme */
+  --primary: oklch(0.68 0.15 285); /* Lighter purple for dark mode */
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.677 0.245 27.325);
+  --destructive-foreground: oklch(0.145 0 0);
+
+  --success: oklch(0.749 0.169 162.4);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.868 0.171 70.67);
+  --warning-foreground: oklch(0.145 0 0);
+
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.75 0.15 285); /* Purple ring */
+  --chart-1: oklch(0.75 0.15 285); /* Purple */
+  --chart-2: oklch(0.749 0.169 162.4);
+  --chart-3: oklch(0.868 0.171 70.67);
+  --chart-4: oklch(0.677 0.245 27.325);
+  --chart-5: oklch(0.727 0.118 70.67);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.75 0.15 285); /* Purple */
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.75 0.15 285); /* Purple */
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-gamification-bronze: var(--gamification-bronze);
+  --color-gamification-silver: var(--gamification-silver);
+  --color-gamification-gold: var(--gamification-gold);
+  --color-gamification-platinum: var(--gamification-platinum);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    /* Ensure html element itself is always light themed at the browser level */
+    background-color: oklch(1 0 0);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Explicit fallbacks so browser dark-mode UA can't bleed through */
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /*
+   * Explicit form element styles using design-system variables.
+   * This prevents the browser's dark-mode UA stylesheet from overriding
+   * input/select/textarea backgrounds to dark while leaving text dark → invisible.
+   * These are intentionally LOW-specificity so any component class wins over them.
+   */
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    background-color: var(--background);
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-foreground);
+    opacity: 1;
+  }
+
+  /* Ensure option elements inside selects stay readable */
+  option {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /* Scrollbar keeps light appearance (browsers that support it) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(0.97 0 0);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.756 0 0);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.556 0 0);
+  }
+
+  /* Dark mode scrollbar when .dark class is active */
+  .dark ::-webkit-scrollbar-track {
+    background: oklch(0.205 0 0);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(0.356 0 0);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.456 0 0);
+  }
+
+  /* Dark mode form elements when .dark class is active */
+  .dark input,
+  .dark input[type="text"],
+  .dark input[type="email"],
+  .dark input[type="password"],
+  .dark input[type="number"],
+  .dark input[type="search"],
+  .dark input[type="tel"],
+  .dark input[type="url"],
+  .dark input[type="date"],
+  .dark input[type="time"],
+  .dark input[type="datetime-local"],
+  .dark textarea,
+  .dark select {
+    background-color: var(--background);
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .dark option {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes badge-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+@keyframes level-up {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes streak-fire {
+  0%, 100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+.animate-badge-bounce {
+  animation: badge-bounce 0.5s ease-in-out 2;
+}
+
+.animate-level-up {
+  animation: level-up 0.5s ease-in-out 3;
+}
+
+.animate-streak-fire {
+  animation: streak-fire 1s ease-in-out infinite;
+}
+
+/* ==================== PROSE MIRROR ==================== */
+.ProseMirror-focused {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* ==================== RICH TEXT CONTENT STYLES ==================== */
+/* Base container styles */
+.rich-text-content {
+  max-width: 100%;
+  overflow-x: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.rich-text-content * {
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Empty paragraph fix */
+.rich-text-content p:empty {
+  min-height: 1em;
+}
+
+/* Headers */
+.rich-text-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content h5 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.75rem;
+  margin-bottom: 0.375rem;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Paragraphs */
+.rich-text-content p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  color: #374151;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Lists */
+.rich-text-content ul {
+  list-style-type: disc;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.rich-text-content ol {
+  list-style-type: decimal;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.rich-text-content li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Nested lists */
+.rich-text-content ul ul,
+.rich-text-content ol ul,
+.rich-text-content ul ol,
+.rich-text-content ol ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Text formatting */
+.rich-text-content strong {
+  font-weight: 600;
+  color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content em {
+  font-style: italic;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content u {
+  text-decoration: underline;
+}
+
+.rich-text-content s {
+  text-decoration: line-through;
+}
+
+/* Blockquotes */
+.rich-text-content blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  color: #4b5563;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Code blocks */
+.rich-text-content pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Links */
+.rich-text-content a {
+  color: #0158B7;
+  text-decoration: underline;
+  text-decoration-color: rgba(1, 88, 183, 0.3);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.rich-text-content a:hover {
+  text-decoration-color: #0158B7;
+}
+
+/* Images */
+.rich-text-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Alignment */
+.rich-text-content [style*="text-align: center"] {
+  text-align: center;
+}
+
+.rich-text-content [style*="text-align: right"] {
+  text-align: right;
+}
+
+.rich-text-content [style*="text-align: justify"] {
+  text-align: justify;
+}
+
+/* Size variations */
+.rich-text-content [style*="font-size: small"] {
+  font-size: 0.875rem;
+}
+
+.rich-text-content [style*="font-size: large"] {
+  font-size: 1.125rem;
+}
+
+.rich-text-content [style*="font-size: huge"] {
+  font-size: 1.5rem;
+}
+
+/* Color and background preservation */
+.rich-text-content [style*="color"] {
+  /* Preserve inline colors from editor */
+}
+
+.rich-text-content [style*="background-color"] {
+  /* Preserve inline backgrounds from editor */
+}
+
+/* First and last child spacing */
+.rich-text-content > *:first-child {
+  margin-top: 0;
+}
+
+.rich-text-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+@media (max-width: 640px) {
+  .rich-text-content h1 {
+    font-size: 1.25rem;
+  }
+  
+  .rich-text-content h2 {
+    font-size: 1.125rem;
+  }
+  
+  .rich-text-content h3 {
+    font-size: 1rem;
+  }
+  
+  .rich-text-content h4 {
+    font-size: 0.9375rem;
+  }
+  
+  .rich-text-content h5 {
+    font-size: 0.875rem;
+  }
+}
+
+/* ==================== CARD CONTENT OVERFLOW HANDLING ==================== */
+.card-content,
+[class*="CardContent"] {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* ==================== TEXT SELECTION DISABLE ==================== */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* ==================== UTILITY CLASSES FOR TEXT WRAPPING ==================== */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.whitespace-normal {
+  white-space: normal;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}

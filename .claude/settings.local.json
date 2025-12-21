@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -n '870,890p' \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MyProject\\\\bwenge-plus-platform-frontend\\\\src\\\\lib\\\\features\\\\auth\\\\auth-slice.ts\")",
+      "Bash(sed -n '1704,1718p' \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MyProject\\\\bwenge-plus-platform-frontend\\\\src\\\\lib\\\\features\\\\auth\\\\auth-slice.ts\")"
+    ]
+  }
+}
