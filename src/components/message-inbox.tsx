@@ -200,6 +200,8 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
   const selectedSpaceIdRef = useRef<string | null>(null)
   // Enhancement #10: track window focus to suppress in-app notifications
   const windowFocusedRef = useRef(true)
+  // Stable ref so socket handlers always call the latest markConversationAsRead
+  const markConversationAsReadRef = useRef<(id: string) => void>(() => {})
 
   useEffect(() => {
     selectedConvIdRef.current = selectedConversation
@@ -279,25 +281,36 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         const handleNewMessage = (message: any) => {
           if (message.senderId === user?.id) return
 
-          if (message.conversationId === selectedConvIdRef.current) {
+          const isActiveConv = message.conversationId === selectedConvIdRef.current
+
+          if (isActiveConv) {
             const enhanced = { ...message, sender: message.sender || null }
             setMessages(prev => prev.some(m => m.id === enhanced.id) ? prev : [...prev, enhanced])
             scrollToBottom()
+            // Mark as read immediately — user is looking at this conversation
+            markConversationAsReadRef.current(message.conversationId)
           }
 
           setConversations(prev =>
             prev.map(conv =>
               conv.id === message.conversationId || (conv as any).originalId === message.conversationId
-                ? { ...conv, lastMessage: message, unreadCount: (conv.unreadCount || 0) + 1 }
+                ? {
+                    ...conv,
+                    lastMessage: message,
+                    // Only bump unread count when this conversation is NOT active
+                    unreadCount: isActiveConv ? 0 : (conv.unreadCount || 0) + 1,
+                  }
                 : conv
             )
           )
 
-          // Enhancement #10: notification
-          const senderName = message.sender
-            ? `${message.sender.first_name || ""} ${message.sender.last_name || ""}`.trim()
-            : "Someone"
-          showBrowserNotification(senderName, message.content || "📎 Attachment")
+          // Enhancement #10: notification — suppress if user is viewing this conversation
+          if (!isActiveConv) {
+            const senderName = message.sender
+              ? `${message.sender.first_name || ""} ${message.sender.last_name || ""}`.trim()
+              : "Someone"
+            showBrowserNotification(senderName, message.content || "📎 Attachment")
+          }
         }
 
         const handleNewSpaceMessage = (message: any) => {
@@ -394,6 +407,64 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
           }
         }
 
+        // ── Real-time: Conversation list updates ────────────────────────────
+        const handleConversationUpdated = ({ conversationId, lastMessage, updatedAt }: any) => {
+          setConversations((prev: any[]) =>
+            prev.map((c: any) =>
+              c.id === conversationId
+                ? { ...c, lastMessage: lastMessage || c.lastMessage, updatedAt: updatedAt || c.updatedAt }
+                : c
+            ).sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+          )
+        }
+
+        const handleNewConversation = (conversation: any) => {
+          setConversations((prev: any[]) => {
+            if (prev.some((c: any) => c.id === conversation.id)) return prev
+            return [conversation, ...prev]
+          })
+        }
+
+        // ── Real-time: Space member events ──────────────────────────────────
+        const handleSpaceMemberJoined = ({ spaceId, member }: any) => {
+          setSpaces((prev: any[]) =>
+            prev.map((s: any) => {
+              if (s.id !== spaceId) return s
+              const existing = s.members || []
+              if (existing.some((m: any) => m.user?.id === member.id)) return s
+              return { ...s, members: [...existing, { user: member }] }
+            })
+          )
+        }
+
+        const handleSpaceMemberLeft = ({ spaceId, userId: leftUserId }: any) => {
+          setSpaces((prev: any[]) =>
+            prev.map((s: any) => {
+              if (s.id !== spaceId) return s
+              return { ...s, members: (s.members || []).filter((m: any) => m.user?.id !== leftUserId) }
+            })
+          )
+        }
+
+        const handleSpaceSettingsUpdated = ({ spaceId, name }: any) => {
+          setSpaces((prev: any[]) =>
+            prev.map((s: any) => (s.id === spaceId ? { ...s, name: name || s.name } : s))
+          )
+        }
+
+        // ── Real-time: Space typing indicators ──────────────────────────────
+        const handleSpaceTypingStart = ({ spaceId, senderId }: any) => {
+          if (spaceId === selectedSpaceIdRef.current && senderId !== user?.id) {
+            setTypingUsers((prev: any) => ({ ...prev, [senderId]: true }))
+          }
+        }
+
+        const handleSpaceTypingStop = ({ spaceId, senderId }: any) => {
+          if (spaceId === selectedSpaceIdRef.current) {
+            setTypingUsers((prev: any) => { const n = { ...prev }; delete n[senderId]; return n })
+          }
+        }
+
         socket.on("new-message", handleNewMessage)
         socket.on("new-space-message", handleNewSpaceMessage)
         socket.on("message-sent", () => {})
@@ -408,7 +479,14 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         socket.on("message-deleted", handleMessageDeleted)
         socket.on("space-message-edited", handleSpaceMsgEdited)
         socket.on("space-message-deleted", handleSpaceMsgDeleted)
-        socket.on("error", (e: any) => console.error("Socket error:", e))
+        socket.on("conversation-updated", handleConversationUpdated)
+        socket.on("new-conversation", handleNewConversation)
+        socket.on("space-member-joined", handleSpaceMemberJoined)
+        socket.on("space-member-left", handleSpaceMemberLeft)
+        socket.on("space-settings-updated", handleSpaceSettingsUpdated)
+        socket.on("space-typing-start", handleSpaceTypingStart)
+        socket.on("space-typing-stop", handleSpaceTypingStop)
+        socket.on("error", () => {})
 
         return () => {
           socket.off("new-message", handleNewMessage)
@@ -425,10 +503,16 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
           socket.off("message-deleted", handleMessageDeleted)
           socket.off("space-message-edited", handleSpaceMsgEdited)
           socket.off("space-message-deleted", handleSpaceMsgDeleted)
+          socket.off("conversation-updated", handleConversationUpdated)
+          socket.off("new-conversation", handleNewConversation)
+          socket.off("space-member-joined", handleSpaceMemberJoined)
+          socket.off("space-member-left", handleSpaceMemberLeft)
+          socket.off("space-settings-updated", handleSpaceSettingsUpdated)
+          socket.off("space-typing-start", handleSpaceTypingStart)
+          socket.off("space-typing-stop", handleSpaceTypingStop)
           socket.off("error")
         }
       } catch (error) {
-        console.error("❌ Error setting up socket:", error)
       }
     }
 
@@ -493,7 +577,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
           setHasMoreMessages(false)
         }
       }
-    } catch (e) { console.error("Error loading older messages:", e) }
+    } catch { }
     finally { setIsFetchingOlder(false) }
   }, [selectedConversation, isFetchingOlder, oldestCursor, token])
 
@@ -524,7 +608,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
           setHasMoreSpaceMessages(false)
         }
       }
-    } catch (e) { console.error("Error loading older space messages:", e) }
+    } catch { }
     finally { setIsFetchingOlder(false) }
   }, [selectedSpace, isFetchingOlder, oldestSpaceCursor, token])
 
@@ -569,7 +653,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
             }
           } catch { /* non-critical */ }
         }
-      } catch (e) { console.error("Error fetching conversations:", e) }
+      } catch { }
       finally { setIsLoadingConversations(false) }
     }
     fetchConversations()
@@ -626,7 +710,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
               }
             }))
           }
-        } catch (e) { console.error("Error fetching students:", e) }
+        } catch { }
         finally { setIsFetchingStudents(false) }
       }
     }
@@ -727,6 +811,28 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
     } catch { /* non-critical */ }
   }, [token])
 
+  // Keep the ref current so socket handlers never capture a stale version
+  useEffect(() => {
+    markConversationAsReadRef.current = markConversationAsRead
+  }, [markConversationAsRead])
+
+  // Mark as read when window regains focus and a conversation is already open
+  useEffect(() => {
+    const onFocus = () => {
+      windowFocusedRef.current = true
+      if (selectedConvIdRef.current) {
+        markConversationAsReadRef.current(selectedConvIdRef.current)
+      }
+    }
+    const onBlur = () => { windowFocusedRef.current = false }
+    window.addEventListener("focus", onFocus)
+    window.addEventListener("blur", onBlur)
+    return () => {
+      window.removeEventListener("focus", onFocus)
+      window.removeEventListener("blur", onBlur)
+    }
+  }, [])
+
   // ── Fetch messages ─────────────────────────────────────────────────────────
 
   const fetchMessages = useCallback(async (conversationId: string, loading = true) => {
@@ -748,7 +854,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         // Mark as read
         markConversationAsRead(conversationId)
       }
-    } catch (e) { console.error("Error fetching messages:", e) }
+    } catch { }
     finally { setIsFetchingMessages(false) }
   }, [token, markConversationAsRead])
 
@@ -771,7 +877,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         setSelectedSpace(prev => prev ? { ...prev, messages: msgs, lastMessage: msgs[msgs.length - 1] || null } : prev)
         setSpaces(prev => prev.map(s => s.courseSpaceId === spaceId || s.id === spaceId ? { ...s, messages: msgs, lastMessage: msgs[msgs.length - 1] || null } : s))
       }
-    } catch (e) { console.error("Error fetching space messages:", e) }
+    } catch { }
     finally { setIsFetchingMessages(false) }
   }, [token])
 
@@ -875,7 +981,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         const data = await res.json()
         return data.attachmentUrl || null
       }
-    } catch (e) { console.error("Upload failed:", e) }
+    } catch { }
     return null
   }
 
@@ -1214,7 +1320,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
   // ── Enhancement #1: Status checkmarks ────────────────────────────────────
 
   const StatusIcon = ({ message }: { message: any }) => {
-    if (message.status === "read") return <CheckCheck className="w-3 h-3 text-blue-400 inline ml-1" />
+    if (message.status === "read") return <CheckCheck className="w-3 h-3 text-primary inline ml-1" />
     if (message.status === "delivered") return <CheckCheck className="w-3 h-3 opacity-50 inline ml-1" />
     return <Check className="w-3 h-3 opacity-50 inline ml-1" />
   }
@@ -1295,7 +1401,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
                                   <AvatarImage src={u.avatar || u.profilePicUrl} />
                                   <AvatarFallback className="bg-primary/10 text-primary">{u.firstName.charAt(0)}{u.lastName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                {isOnline(u.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />}
+                                {isOnline(u.id) && <span className="absolute bottom-0 right-0 w-3 h-3 bg-success/100 rounded-full border-2 border-background" />}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
@@ -1408,7 +1514,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
                               <AvatarImage src={getUserAvatar(conv)} />
                               <AvatarFallback className="bg-primary/10 text-primary text-xs">{getUserInitials(conv)}</AvatarFallback>
                             </Avatar>
-                            {isOnline(otherId) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />}
+                            {isOnline(otherId) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success/100 rounded-full border-2 border-background" />}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2">
@@ -1440,8 +1546,8 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
                       <button key={`space-${space.id}`} onClick={() => handleSpaceSelect(space)}
                         className={`w-full text-left p-3 rounded transition-all ${isActive ? "bg-muted" : "hover:bg-muted"}`}>
                         <div className="flex items-start gap-3 min-w-0">
-                          <div className="h-8 w-8 flex-shrink-0 rounded bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                            <Zap className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          <div className="h-8 w-8 flex-shrink-0 rounded bg-primary/15 dark:bg-primary/20/30 flex items-center justify-center">
+                            <Zap className="h-4 w-4 text-primary dark:text-primary" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2">
@@ -1482,12 +1588,12 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
                           {(selectedUser.firstName || "").charAt(0)}{(selectedUser.lastName || "").charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      {isOnline(selectedUser.id) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />}
+                      {isOnline(selectedUser.id) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success/100 rounded-full border-2 border-background" />}
                     </div>
                     <div>
                       <CardTitle className="text-sm">
                         {selectedUser.firstName} {selectedUser.lastName}
-                        {isOnline(selectedUser.id) && <span className="text-xs text-green-500 font-normal ml-2">Online</span>}
+                        {isOnline(selectedUser.id) && <span className="text-xs text-success font-normal ml-2">Online</span>}
                       </CardTitle>
                       <CardDescription className="text-xs">{selectedConversation.course?.title || selectedConversation.courseTitle}</CardDescription>
                     </div>
@@ -1738,7 +1844,7 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <Zap className="h-5 w-5 text-primary dark:text-primary" />
                       {selectedSpace.title || selectedSpace.name || "Space"}
                     </CardTitle>
                     <CardDescription>{selectedSpace.courseTitle || "Course Space"} • Course Space</CardDescription>

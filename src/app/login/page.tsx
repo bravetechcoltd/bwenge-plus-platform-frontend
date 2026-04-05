@@ -6,75 +6,75 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { loginBwenge, clearError, setInstitutionData } from '@/lib/features/auth/auth-slice'
 import type { AppDispatch, RootState } from '@/lib/store'
-import {
-  Mail, Lock, Eye, EyeOff, AlertCircle, Loader2,
-  ArrowRight, Sparkles, ShieldCheck, Smartphone, Globe, Home,
-  Zap
-} from 'lucide-react'
+import { Eye, EyeOff, Loader2, ArrowRight, Home } from 'lucide-react'
 import Link from 'next/link'
 import { getRoleDashboardPath } from "@/app/utils/roleNavigation"
 import { GoogleOAuthProviderWrapper, GoogleLoginButton } from '@/components/auth/google-login'
 import { toast } from 'sonner'
 import { GoogleOneTapLogin } from '@/components/auth/GoogleOneTap'
 
-/* ─────────────────────────── Floating Particles (right panel) ─────────────────────────── */
-function FloatingParticles() {
-  const particles = Array.from({ length: 24 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 4 + 1,
-    duration: Math.random() * 10 + 14,
-    delay: Math.random() * 6,
-  }))
+/* ── Stats for right panel ── */
+const stats = [
+  ["500+", "Courses"],
+  ["100+", "Institutions"],
+  ["10K+", "Learners"],
+]
+
+const highlights = [
+  { label: "MOOC", desc: "Open access courses for everyone" },
+  { label: "SPOC", desc: "Private institutional learning" },
+  { label: "Certified", desc: "Industry-recognized certificates" },
+]
+
+/* ── Simple input with placeholder ── */
+interface InputProps {
+  id: string
+  name: string
+  type?: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string
+  required?: boolean
+  disabled?: boolean
+  rightEl?: React.ReactNode
+}
+
+function Input({ id, name, type = 'text', value, onChange, placeholder, required, disabled, rightEl }: InputProps) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full bg-white/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
-          animate={{ y: [-10, -55], opacity: [0, 0.8, 0.8, 0], scale: [1, 1.4, 1] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: 'easeInOut' }}
-        />
-      ))}
+    <div className="relative">
+      <input
+        id={id} name={name} type={type} value={value}
+        onChange={onChange} placeholder={placeholder}
+        required={required} disabled={disabled}
+        className={`w-full ${rightEl ? 'pr-9' : 'pr-3.5'} pl-3.5 py-2.5
+          text-sm bg-white/80 dark:bg-white/5
+          border border-border rounded-lg outline-none
+          transition-colors duration-150
+          focus:border-primary dark:focus:border-primary
+          text-foreground placeholder:text-muted-foreground/60
+          disabled:opacity-50 disabled:cursor-not-allowed`}
+      />
+      {rightEl && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">{rightEl}</div>
+      )}
     </div>
   )
 }
 
-/* ─────────────────────────── Feature Carousel Data ─────────────────────────── */
-const features = [
-  {
-    title: 'One-Tap Login',
-    description: "Sign in instantly if you're already logged into Google",
-    icon: Smartphone,
-    color: 'bg-primary',
-    protection: 'Fast, secure authentication',
-  },
-  {
-    title: 'Protected Institution Data',
-    description: 'Your institution affiliation, roles, and settings are safeguarded across systems.',
-    icon: ShieldCheck,
-    color: 'bg-primary',
-    protection: 'Field-level protection prevents data loss',
-  },
-  {
-    title: 'Global Access',
-    description: 'Access your learning from anywhere, on any device',
-    icon: Globe,
-    color: 'bg-primary',
-    protection: 'Cloud-synced progress',
-  },
-]
-
 export default function BwengePlusLoginPage() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
-  const { isLoading, error, isAuthenticated, user, requiresVerification, verificationEmail, errorCode, rejectionReason } = useSelector(
-    (state: RootState) => state.bwengeAuth
-  )
+  const {
+    isLoading, error, isAuthenticated, user,
+    requiresVerification, verificationEmail,
+    errorCode, rejectionReason,
+  } = useSelector((state: RootState) => state.bwengeAuth)
+
   const hasRedirected = React.useRef(false)
   const hasRedirectedToVerify = React.useRef(false)
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated && user && !hasRedirected.current) {
@@ -82,17 +82,15 @@ export default function BwengePlusLoginPage() {
       if (user.institution) {
         sessionStorage.setItem('current_institution', JSON.stringify(user.institution))
         if (!user.institution?._protected) {
-          dispatch(
-            setInstitutionData({
-              ...user.institution,
-              _protected: {
-                system: 'BWENGEPLUS',
-                last_updated: new Date().toISOString(),
-                immutable_fields: ['id', 'name', 'type', 'slug', 'created_at'],
-                version: 1,
-              },
-            })
-          )
+          dispatch(setInstitutionData({
+            ...user.institution,
+            _protected: {
+              system: 'BWENGEPLUS',
+              last_updated: new Date().toISOString(),
+              immutable_fields: ['id', 'name', 'type', 'slug', 'created_at'],
+              version: 1,
+            },
+          }))
         }
         toast.success(`Welcome back to ${user.institution.name || 'BwengePlus'}!`, {
           description: 'Your institution data is protected',
@@ -103,17 +101,8 @@ export default function BwengePlusLoginPage() {
     }
   }, [isAuthenticated, user, router, dispatch])
 
-  const [formData, setFormData] = useState({ email: '', password: '' })
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const [currentFeature, setCurrentFeature] = useState(0)
+  useEffect(() => { return () => { dispatch(clearError()) } }, [dispatch])
 
-  useEffect(() => {
-    return () => { dispatch(clearError()) }
-  }, [dispatch])
-
-  /* Redirect to verify-email when login fails because account is unverified.
-     The ref guard prevents re-firing after the user returns from verify-email. */
   useEffect(() => {
     if (requiresVerification && verificationEmail && !hasRedirectedToVerify.current) {
       hasRedirectedToVerify.current = true
@@ -122,13 +111,8 @@ export default function BwengePlusLoginPage() {
     }
   }, [requiresVerification, verificationEmail, router])
 
-  useEffect(() => {
-    const t = setInterval(
-      () => setCurrentFeature((p) => (p + 1) % features.length),
-      8000
-    )
-    return () => clearInterval(t)
-  }, [])
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,9 +120,7 @@ export default function BwengePlusLoginPage() {
     try {
       const result = await dispatch(loginBwenge(formData)).unwrap()
       if (result.user) {
-        const hasInstitutionData =
-          result.user.institution || result.user.primary_institution_id
-        if (hasInstitutionData) {
+        if (result.user.institution || result.user.primary_institution_id) {
           toast.success('Institution data preserved successfully', {
             description: 'Your institution context is protected across systems',
           })
@@ -149,392 +131,232 @@ export default function BwengePlusLoginPage() {
     } catch (err: any) {
       if (err.includes?.('protection') || err.includes?.('institution')) {
         toast.error('Data Protection Alert', {
-          description:
-            'Your institution data is being safeguarded. Please contact support if this persists.',
+          description: 'Your institution data is being safeguarded. Please contact support if this persists.',
         })
       }
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
   return (
-<GoogleOAuthProviderWrapper>
-  {/* Full-screen split layout - COMPACT VERSION */}
-  <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden relative bg-primary">
-    {/* Show One Tap on login page only if not authenticated */}
-    {!isAuthenticated && (
-      <GoogleOneTapLogin
-        autoSelect={false}
-        cancelOnTapOutside={false}
-        context="signin"
-        forceDisplay={false} // Don't force on login page, let it show naturally
-      />
-    )}
-    
-    {/* Background overlay for better contrast */}
-    <div className="absolute inset-0 bg-black/5 pointer-events-none" />
+    <GoogleOAuthProviderWrapper>
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
 
-    {/* ══════════════════ LEFT PANEL – Login Form ══════════════════ */}
-    <div className="w-full lg:w-[44%] flex items-center justify-center p-4 sm:p-5 lg:p-6 relative z-20">
-      {/* Back to Home pill button – top-left */}
-      <Link
-        href="/"
-        className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-xs font-medium transition-all hover:scale-105 group z-30 shadow-sm"
-      >
-        <Home className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-        <span className="hidden sm:inline">Home</span>
-      </Link>
+{!isAuthenticated && (
+  <GoogleOneTapLogin 
+    autoSelect={false} 
+    cancelOnTapOutside={false} 
+    context="signin" 
+    forceDisplay={true}  
+  />
+)}
+        {/* ══ LEFT — Form column ══ */}
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="w-full max-w-[380px]"
-      >
-        {/* Compact White Card */}
-        <div className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/70 overflow-hidden">
-
-          {/* Card Header */}
-          <div className="pt-5 pb-3 px-6 flex flex-col items-center border-b border-gray-100/80">
-            <div className="w-12 h-12 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center mb-2">
-              <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
-                <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
-                <polygon points="20,3 8,10 20,14 32,10" fill="white" />
-                <rect x="10" y="14" width="9" height="16" rx="2" fill="white" />
-                <rect x="21" y="14" width="9" height="16" rx="2" fill="white" />
-                <rect x="28" y="10" width="2" height="7" rx="1" fill="#f59e0b" />
-                <ellipse cx="29" cy="17" rx="2" ry="1.5" fill="#f59e0b" />
-              </svg>
+          {/* Top nav */}
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+                <svg viewBox="0 0 40 40" className="w-3.5 h-3.5" fill="none">
+                  <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
+                  <polygon points="20,3 8,10 20,14 32,10" fill="white" />
+                  <rect x="10" y="14" width="9" height="16" rx="1.5" fill="white" />
+                  <rect x="21" y="14" width="9" height="16" rx="1.5" fill="white" />
+                </svg>
+              </div>
+              <span className="text-sm font-bold text-foreground tracking-tight">BwengePlus</span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-gray-900">
-              <span className="text-gray-900">Bwenge</span>
-              <span className="text-primary">Plus</span>
-            </h1>
-            <p className="text-xs text-gray-500 mt-1">Sign in to continue learning</p>
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
           </div>
 
-          {/* Card Body */}
-          <div className="px-5 py-4 space-y-3">
-
-            {/* Error display */}
-            <AnimatePresence>
-              {error && errorCode === 'PENDING_APPROVAL' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2"
-                >
-                  <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-amber-800 font-semibold">Application Under Review</p>
-                    <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">{error}</p>
-                  </div>
-                </motion.div>
-              )}
-              {error && errorCode === 'APPLICATION_REJECTED' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"
-                >
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-red-700 font-semibold">Application Not Approved</p>
-                    <p className="text-xs text-red-600 mt-0.5 leading-relaxed">{error}</p>
-                    {rejectionReason && (
-                      <p className="text-xs text-red-500 mt-1 italic">Reason: {rejectionReason}</p>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-              {error && !errorCode && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-red-600 font-medium">{error}</p>
-                    {error.includes('institution') && (
-                      <p className="text-xs text-red-400 mt-0.5">
-                        Your institution data is protected.
-                      </p>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Email Input */}
-            <div className="relative group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <div className="w-7 h-7 rounded-lg bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                  <Mail className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                </div>
-              </div>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full pl-12 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 font-medium outline-none"
-                placeholder="Email address"
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Password Input */}
-            <div className="relative group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <div className="w-7 h-7 rounded-lg bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                  <Lock className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                </div>
-              </div>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full pl-12 pr-10 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 font-medium outline-none"
-                placeholder="Password"
-                required
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all"
-                disabled={isLoading}
-              >
-                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-
-            {/* Remember Me + Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-1.5 cursor-pointer group">
-                <div
-                  onClick={() => !isLoading && setRememberMe(!rememberMe)}
-                  className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${
-                    rememberMe
-                      ? 'bg-primary border-primary'
-                      : 'bg-white border-gray-300 group-hover:border-primary/50'
-                  }`}
-                >
-                  {rememberMe && (
-                    <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 10 10">
-                      <path
-                        d="M1.5 5L4 7.5L8.5 2.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-xs text-gray-500 select-none">Remember me</span>
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Login Button */}
-            <motion.button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              whileHover={{ scale: isLoading ? 1 : 1.01 }}
-              whileTap={{ scale: isLoading ? 1 : 0.99 }}
-              className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group shadow-sm"
+          {/* Form — vertically centered */}
+          <div className="flex-1 flex items-center justify-center px-8 py-3 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="w-full max-w-[300px] space-y-3"
             >
-              <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none" />
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <span className="tracking-wide">Sign In</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              )}
-            </motion.button>
+              {/* Heading */}
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Sign in</p>
+                <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Welcome back.</h1>
+                <p className="text-[11px] text-muted-foreground">Continue your learning journey.</p>
+              </div>
 
-            {/* OR divider */}
-            <div className="relative flex items-center gap-2">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400 font-medium">OR</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
+              {/* Error states */}
+              <AnimatePresence>
+                {error && errorCode === 'PENDING_APPROVAL' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="border-l-[3px] border-amber-400 bg-amber-50 dark:bg-amber-950/20 pl-3 pr-3 py-2 rounded-r"
+                  >
+                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-600 dark:text-amber-400 mb-0.5">Under Review</p>
+                    <p className="text-[11px] text-amber-600/80 dark:text-amber-400/70 leading-snug">{error}</p>
+                  </motion.div>
+                )}
+                {error && errorCode === 'APPLICATION_REJECTED' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="border-l-[3px] border-red-400 bg-red-50 dark:bg-red-950/20 pl-3 pr-3 py-2 rounded-r"
+                  >
+                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-600 dark:text-red-400 mb-0.5">Not Approved</p>
+                    <p className="text-[11px] text-red-500/80 dark:text-red-400/70 leading-snug">{error}</p>
+                    {rejectionReason && <p className="text-[10px] text-red-400/60 mt-0.5 italic">Reason: {rejectionReason}</p>}
+                  </motion.div>
+                )}
+                {error && !errorCode && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="border-l-[3px] border-destructive bg-destructive/5 pl-3 pr-3 py-2 rounded-r"
+                  >
+                    <p className="text-[11px] text-destructive leading-snug">{error}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {/* Google Login */}
-            <GoogleLoginButton />
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-2">
+                <Input
+                  id="email" name="email" type="email"
+                  value={formData.email} onChange={handleChange}
+                  placeholder="Email address"
+                  required disabled={isLoading}
+                />
+                <Input
+                  id="password" name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password} onChange={handleChange}
+                  placeholder="Password"
+                  required disabled={isLoading}
+                  rightEl={
+                    <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)}
+                      className="text-muted-foreground hover:text-foreground transition-colors">
+                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  }
+                />
 
-            {/* Sign Up Link - NEW SECTION */}
-            <div className="mt-4 pt-2 text-center">
-              <p className="text-xs text-gray-500">
-                Don't have an account?{' '}
-                <Link
-                  href="/register"
-                  className="text-primary font-semibold hover:text-primary/80 transition-colors inline-flex items-center gap-1 group/register"
-                >
-                  Apply to join BwengePlus
-                  <ArrowRight className="w-3 h-3 group-hover/register:translate-x-0.5 transition-transform" />
+                {/* Remember + Forgot */}
+                <div className="flex items-center justify-between pt-0.5">
+                  <label className="flex items-center gap-1.5 cursor-pointer group/rem select-none">
+                    <button type="button" role="checkbox" aria-checked={rememberMe}
+                      onClick={() => !isLoading && setRememberMe(!rememberMe)} disabled={isLoading}
+                      className={`w-3.5 h-3.5 rounded-sm border-[1.5px] flex items-center justify-center transition-all flex-shrink-0 ${
+                        rememberMe ? 'bg-primary border-primary' : 'bg-background border-border group-hover/rem:border-muted-foreground'
+                      }`}>
+                      {rememberMe && (
+                        <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 10 10">
+                          <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                    <span className="text-[11px] text-muted-foreground">Remember me</span>
+                  </label>
+                  <Link href="/forgot-password" className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                {/* Submit */}
+                <button type="submit" disabled={isLoading}
+                  className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                    hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                    flex items-center justify-center gap-2">
+                  {isLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in…</span></>
+                    : <><span>Sign in</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.16em]">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {/* Google OAuth */}
+              <GoogleLoginButton />
+
+              {/* Register link */}
+              <p className="text-center text-[11px] text-muted-foreground">
+                No account?{' '}
+                <Link href="/register" className="text-foreground font-semibold hover:underline underline-offset-2 transition-colors">
+                  Apply to join BwengePlus →
                 </Link>
               </p>
-            </div>
+            </motion.div>
+          </div>
 
-            {/* Decorative dots */}
-            <div className="flex items-center justify-center gap-1 pt-1">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className={`rounded-full transition-all ${
-                    i === 0 ? 'w-4 h-1 bg-primary' : 'w-1 h-1 bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
+          {/* Footer */}
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+            </p>
           </div>
         </div>
-      </motion.div>
-    </div>
 
-    {/* ══════════════════ RIGHT PANEL – Decorative / Feature Showcase ══════════════════ */}
-    <div className="hidden lg:flex w-full lg:w-[56%] relative overflow-hidden flex-col items-center justify-center bg-primary">
-      <FloatingParticles />
+        {/* ══ RIGHT — Primary color editorial panel ══ */}
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col">
 
-      {/* Background shapes */}
-      <div className="absolute inset-0 bg-primary" />
-      <div className="absolute right-[-15%] top-[5%] w-[65%] h-[75%] rounded-full bg-white/5" />
-      <div className="absolute left-[-10%] bottom-[-10%] w-[55%] h-[55%] rounded-full bg-white/5" />
+          {/* Top label row */}
+          <div className="flex items-center justify-between px-12 h-11 border-b border-white/10 flex-shrink-0">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">E-Learning Platform</span>
+            <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">Rwanda · Education</span>
+          </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center h-full w-full px-6 py-8 gap-4">
+          {/* Editorial body — vertically centered */}
+          <div className="flex-1 flex flex-col justify-center px-12 py-6 gap-7">
 
-        {/* Tagline */}
-        <div className="text-center space-y-1">
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex items-center justify-center gap-1.5 mb-1"
-          >
-            <Sparkles className="w-3 h-3 text-yellow-300" />
-            <span className="text-white/80 text-xs font-medium uppercase tracking-wider">
-              Education Platform
-            </span>
-            <Sparkles className="w-3 h-3 text-yellow-300" />
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-3xl font-bold text-white tracking-tight"
-          >
-            Bwenge<span className="text-blue-200">Plus</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-white/70 text-xs font-medium"
-          >
-            Secure • Protected • Smart
-          </motion.p>
-        </div>
+            {/* Display headline */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.45, ease: 'easeOut' }}
+            >
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-3">Ubwenge burarahurwa</p>
+              <div className="space-y-0.5">
+                <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Learn.</h2>
+                <h2 className="text-[38px] font-bold text-white/70 leading-[1.0] tracking-tight">Grow.</h2>
+                <h2 className="text-[38px] font-bold text-white/40 leading-[1.0] tracking-tight">Succeed.</h2>
+              </div>
+              <p className="text-[13px] text-white/70 mt-3 leading-relaxed max-w-xs">
+                Access hundreds of courses across MOOC and SPOC formats from Rwanda's leading institutions.
+              </p>
+            </motion.div>
 
-        {/* Feature Carousel */}
-        <div className="w-full max-w-xs">
-          <div className="relative h-24 overflow-hidden">
-            {features.map((feat, index) => {
-              const FIcon = feat.icon
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{
-                    opacity: index === currentFeature ? 1 : 0,
-                    x: index === currentFeature ? 0 : 30,
-                  }}
-                  transition={{ duration: 0.4 }}
-                  className="absolute inset-0 flex flex-col items-center justify-center text-center px-3"
-                >
-                  <div
-                    className={`w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shadow-md mb-1.5`}
-                  >
-                    <FIcon className="w-4 h-4 text-white" />
+            {/* Rule */}
+            <div className="w-10 h-px bg-white/20" />
+
+            {/* Highlights list */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.22, duration: 0.45 }}
+            >
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-3">Platform features</p>
+              <div className="space-y-0">
+                {highlights.map((h, i) => (
+                  <div key={i} className="flex items-start justify-between gap-6 py-3 border-b border-white/10 group">
+                    <div className="space-y-0.5">
+                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/70">{h.label}</p>
+                      <p className="text-[13px] text-white group-hover:text-white transition-colors duration-200">{h.desc}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5 group-hover:text-white/60 transition-colors" />
                   </div>
-                  <h3 className="text-white font-semibold text-sm mb-0.5">{feat.title}</h3>
-                  <p className="text-white/70 text-xs leading-relaxed">{feat.description}</p>
-                </motion.div>
-              )
-            })}
+                ))}
+              </div>
+            </motion.div>
+
           </div>
 
-          {/* Dot nav */}
-          <div className="flex justify-center gap-1.5 mt-1">
-            {features.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentFeature(i)}
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  i === currentFeature ? 'w-5 bg-white' : 'w-1 bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
         </div>
-
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-4 text-white/80 text-xs mt-2">
-          <div className="text-center">
-            <div className="font-bold text-white text-sm">10K+</div>
-            <div>Learners</div>
-          </div>
-          <div className="w-px h-6 bg-white/20" />
-          <div className="text-center">
-            <div className="font-bold text-white text-sm">100+</div>
-            <div>Institutions</div>
-          </div>
-          <div className="w-px h-6 bg-white/20" />
-          <div className="text-center">
-            <div className="font-bold text-white text-sm">500+</div>
-            <div>Courses</div>
-          </div>
-        </div>
-
-        {/* Additional CTA for new users */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.4 }}
-          className="mt-4 pt-4 border-t border-white/20 w-full max-w-xs text-center"
-        >
-          <p className="text-white/70 text-xs mb-2">New to BwengePlus?</p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-medium transition-all group"
-          >
-            <span>Create free account</span>
-            <Zap className="w-3 h-3 group-hover:rotate-12 transition-transform" />
-          </Link>
-        </motion.div>
       </div>
-    </div>
-  </div>
-</GoogleOAuthProviderWrapper>
+    </GoogleOAuthProviderWrapper>
   )
 }

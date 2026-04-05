@@ -182,21 +182,21 @@ export default function SystemAdminUsersPage() {
   
   // Get role badge color - NULL SAFE
   const getRoleColor = (role: string | null | undefined) => {
-    if (!role) return 'bg-gray-100 text-gray-800';
+    if (!role) return 'bg-muted text-foreground';
     
     switch (role) {
       case 'SYSTEM_ADMIN':
-        return 'bg-red-100 text-red-800';
+        return 'bg-destructive/15 text-destructive';
       case 'INSTITUTION_ADMIN':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-primary/15 text-primary';
       case 'CONTENT_CREATOR':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary/15 text-primary';
       case 'INSTRUCTOR':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/15 text-success';
       case 'LEARNER':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
   
@@ -212,9 +212,9 @@ export default function SystemAdminUsersPage() {
       return <Badge variant="destructive" className="text-xs">Inactive</Badge>;
     }
     if (!user.is_verified) {
-      return <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800 border-amber-200">Unverified</Badge>;
+      return <Badge variant="outline" className="text-xs bg-warning/15 text-warning border-warning/30">Unverified</Badge>;
     }
-    return <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-200">Active</Badge>;
+    return <Badge variant="outline" className="text-xs bg-success/15 text-success border-success/30">Active</Badge>;
   };
   
   // Get user initials - NULL SAFE
@@ -240,8 +240,8 @@ export default function SystemAdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-1">
             Manage all users, roles, and permissions across the platform
           </p>
         </div>
@@ -269,10 +269,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{statistics.total_users}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Total Users</p>
+                  <p className="text-2xl font-bold text-foreground">{statistics.total_users}</p>
                 </div>
-                <Users className="w-8 h-8 text-blue-500 opacity-80" />
+                <Users className="w-8 h-8 text-primary opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -282,10 +282,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">BwengePlus</p>
-                  <p className="text-2xl font-bold text-purple-600">{bwengePlusUsers.length}</p>
+                  <p className="text-xs text-muted-foreground font-medium">BwengePlus</p>
+                  <p className="text-2xl font-bold text-primary">{bwengePlusUsers.length}</p>
                 </div>
-                <BookOpen className="w-8 h-8 text-purple-500 opacity-80" />
+                <BookOpen className="w-8 h-8 text-primary opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -295,10 +295,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Ongera</p>
-                  <p className="text-2xl font-bold text-green-600">{ongeraUsers.length}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Ongera</p>
+                  <p className="text-2xl font-bold text-success">{ongeraUsers.length}</p>
                 </div>
-                <Shield className="w-8 h-8 text-green-500 opacity-80" />
+                <Shield className="w-8 h-8 text-success opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -308,10 +308,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Active</p>
-                  <p className="text-2xl font-bold text-green-600">{statistics.active_users}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Active</p>
+                  <p className="text-2xl font-bold text-success">{statistics.active_users}</p>
                 </div>
-                <UserCheck className="w-8 h-8 text-green-500 opacity-80" />
+                <UserCheck className="w-8 h-8 text-success opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -321,10 +321,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Verified</p>
-                  <p className="text-2xl font-bold text-blue-600">{statistics.verified_users}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Verified</p>
+                  <p className="text-2xl font-bold text-primary">{statistics.verified_users}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-blue-500 opacity-80" />
+                <CheckCircle className="w-8 h-8 text-primary opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -334,10 +334,10 @@ export default function SystemAdminUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600 font-medium">Recent (30d)</p>
-                  <p className="text-2xl font-bold text-orange-600">{statistics.recent_signups}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Recent (30d)</p>
+                  <p className="text-2xl font-bold text-warning">{statistics.recent_signups}</p>
                 </div>
-                <Clock className="w-8 h-8 text-orange-500 opacity-80" />
+                <Clock className="w-8 h-8 text-warning opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -386,28 +386,28 @@ export default function SystemAdminUsersPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-border">
                     <th className="text-left py-3 px-2 w-12">
                       <input
                         type="checkbox"
                         checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                         onChange={handleSelectAll}
-                        className="rounded border-gray-300"
+                        className="rounded border-border"
                       />
                     </th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">User</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">System</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">Role</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">Status</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">Institutions</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">Joined</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-700 text-sm">Actions</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">User</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">System</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Role</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Status</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Institutions</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Joined</th>
+                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, index) => (
-                      <tr key={index} className="border-b border-gray-100">
+                      <tr key={index} className="border-b border-border">
                         <td className="py-3 px-2"><Skeleton className="w-4 h-4" /></td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-3">
@@ -429,8 +429,8 @@ export default function SystemAdminUsersPage() {
                     ))
                   ) : filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-8 text-center text-gray-500">
-                        <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                      <td colSpan={9} className="py-8 text-center text-muted-foreground">
+                        <Users className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
                         <p>No users found</p>
                         <p className="text-sm mt-1">
                           {activeSystemTab !== 'all' ? `No ${activeSystemTab} users found` : 'Try adjusting your filters'}
@@ -439,13 +439,13 @@ export default function SystemAdminUsersPage() {
                     </tr>
                   ) : (
                     filteredUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr key={user.id} className="border-b border-border hover:bg-muted/50">
                         <td className="py-3 px-2">
                           <input
                             type="checkbox"
                             checked={selectedUsers.includes(user.id)}
                             onChange={() => handleUserSelect(user.id)}
-                            className="rounded border-gray-300"
+                            className="rounded border-border"
                           />
                         </td>
                         <td className="py-3 px-2">
@@ -467,8 +467,8 @@ export default function SystemAdminUsersPage() {
                         <td className="py-3 px-2">
                           <Badge variant="outline" className={`text-xs ${
                             user.isforwhich_system?.toLowerCase() === 'bwengeplus' 
-                              ? 'bg-purple-50 text-purple-700 border-purple-200' 
-                              : 'bg-green-50 text-green-700 border-green-200'
+                              ? 'bg-primary/10 text-primary border-primary/30' 
+                              : 'bg-success/10 text-success border-success/30'
                           }`}>
                             {user.isforwhich_system || 'N/A'}
                           </Badge>
@@ -485,13 +485,13 @@ export default function SystemAdminUsersPage() {
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1">
-                            <Building2 className="w-3 h-3 text-gray-400" />
+                            <Building2 className="w-3 h-3 text-muted-foreground" />
                             <span className="text-sm">
                               {user.institutions?.length || 0}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-2 text-xs text-gray-600">
+                        <td className="py-3 px-2 text-xs text-muted-foreground">
                           {formatDate(user.date_joined)}
                         </td>
                         <td className="py-3 px-2">
@@ -557,7 +557,7 @@ export default function SystemAdminUsersPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
-                                    className="text-red-600"
+                                    className="text-destructive"
                                     onClick={() => {
                                       setUserToDelete(user);
                                       setShowDeleteDialog(true);
@@ -596,8 +596,8 @@ export default function SystemAdminUsersPage() {
                 ))
               ) : filteredUsers.length === 0 ? (
                 <div className="col-span-full text-center py-8">
-                  <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-gray-500">No users found</p>
+                  <Users className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-muted-foreground">No users found</p>
                 </div>
               ) : (
                 filteredUsers.map((user) => (
@@ -614,15 +614,15 @@ export default function SystemAdminUsersPage() {
                           <h4 className="font-semibold text-sm">
                             {getFullName(user.first_name, user.last_name)}
                           </h4>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {user.email || 'No email'}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-1 justify-center">
                           <Badge variant="outline" className={`text-xs ${
                             user.isforwhich_system?.toLowerCase() === 'bwengeplus' 
-                              ? 'bg-purple-50 text-purple-700 border-purple-200' 
-                              : 'bg-green-50 text-green-700 border-green-200'
+                              ? 'bg-primary/10 text-primary border-primary/30' 
+                              : 'bg-success/10 text-success border-success/30'
                           }`}>
                             {user.isforwhich_system}
                           </Badge>
@@ -631,11 +631,11 @@ export default function SystemAdminUsersPage() {
                           </Badge>
                           {getStatusBadge(user)}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Building2 className="w-3 h-3" />
                           <span>{user.institutions?.length || 0} institutions</span>
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           Joined {formatDate(user.date_joined)}
                         </div>
                         <div className="flex gap-2 w-full">
@@ -668,7 +668,7 @@ export default function SystemAdminUsersPage() {
                                   Reset Password
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600">
+                                <DropdownMenuItem className="text-destructive">
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
@@ -686,8 +686,8 @@ export default function SystemAdminUsersPage() {
           
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-              <div className="text-sm text-gray-700">
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+              <div className="text-sm text-muted-foreground">
                 Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to{" "}
                 <span className="font-medium">
                   {Math.min(currentPage * itemsPerPage, pagination.total)}
@@ -741,7 +741,7 @@ export default function SystemAdminUsersPage() {
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Per page:</span>
+                <span className="text-sm text-muted-foreground">Per page:</span>
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {
@@ -796,7 +796,6 @@ export default function SystemAdminUsersPage() {
           }}
           user={userToDelete}
           onConfirm={(options) => {
-            console.log('Delete user with options:', options);
             setShowDeleteDialog(false);
             setUserToDelete(null);
           }}

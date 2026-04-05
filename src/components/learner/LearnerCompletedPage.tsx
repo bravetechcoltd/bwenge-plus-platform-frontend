@@ -60,6 +60,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d";
 
 interface CompletedCourse {
   id: string;
@@ -214,7 +215,6 @@ export default function LearnerCompletedPage() {
         setStats(stats);
       }
     } catch (error) {
-      console.error("Error fetching completed courses:", error);
       toast.error("Failed to load completed courses");
     } finally {
       setLoading(false);
@@ -314,7 +314,6 @@ export default function LearnerCompletedPage() {
       
       toast.success("Certificate downloaded successfully");
     } catch (error) {
-      console.error("Error generating PDF:", error);
       toast.error("Failed to download certificate");
     } finally {
       setGeneratingPDF(false);
@@ -395,14 +394,14 @@ export default function LearnerCompletedPage() {
   const getLevelColor = (level: string) => {
     switch (level?.toUpperCase()) {
       case "BEGINNER":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-success/15 text-success border-success/30";
       case "INTERMEDIATE":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-primary/15 text-primary border-primary/30";
       case "ADVANCED":
       case "EXPERT":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return "bg-primary/15 text-primary border-primary/30";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-foreground border-border";
     }
   };
 
@@ -425,10 +424,10 @@ export default function LearnerCompletedPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Completed Courses
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Celebrate your achievements and showcase your certificates
           </p>
         </div>
@@ -452,14 +451,14 @@ export default function LearnerCompletedPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Courses Completed</p>
+                  <p className="text-sm text-muted-foreground">Courses Completed</p>
                   <p className="text-3xl font-bold">{stats.total_completed}</p>
-                  <p className="text-xs text-green-600 mt-1">
+                  <p className="text-xs text-success mt-1">
                     {stats.certificates_earned} certificates earned
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -469,14 +468,14 @@ export default function LearnerCompletedPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Time</p>
+                  <p className="text-sm text-muted-foreground">Total Time</p>
                   <p className="text-3xl font-bold">{stats.total_time_spent_hours}h</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {stats.total_lessons_completed} lessons
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -486,14 +485,14 @@ export default function LearnerCompletedPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Average Score</p>
+                  <p className="text-sm text-muted-foreground">Average Score</p>
                   <p className="text-3xl font-bold">{stats.average_score}%</p>
-                  <p className="text-xs text-purple-600 mt-1">
+                  <p className="text-xs text-primary mt-1">
                     Top performer in {stats.by_level.length} levels
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -503,14 +502,14 @@ export default function LearnerCompletedPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Achievements</p>
+                  <p className="text-sm text-muted-foreground">Achievements</p>
                   <p className="text-3xl font-bold">{stats.achievements_count}</p>
-                  <p className="text-xs text-yellow-600 mt-1">
+                  <p className="text-xs text-warning mt-1">
                     badges earned
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -521,7 +520,7 @@ export default function LearnerCompletedPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search completed courses..."
             value={searchTerm}
@@ -558,11 +557,11 @@ export default function LearnerCompletedPage() {
       {filteredCourses.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Completed Courses Yet
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm
                 ? "No courses match your search criteria"
                 : "You haven't completed any courses yet. Keep learning!"}
@@ -575,132 +574,45 @@ export default function LearnerCompletedPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
-              {/* Thumbnail */}
-              <div className="relative h-40">
-                {course.thumbnail_url ? (
-                  <img
-                    src={course.thumbnail_url}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
-                    <CheckCircle className="w-12 h-12 text-white opacity-50" />
-                  </div>
-                )}
-                <Badge
-                  className={`absolute top-2 left-2 ${getLevelColor(course.level)}`}
-                >
-                  <span className="flex items-center gap-1">
-                    {getLevelIcon(course.level)}
-                    {course.level}
-                  </span>
-                </Badge>
-                {course.completion.certificate_issued && (
-                  <Badge className="absolute top-2 right-2 bg-yellow-500 text-white">
-                    <Award className="w-3 h-3 mr-1" />
-                    Certified
-                  </Badge>
-                )}
-                <div className="absolute bottom-2 right-2">
-                  <Badge variant="secondary">
-                    {course.course_type}
-                  </Badge>
-                </div>
-              </div>
-
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {course.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="pb-2 space-y-3">
-                {/* Completion Info */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    Completed
-                  </span>
-                  <span className="font-medium">
-                    {format(new Date(course.completion.date), "MMM d, yyyy")}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 flex items-center gap-1">
-                    <Award className="w-4 h-4" />
-                    Final Score
-                  </span>
-                  <span className="font-bold text-green-600">
-                    {course.completion.score}%
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    Time Spent
-                  </span>
-                  <span>{formatTime(course.completion.time_spent_minutes)}</span>
-                </div>
-
-                {/* Achievements */}
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {course.achievements.perfect_scores > 0 && (
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                      ⭐ Perfect Score ({course.achievements.perfect_scores})
-                    </Badge>
-                  )}
-                  {course.achievements.early_bird && (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      🐦 Early Bird
-                    </Badge>
-                  )}
-                  {course.achievements.top_performer && (
-                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                      🏆 Top Performer
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-
-              <CardFooter className="flex gap-2 pt-2">
-                {course.completion.certificate_issued && (
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleViewCertificate(course)}
-                  >
-                    <Award className="w-4 h-4 mr-2" />
-                    View Certificate
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => handleWriteReview(course)}
-                >
-                  <Star className="w-4 h-4 mr-2" />
-                  Review
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="w-10 p-0"
-                  asChild
-                >
-                  <Link href={`/courses/${course.id}`}>
-                    <BookOpen className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredCourses.map((course, idx) => (
+            <BwengeCourseCard3D
+              key={course.id}
+              id={course.id}
+              title={course.title}
+              description={course.description}
+              thumbnail_url={course.thumbnail_url || undefined}
+              instructor={{
+                id: course.instructor.id,
+                first_name: course.instructor.name.split(" ")[0] || "",
+                last_name: course.instructor.name.split(" ").slice(1).join(" ") || "",
+                profile_picture_url: course.instructor.avatar || undefined,
+              }}
+              level={course.level}
+              course_type={course.course_type}
+              is_certificate_available={course.completion.certificate_issued}
+              variant="student"
+              showActions={false}
+              showInstitution={false}
+              index={idx}
+              onLearnMoreClick={(id) => {
+                if (course.completion.certificate_issued) {
+                  handleViewCertificate(course);
+                }
+              }}
+              enrollmentData={{
+                progress_percentage: 100,
+                enrollment_status: "COMPLETED",
+                approval_status: "APPROVED",
+                time_spent_minutes: course.completion.time_spent_minutes,
+                completed_lessons: course.completion.lessons_completed,
+                total_lessons_count: course.completion.total_lessons,
+                certificate_issued: course.completion.certificate_issued,
+                final_score: String(course.completion.score),
+                action_href: `/courses/${course.id}/learn`,
+                animate: true,
+              }}
+            />
           ))}
         </div>
       )}
@@ -720,50 +632,50 @@ export default function LearnerCompletedPage() {
               {/* Certificate Preview */}
               <div
                 id="certificate-preview"
-                className="border-8 border-double border-yellow-400 p-8 bg-gradient-to-br from-yellow-50 to-white rounded-lg text-center"
+                className="border-8 border-double border-warning/50 p-8 bg-gradient-to-br from-yellow-50 to-white rounded-lg text-center"
               >
                 <div className="mb-6">
-                  <GraduationCap className="w-16 h-16 text-yellow-500 mx-auto" />
+                  <GraduationCap className="w-16 h-16 text-warning mx-auto" />
                 </div>
                 
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
                   Certificate of Completion
                 </h2>
                 
-                <p className="text-gray-600 mb-6">
+                <p className="text-muted-foreground mb-6">
                   This is to certify that
                 </p>
                 
-                <p className="text-2xl font-bold text-blue-600 mb-6">
+                <p className="text-2xl font-bold text-primary mb-6">
                   {user?.first_name} {user?.last_name}
                 </p>
                 
-                <p className="text-gray-600 mb-2">
+                <p className="text-muted-foreground mb-2">
                   has successfully completed the course
                 </p>
                 
-                <p className="text-xl font-bold text-gray-900 mb-6">
+                <p className="text-xl font-bold text-foreground mb-6">
                   {selectedCertificate.title}
                 </p>
                 
                 <div className="flex items-center justify-center gap-8 mb-6">
                   <div>
-                    <p className="text-sm text-gray-500">Completed on</p>
+                    <p className="text-sm text-muted-foreground">Completed on</p>
                     <p className="font-semibold">
                       {format(new Date(selectedCertificate.completion.date), "MMMM d, yyyy")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Final Score</p>
+                    <p className="text-sm text-muted-foreground">Final Score</p>
                     <p className="font-semibold">{selectedCertificate.completion.score}%</p>
                   </div>
                 </div>
                 
                 <div className="border-t pt-6">
-                  <p className="text-xs text-gray-400 mb-1">
+                  <p className="text-xs text-muted-foreground mb-1">
                     Certificate ID: {selectedCertificate.completion.certificate_id}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Verify at: {window.location.origin}/verify-certificate/{selectedCertificate.completion.certificate_id}
                   </p>
                 </div>
@@ -786,7 +698,7 @@ export default function LearnerCompletedPage() {
                   
                   <Button variant="outline" onClick={handleCopyLink}>
                     {copied ? (
-                      <Check className="w-4 h-4 mr-2 text-green-600" />
+                      <Check className="w-4 h-4 mr-2 text-success" />
                     ) : (
                       <Copy className="w-4 h-4 mr-2" />
                     )}
@@ -795,7 +707,7 @@ export default function LearnerCompletedPage() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2 text-center">
+                  <p className="text-sm font-medium text-muted-foreground mb-2 text-center">
                     Share your achievement
                   </p>
                   <div className="flex justify-center gap-2">

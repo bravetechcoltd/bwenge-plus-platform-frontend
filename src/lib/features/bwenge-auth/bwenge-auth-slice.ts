@@ -34,7 +34,6 @@ const parseCookieJSON = (cookieValue: string | undefined): any => {
   try {
     return JSON.parse(cookieValue);
   } catch (error) {
-    console.error("Failed to parse cookie JSON:", error);
     return null;
   }
 };
@@ -72,20 +71,17 @@ export const consumeSSOToken = createAsyncThunk(
   "bwengeAuth/consumeSSOToken",
   async (ssoToken: string, { rejectWithValue }) => {
     try {
-      console.log("🔓 [Frontend] Consuming SSO token...");
       
       const response = await api.post("/auth/sso/consume", {
         sso_token: ssoToken,
       });
 
-      console.log("✅ [Frontend] SSO token consumed:", response.data);
 
       if (response.data.success) {
         return response.data.data;
       }
       return rejectWithValue(response.data.message);
     } catch (error: any) {
-      console.error("❌ [Frontend] SSO consumption failed:", error);
       return rejectWithValue(
         error.response?.data?.message || "SSO authentication failed"
       );
@@ -174,7 +170,6 @@ const bwengeAuthSlice = createSlice({
         state.error = null;
       })
       .addCase(consumeSSOToken.fulfilled, (state, action) => {
-        console.log("✅ [Redux] SSO token consumed successfully");
         
         state.isLoading = false;
         state.token = action.payload.token;
@@ -186,7 +181,6 @@ const bwengeAuthSlice = createSlice({
         Cookies.set("bwenge_user", JSON.stringify(action.payload.user), { expires: 7 });
       })
       .addCase(consumeSSOToken.rejected, (state, action) => {
-        console.error("❌ [Redux] SSO consumption failed:", action.payload);
         
         state.isLoading = false;
         state.error = action.payload as string;

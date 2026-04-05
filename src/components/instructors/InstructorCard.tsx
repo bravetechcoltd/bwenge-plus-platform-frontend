@@ -41,7 +41,7 @@ export function InstructorCard({
                 src={instructor.profile_picture_url}
                 alt={instructor.first_name}
               />
-              <AvatarFallback className="bg-blue-100 text-blue-600">
+              <AvatarFallback className="bg-primary/15 text-primary">
                 {instructor.first_name?.[0]}
                 {instructor.last_name?.[0]}
               </AvatarFallback>
@@ -53,14 +53,14 @@ export function InstructorCard({
                   {instructor.first_name} {instructor.last_name}
                 </h3>
                 {isPrimary && (
-                  <Badge className="bg-amber-100 text-amber-800">
+                  <Badge className="bg-warning/15 text-warning">
                     <Award className="w-3 h-3 mr-1" />
                     Primary
                   </Badge>
                 )}
               </div>
               
-              <p className="text-sm text-gray-500 truncate mb-2">
+              <p className="text-sm text-muted-foreground truncate mb-2">
                 {instructor.email}
               </p>
               
@@ -68,7 +68,7 @@ export function InstructorCard({
                 <Badge variant="outline" className="text-xs">
                   Instructor
                 </Badge>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   Assigned: {new Date(instructor.assigned_at).toLocaleDateString()}
                 </span>
               </div>
@@ -78,29 +78,29 @@ export function InstructorCard({
                 <div className="flex items-center gap-3">
                   {instructor.permissions.can_grade_assignments && (
                     <div className="flex items-center gap-1" title="Can grade assignments">
-                      <FileText className="w-3 h-3 text-green-600" />
-                      <span className="text-xs text-gray-600">Grade</span>
+                      <FileText className="w-3 h-3 text-success" />
+                      <span className="text-xs text-muted-foreground">Grade</span>
                     </div>
                   )}
                   
                   {instructor.permissions.can_manage_enrollments && (
                     <div className="flex items-center gap-1" title="Can manage enrollments">
-                      <Users className="w-3 h-3 text-blue-600" />
-                      <span className="text-xs text-gray-600">Enrollments</span>
+                      <Users className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">Enrollments</span>
                     </div>
                   )}
                   
                   {instructor.permissions.can_edit_course_content && (
                     <div className="flex items-center gap-1" title="Can edit course content">
-                      <Edit className="w-3 h-3 text-purple-600" />
-                      <span className="text-xs text-gray-600">Content</span>
+                      <Edit className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-muted-foreground">Content</span>
                     </div>
                   )}
                   
                   {!instructor.permissions.can_grade_assignments &&
                    !instructor.permissions.can_manage_enrollments &&
                    !instructor.permissions.can_edit_course_content && (
-                    <span className="text-xs text-gray-500">No permissions</span>
+                    <span className="text-xs text-muted-foreground">No permissions</span>
                   )}
                 </div>
               )}
@@ -122,7 +122,7 @@ export function InstructorCard({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-600"
+                  className="text-destructive"
                   onClick={onRemove}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />

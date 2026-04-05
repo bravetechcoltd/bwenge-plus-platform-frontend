@@ -74,6 +74,8 @@ import {
   ClipboardList,
 } from "lucide-react"
 import Link from "next/link"
+import { useTheme } from "next-themes"
+import { Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -98,6 +100,8 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import Cookies from "js-cookie"
+import NotificationDropdown from "@/components/notifications/NotificationDropdown"
+import api from "@/lib/api"
 
 // ==================== ENUMS ====================
 export enum BwengeRole {
@@ -138,62 +142,43 @@ const safeSetLocalStorage = (key: string, value: string): void => {
   try {
     localStorage.setItem(key, value)
   } catch (error) {
-    console.warn(`Failed to set localStorage for key: ${key}`, error)
   }
 }
-
-
 
 const safeSetLocalStorageJSON = (key: string, value: unknown): void => {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(key, JSON.stringify(value))
   } catch (error) {
-    console.warn(`Failed to set localStorage for key: ${key}`, error)
   }
 }
 
 // ==================== USER VALIDATION ====================
 const validateUserFromAllSources = () => {
-  console.log("🔍 [VALIDATION] Validating user from all sources...")
-
-  // 1. Check Redux store first (most reliable)
   let reduxUser = null
   try {
-    // We'll get this from the hook in the component
   } catch (e) {
-    console.warn("⚠️ [VALIDATION] Cannot access Redux directly in helper")
   }
 
-  // 2. Check cookies
   let cookieUser = null
   const userCookie = Cookies.get("bwenge_user")
   if (userCookie) {
     try {
       cookieUser = JSON.parse(userCookie)
-      console.log("✅ [VALIDATION] Found user in cookies:", cookieUser?.bwenge_role)
     } catch (e) {
-      console.error("❌ [VALIDATION] Failed to parse cookie user:", e)
     }
   }
 
-  // 3. Check localStorage
   let localStorageUser = null
   const localUserStr = safeGetLocalStorage("bwengeplus_user")
   if (localUserStr) {
     try {
       localStorageUser = JSON.parse(localUserStr)
-      console.log("✅ [VALIDATION] Found user in localStorage:", localStorageUser?.bwenge_role)
     } catch (e) {
-      console.error("❌ [VALIDATION] Failed to parse localStorage user:", e)
     }
   }
 
-  // 4. Check cross-system context
   const crossSystemContext = safeGetLocalStorageJSON("cross_system_context", null)
-  if (crossSystemContext) {
-    console.log("✅ [VALIDATION] Found cross-system context:", crossSystemContext)
-  }
 
   return {
     cookieUser,
@@ -215,45 +200,31 @@ interface CrossSystemContext {
 }
 
 const determineActualRole = (reduxUser: unknown, cookieUser: unknown, localStorageUser: unknown): string => {
-  // Priority: Redux > Cookies > localStorage > cross-system context
-
   if (reduxUser && typeof reduxUser === 'object' && 'bwenge_role' in reduxUser) {
     const role = (reduxUser as UserLike).bwenge_role
-    if (role) {
-      console.log("🎯 [ROLE] Using Redux role:", role)
-      return role
-    }
+    if (role) return role
   }
 
   if (cookieUser && typeof cookieUser === 'object' && 'bwenge_role' in cookieUser) {
     const role = (cookieUser as UserLike).bwenge_role
-    if (role) {
-      console.log("🎯 [ROLE] Using cookie role:", role)
-      return role
-    }
+    if (role) return role
   }
 
   if (localStorageUser && typeof localStorageUser === 'object' && 'bwenge_role' in localStorageUser) {
     const role = (localStorageUser as UserLike).bwenge_role
-    if (role) {
-      console.log("🎯 [ROLE] Using localStorage role:", role)
-      return role
-    }
+    if (role) return role
   }
 
-  // Check cross-system context
   const crossSystemContext = safeGetLocalStorageJSON<CrossSystemContext | null>("cross_system_context", null)
   if (crossSystemContext?.bwenge_role) {
-    console.log("🎯 [ROLE] Using cross-system context role:", crossSystemContext.bwenge_role)
     return crossSystemContext.bwenge_role
   }
 
-  console.log("⚠️ [ROLE] No role found, defaulting to LEARNER")
   return "LEARNER"
 }
 
 // ==================== SIDEBAR CONFIGURATION ====================
-const getSidebarConfig = (role: string, institutionId?: string, user?: { primary_institution_id?: string }) => {
+const getSidebarConfig = (role: string, institutionId?: string, user?: { primary_institution_id?: string }, pendingEnrollmentCount?: number) => {
   const baseItems = {
     INSTITUTION_ADMIN: [
       {
@@ -339,7 +310,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
           },
         ]
       },
-
       {
         title: "Enrollment Management",
         icon: Users,
@@ -348,7 +318,7 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             title: "Enrollment Requests",
             href: "/dashboard/institution-admin/enrollment/requests",
             icon: Clock,
-            badge: "pending"
+            badge: pendingEnrollmentCount && pendingEnrollmentCount > 0 ? pendingEnrollmentCount : undefined
           },
           {
             title: "Bulk Enrollment",
@@ -605,6 +575,12 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             href: "/dashboard/instructor/assessments",
             icon: CheckCircle,
             action: "grade_assignments"
+          },
+          {
+            title: "Enrollment Requests",
+            href: "/dashboard/instructor/enrollment/requests",
+            icon: Clock,
+            badge: "pending"
           }
         ]
       },
@@ -703,7 +679,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
     ]
   };
 
-  // Handle SYSTEM_ADMIN (not defined above)
   if (role === "SYSTEM_ADMIN") {
     return [
       {
@@ -712,7 +687,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         icon: Home,
         exact: true
       },
-
       {
         title: "Institution Management",
         icon: Building2,
@@ -778,7 +752,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             title: "Enrollment Requests",
             href: "/dashboard/system-admin/enrollment-requests",
             icon: Clock
-            // badge: pendingEnrollments 
           },
           {
             title: "MOOC Overview",
@@ -803,42 +776,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
           },
         ]
       },
-      // {
-      //   title: "System Settings",
-      //   icon: Settings,
-      //   subItems: [
-      //     {
-      //       title: "Platform Configuration",
-      //       href: "/dashboard/system-admin/settings/platform",
-      //       icon: Cpu
-      //     },
-      //     {
-      //       title: "Payment Integration",
-      //       href: "/dashboard/system-admin/settings/payments",
-      //       icon: CreditCard
-      //     },
-      //     {
-      //       title: "Global Policies",
-      //       href: "/dashboard/system-admin/settings/policies",
-      //       icon: FileText
-      //     },
-      //     {
-      //       title: "System Analytics",
-      //       href: "/dashboard/system-admin/settings/analytics",
-      //       icon: Activity
-      //     },
-      //     {
-      //       title: "API Management",
-      //       href: "/dashboard/system-admin/settings/api",
-      //       icon: Network
-      //     },
-      //     {
-      //       title: "Database",
-      //       href: "/dashboard/system-admin/settings/database",
-      //       icon: Database
-      //     },
-      //   ]
-      // },
       {
         title: "Security & Monitoring",
         icon: Shield,
@@ -921,17 +858,10 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
   const hasChildren = item.subItems && item.subItems.length > 0
   const Icon = item.icon
 
-  // ==================== IMPROVED ACTIVE STATE DETECTION ====================
   const isItemActive = () => {
     if (!item.href) return false
-
-    // For items without children (direct links)
     if (!hasChildren) {
-      // Exact match for dashboard home
-      if (item.exact) {
-        return pathname === item.href
-      }
-      // For other links, check if path starts with href (for nested routes)
+      if (item.exact) return pathname === item.href
       return pathname.startsWith(item.href)
     }
     return false
@@ -941,12 +871,10 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
     if (!hasChildren) return false
     return item.subItems?.some((subItem) => {
       if (!subItem.href) return false
-      // Check if current path matches subitem or starts with it
       return pathname === subItem.href || pathname.startsWith(subItem.href)
     })
   }
 
-  // Check if any subitem is exactly active (for subitem styling)
   const getActiveSubItem = () => {
     if (!hasChildren) return null
     return item.subItems?.find((subItem) =>
@@ -958,7 +886,6 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
   const isActive = isItemActive()
   const childIsActive = hasActiveChild()
 
-  // For direct links (no children)
   if (item.href && !hasChildren) {
     return (
       <li className="relative max-w-full">
@@ -969,9 +896,7 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
             "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 w-full group relative",
             "border-l-4",
             isCollapsed && "justify-center px-3",
-            // Base styles
             !isActive && "border-transparent text-foreground hover:text-primary hover:bg-primary/5",
-            // Active styles
             isActive && "bg-primary text-primary-foreground border-l-primary-foreground shadow-md"
           )}
         >
@@ -999,7 +924,6 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
     )
   }
 
-  // For parent items with children
   return (
     <li className="relative max-w-full">
       <div>
@@ -1009,9 +933,7 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
             "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 w-full group relative",
             "border-l-4",
             isCollapsed && "justify-center px-3",
-            // Base styles
             !childIsActive && "border-transparent text-foreground hover:text-primary hover:bg-primary/5",
-            // Active when child is active
             childIsActive && "bg-primary/10 text-primary border-l-primary"
           )}
         >
@@ -1035,7 +957,6 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
           )}
         </button>
 
-        {/* Sub-items */}
         {isExpanded && !isCollapsed && item.subItems && (
           <div className="mt-1 space-y-0.5 ml-4 border-l-2 border-border pl-4">
             {item.subItems.map((subItem) => {
@@ -1052,9 +973,7 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
                   className={cn(
                     "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 group relative",
                     "border-l-4",
-                    // Base styles
                     !isSubItemActive && "border-transparent text-muted-foreground hover:text-primary hover:bg-primary/5",
-                    // Active styles
                     isSubItemActive && "bg-primary text-primary-foreground border-l-primary-foreground shadow-md"
                   )}
                 >
@@ -1088,7 +1007,7 @@ const MenuItem = ({ item, expandedItems, toggleExpanded, closeSidebar, pathname,
   )
 }
 
-// ==================== HEADER COMPONENT ====================
+// ==================== COMPACT FIXED HEADER COMPONENT ====================
 interface HeaderProps {
   user: {
     username?: string
@@ -1106,80 +1025,97 @@ interface HeaderProps {
   isMobile: boolean
   handleLogout: (logoutAllSystems: boolean) => void
   actualRole: string
+  sidebarWidth: number
 }
 
-const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualRole }: HeaderProps) => {
+const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualRole, sidebarWidth }: HeaderProps) => {
   const displayName = user?.username || user?.email?.split('@')[0] || 'User'
   const institutionName = user?.institution?.name || user?.primary_institution_name || 'Your Institution'
   const RoleIcon = roleInfo.icon
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <header
+      className="fixed top-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border"
+      style={{ left: sidebarWidth }}
+    >
+      <div className="px-3 sm:px-4 py-1.5">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Mobile menu toggle + title */}
+          <div className="flex items-center gap-2 min-w-0">
             {isMobile && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleSidebar}
-                className="h-9 w-9 rounded-lg"
+                className="h-7 w-7 rounded-md flex-shrink-0 p-0"
               >
-                <Menu className="h-5 w-5 text-foreground" />
+                <Menu className="h-4 w-4 text-foreground" />
               </Button>
             )}
 
-            <div className="flex items-center gap-2">
-              <div className="hidden md:flex flex-col">
-                <h1 className="text-xl font-bold text-foreground">
-                  {actualRole === 'INSTITUTION_ADMIN' ? `${institutionName} Admin` :
-                    actualRole === 'CONTENT_CREATOR' ? 'Content Creator Dashboard' :
-                      actualRole === 'SYSTEM_ADMIN' ? 'System Admin Dashboard' :
-                        actualRole === 'INSTRUCTOR' ? 'Instructor Dashboard' :
-                          'Learning Dashboard'}
-                </h1>
-                <p className="text-xs text-muted-foreground">
-                  Welcome back, {displayName}
-                </p>
-              </div>
+            <div className="hidden sm:flex flex-col leading-none">
+              <h1 className="text-sm font-semibold text-foreground truncate">
+                {actualRole === 'INSTITUTION_ADMIN' ? `${institutionName} Admin` :
+                  actualRole === 'CONTENT_CREATOR' ? 'Content Creator' :
+                    actualRole === 'SYSTEM_ADMIN' ? 'System Admin' :
+                      actualRole === 'INSTRUCTOR' ? 'Instructor' :
+                        'Learning Dashboard'}
+              </h1>
+              <p className="text-[11px] text-muted-foreground">
+                Welcome, {displayName}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="relative h-9 w-9 rounded-lg">
-              <Bell className="w-4 h-4 text-foreground" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          {/* Right: actions */}
+          <div className="flex items-center gap-1">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="h-7 w-7 rounded-md p-0"
+              aria-label="Toggle theme"
+            >
+              {mounted && theme === 'dark' ? (
+                <Sun className="w-3.5 h-3.5 text-foreground" />
+              ) : (
+                <Moon className="w-3.5 h-3.5 text-foreground" />
+              )}
             </Button>
+
+            <NotificationDropdown actualRole={actualRole} />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-                  <div className="flex items-center gap-3">
-                    <div className="hidden md:flex items-center gap-3 bg-muted/50 hover:bg-muted transition-colors rounded px-3 py-2">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
-                          <span className="text-primary-foreground text-sm font-semibold">
-                            {displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex flex-col text-left">
-                          <span className="text-sm font-medium text-foreground">
-                            {displayName}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {roleInfo.label}
-                          </span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-
-                    <div className="md:hidden h-9 w-9 rounded flex items-center justify-center">
-                      <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground text-sm font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    {/* Desktop user pill */}
+                    <div className="hidden md:flex items-center gap-2 bg-muted/50 hover:bg-muted transition-colors rounded-md px-2 py-1">
+                      <div className="h-6 w-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-primary-foreground text-xs font-semibold">
                           {displayName.charAt(0).toUpperCase()}
                         </span>
                       </div>
+                      <div className="flex flex-col text-left leading-none">
+                        <span className="text-xs font-medium text-foreground">
+                          {displayName}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {roleInfo.label}
+                        </span>
+                      </div>
+                      <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    </div>
+
+                    {/* Mobile avatar only */}
+                    <div className="md:hidden h-7 w-7 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-primary-foreground text-xs font-semibold">
+                        {displayName.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                   </div>
                 </Button>
@@ -1212,7 +1148,7 @@ const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualR
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem
-                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                      className="text-destructive focus:text-destructive cursor-pointer"
                       onSelect={(e) => e.preventDefault()}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -1235,15 +1171,15 @@ const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualR
                         </div>
                       </div>
                     </AlertDialogHeader>
-                    <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg">
+                    <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                       <div className="flex items-start gap-3">
-                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <RoleIcon className="h-3 w-3 text-red-600" />
+                        <div className="w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <RoleIcon className="h-3 w-3 text-destructive" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-red-800 mb-1">{roleInfo.label} Session</p>
-                          <p className="text-sm text-red-700">
-                            You are currently logged in as a <span className="font-semibold">{roleInfo.label}</span>.
+                          <p className="text-sm font-medium text-destructive mb-1">{roleInfo.label} Session</p>
+                          <p className="text-sm text-muted-foreground">
+                            You are currently logged in as a <span className="font-semibold text-foreground">{roleInfo.label}</span>.
                             Make sure to save any unsaved work before logging out.
                           </p>
                         </div>
@@ -1278,7 +1214,6 @@ const getRoleDisplayInfo = (role: string) => {
       return { label: 'System Administrator', color: 'from-red-500 to-orange-500', icon: Shield }
     case 'INSTITUTION_ADMIN':
       return { label: 'Institution Administrator', color: 'from-blue-500 to-cyan-500', icon: Building2 }
-
     case 'INSTRUCTOR':
       return { label: 'Instructor', color: 'from-green-500 to-emerald-500', icon: GraduationCap }
     case 'LEARNER':
@@ -1287,6 +1222,15 @@ const getRoleDisplayInfo = (role: string) => {
       return { label: 'User', color: 'from-gray-500 to-gray-700', icon: User }
   }
 }
+
+// ==================== CONSTANTS ====================
+// Header height in px (compact: ~44px)
+const HEADER_HEIGHT = 44
+// Sidebar widths
+const SIDEBAR_EXPANDED_WIDTH = 288   // w-72 = 18rem = 288px
+const SIDEBAR_COLLAPSED_WIDTH = 80   // w-20 = 5rem = 80px
+// Viewport width threshold below which sidebar auto-collapses
+const AUTO_COLLAPSE_BREAKPOINT = 1024
 
 // ==================== MAIN LAYOUT COMPONENT ====================
 export default function RoleBasedDashboardLayout({
@@ -1320,24 +1264,18 @@ export default function RoleBasedDashboardLayout({
   } | null>(null)
   const [actualRole, setActualRole] = useState<string>("LEARNER")
   const [validationDone, setValidationDone] = useState(false)
+  const [pendingEnrollmentCount, setPendingEnrollmentCount] = useState<number>(0)
 
   useEffect(() => {
     if (!hydrated) return
 
-    console.log("🔍 [LAYOUT] Validating user from all sources...")
-
-    // Get from all sources
     const { cookieUser, localStorageUser, crossSystemContext } = validateUserFromAllSources()
-
-    // Determine the actual role
     const determinedRole = determineActualRole(reduxUser, cookieUser, localStorageUser)
 
-    // Determine the actual user object (priority: redux > cookie > localStorage)
     let determinedUser = reduxUser
     if (!determinedUser && cookieUser) determinedUser = cookieUser
     if (!determinedUser && localStorageUser) determinedUser = localStorageUser
 
-    // If still no user but cross-system context exists, create a minimal user
     if (!determinedUser && crossSystemContext) {
       const ctx = crossSystemContext as CrossSystemContext
       determinedUser = {
@@ -1352,16 +1290,11 @@ export default function RoleBasedDashboardLayout({
         id: "recovered",
         username: "user"
       } as any
-      console.log("🔄 [LAYOUT] Recovered user from cross-system context")
     }
-
-    console.log("✅ [LAYOUT] Determined role:", determinedRole)
-    console.log("✅ [LAYOUT] Determined user:", determinedUser && typeof determinedUser === 'object' && 'bwenge_role' in determinedUser ? (determinedUser as any).bwenge_role : 'none')
 
     setActualUser(determinedUser)
     setActualRole(determinedRole)
 
-    // Run protection validation
     if (isAuthenticated) {
       dispatch(validateProtectionStatus())
         .then((result: unknown) => {
@@ -1372,27 +1305,43 @@ export default function RoleBasedDashboardLayout({
             })
           }
         })
-        .catch(() => {
-          console.warn("⚠️ [LAYOUT] Protection validation failed")
-        })
+        .catch(() => {})
     }
 
     setValidationDone(true)
   }, [reduxUser, hydrated, isAuthenticated, dispatch])
+
+  // ==================== FETCH PENDING ENROLLMENT COUNT ====================
+  useEffect(() => {
+    if (!validationDone || !isAuthenticated || actualRole !== 'INSTITUTION_ADMIN') return
+    api.get('/enrollments/pending-count')
+      .then(res => {
+        const count = res.data?.data?.count ?? res.data?.count ?? 0
+        setPendingEnrollmentCount(count)
+      })
+      .catch(() => {})
+  }, [validationDone, isAuthenticated, actualRole])
 
   // ==================== HYDRATION ====================
   useEffect(() => {
     setHydrated(true)
   }, [])
 
-  // ==================== RESPONSIVE ====================
+  // ==================== RESPONSIVE: auto-collapse sidebar when viewport is narrow ====================
   useEffect(() => {
     const checkScreenSize = () => {
-      const mobile = window.innerWidth < 1024
+      const width = window.innerWidth
+      const mobile = width < AUTO_COLLAPSE_BREAKPOINT
+
       setIsMobile(mobile)
-      setIsCollapsed(mobile)
-      if (!mobile) {
+
+      // Auto-collapse when below breakpoint
+      if (mobile) {
+        setIsCollapsed(true)
         setIsSidebarOpen(false)
+      } else {
+        // On wide screens restore expanded state (don't force collapsed)
+        setIsCollapsed(false)
       }
     }
 
@@ -1405,19 +1354,15 @@ export default function RoleBasedDashboardLayout({
   useEffect(() => {
     if (hydrated && validationDone) {
       if (!isAuthenticated) {
-        console.log("🚫 [LAYOUT] Not authenticated, redirecting to login")
         router.push("/login")
         return
       }
     }
   }, [isAuthenticated, hydrated, router, validationDone])
 
-  // ==================== FIXED: Centralized logout handler ====================
+  // ==================== LOGOUT ====================
   const handleLogout = async (logoutAllSystems: boolean = false) => {
     try {
-      console.log("🔓 [LOGOUT] Initiating logout...", { logoutAllSystems })
-
-      // Save cross-system context before logout
       if (actualUser) {
         const crossSystemContext = {
           system: SystemType.BWENGEPLUS,
@@ -1428,7 +1373,6 @@ export default function RoleBasedDashboardLayout({
           last_sync: new Date().toISOString()
         }
         safeSetLocalStorageJSON("cross_system_context", crossSystemContext)
-        console.log("💾 [LOGOUT] Saved cross-system context")
       }
 
       await dispatch(logoutBwenge(logoutAllSystems)).unwrap()
@@ -1439,19 +1383,19 @@ export default function RoleBasedDashboardLayout({
           : "Successfully logged out"
       )
 
-      console.log("✅ [LOGOUT] Logout successful, redirecting to login...")
       router.push("/login")
     } catch (error: any) {
-      console.error("❌ [LOGOUT] Logout failed:", error)
       toast.error(error || "Failed to logout")
-
-      // Still redirect to login even if backend logout fails
       router.push("/login")
     }
   }
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
+    if (isMobile) {
+      setIsSidebarOpen(!isSidebarOpen)
+    } else {
+      setIsCollapsed(!isCollapsed)
+    }
   }
 
   const toggleExpanded = (title: string) => {
@@ -1468,8 +1412,15 @@ export default function RoleBasedDashboardLayout({
     }
   }
 
-  const sidebarItems = getSidebarConfig(actualRole, actualUser?.primary_institution_id, actualUser ?? undefined)
+  const sidebarItems = getSidebarConfig(actualRole, actualUser?.primary_institution_id, actualUser ?? undefined, pendingEnrollmentCount)
   const roleInfo = getRoleDisplayInfo(actualRole)
+
+  // Compute the effective sidebar width for layout offsets
+  const effectiveSidebarWidth = isMobile
+    ? 0  // on mobile the sidebar overlays; main content starts at 0
+    : isCollapsed
+      ? SIDEBAR_COLLAPSED_WIDTH
+      : SIDEBAR_EXPANDED_WIDTH
 
   if (!hydrated || !validationDone) {
     return (
@@ -1487,8 +1438,8 @@ export default function RoleBasedDashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Mobile Overlay */}
+    <div className="min-h-screen bg-background text-foreground">
+      {/* ── Mobile Overlay ── */}
       {isMobile && isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
@@ -1496,26 +1447,27 @@ export default function RoleBasedDashboardLayout({
         />
       )}
 
-      {/* Sidebar */}
-      <div
+      {/* ── Fixed Sidebar ── */}
+      <aside
         className={cn(
-          "sticky top-0 h-screen flex flex-col transition-all duration-300 bg-background border-r border-border z-40",
-          isMobile && isSidebarOpen ? "absolute left-0 shadow-2xl" : "",
+          "fixed top-0 left-0 h-full flex flex-col transition-all duration-300 bg-background border-r border-border z-40",
           isCollapsed ? "w-20" : "w-72",
-          isMobile && !isSidebarOpen ? "-translate-x-full" : "translate-x-0"
+          // On mobile: slide in/out
+          isMobile && !isSidebarOpen ? "-translate-x-full" : "translate-x-0",
+          isMobile && isSidebarOpen ? "shadow-2xl" : ""
         )}
       >
         <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
             {!isCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                   <roleInfo.icon className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <div>
-                  <h2 className="font-bold text-foreground">BwengePlus</h2>
-                  <p className="text-xs text-muted-foreground font-medium">
+                <div className="min-w-0">
+                  <h2 className="font-bold text-foreground truncate">BwengePlus</h2>
+                  <p className="text-xs text-muted-foreground font-medium truncate">
                     {roleInfo.label}
                   </p>
                 </div>
@@ -1524,8 +1476,8 @@ export default function RoleBasedDashboardLayout({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-9 w-9 p-0 hover:bg-muted rounded-xl transition-all duration-300"
+              onClick={() => isMobile ? setIsSidebarOpen(false) : setIsCollapsed(!isCollapsed)}
+              className="h-9 w-9 p-0 hover:bg-muted rounded-xl transition-all duration-300 flex-shrink-0"
             >
               {isCollapsed ? (
                 <ChevronRight className="h-4 w-4 text-foreground" />
@@ -1552,8 +1504,8 @@ export default function RoleBasedDashboardLayout({
             </ul>
           </nav>
 
-          {/* Footer */}
-          <div className={cn("border-t border-border", isCollapsed ? "p-3" : "p-4")}>
+          {/* Sidebar Footer */}
+          <div className={cn("border-t border-border flex-shrink-0", isCollapsed ? "p-3" : "p-4")}>
             {isCollapsed ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1584,7 +1536,7 @@ export default function RoleBasedDashboardLayout({
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem
-                        className="cursor-pointer text-red-600 focus:text-red-600 rounded-lg"
+                        className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
                         onSelect={(e) => e.preventDefault()}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
@@ -1607,15 +1559,15 @@ export default function RoleBasedDashboardLayout({
                           </div>
                         </div>
                       </AlertDialogHeader>
-                      <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg">
+                      <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <roleInfo.icon className="h-3 w-3 text-red-600" />
+                          <div className="w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <roleInfo.icon className="h-3 w-3 text-destructive" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-red-800 mb-1">{roleInfo.label} Session</p>
-                            <p className="text-sm text-red-700">
-                              You are currently logged in as a <span className="font-semibold">{roleInfo.label}</span>.
+                            <p className="text-sm font-medium text-destructive mb-1">{roleInfo.label} Session</p>
+                            <p className="text-sm text-muted-foreground">
+                              You are currently logged in as a <span className="font-semibold text-foreground">{roleInfo.label}</span>.
                               Make sure to save any unsaved work before logging out.
                             </p>
                           </div>
@@ -1644,8 +1596,8 @@ export default function RoleBasedDashboardLayout({
                       variant="ghost"
                       className="w-full justify-start p-3 h-auto hover:bg-muted/50 rounded-xl shadow-sm border border-transparent hover:border-border transition-all duration-300"
                     >
-                      <div className="flex items-center gap-3 w-full">
-                        <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <div className="flex items-center gap-3 w-full min-w-0">
+                        <Avatar className="h-10 w-10 ring-2 ring-primary/20 flex-shrink-0">
                           <AvatarFallback className="text-sm font-semibold bg-primary text-primary-foreground">
                             {(actualUser?.username || actualUser?.email?.[0] || 'U').charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -1686,7 +1638,7 @@ export default function RoleBasedDashboardLayout({
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem
-                          className="cursor-pointer text-red-600 focus:text-red-600 rounded-lg"
+                          className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
                           onSelect={(e) => e.preventDefault()}
                         >
                           <LogOut className="mr-2 h-4 w-4" />
@@ -1709,15 +1661,15 @@ export default function RoleBasedDashboardLayout({
                             </div>
                           </div>
                         </AlertDialogHeader>
-                        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg">
+                        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                           <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <roleInfo.icon className="h-3 w-3 text-red-600" />
+                            <div className="w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <roleInfo.icon className="h-3 w-3 text-destructive" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-red-800 mb-1">{roleInfo.label} Session</p>
-                              <p className="text-sm text-red-700">
-                                You are currently logged in as a <span className="font-semibold">{roleInfo.label}</span>.
+                              <p className="text-sm font-medium text-destructive mb-1">{roleInfo.label} Session</p>
+                              <p className="text-sm text-muted-foreground">
+                                You are currently logged in as a <span className="font-semibold text-foreground">{roleInfo.label}</span>.
                                 Make sure to save any unsaved work before logging out.
                               </p>
                             </div>
@@ -1765,7 +1717,7 @@ export default function RoleBasedDashboardLayout({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="flex-1 rounded-xl h-9 text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-300"
+                        className="flex-1 rounded-xl h-9 text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300"
                       >
                         <LogOut className="h-4 w-4" />
                       </Button>
@@ -1786,15 +1738,15 @@ export default function RoleBasedDashboardLayout({
                           </div>
                         </div>
                       </AlertDialogHeader>
-                      <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg">
+                      <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <roleInfo.icon className="h-3 w-3 text-red-600" />
+                          <div className="w-6 h-6 bg-destructive/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <roleInfo.icon className="h-3 w-3 text-destructive" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-red-800 mb-1">{roleInfo.label} Session</p>
-                            <p className="text-sm text-red-700">
-                              You are currently logged in as a <span className="font-semibold">{roleInfo.label}</span>.
+                            <p className="text-sm font-medium text-destructive mb-1">{roleInfo.label} Session</p>
+                            <p className="text-sm text-muted-foreground">
+                              You are currently logged in as a <span className="font-semibold text-foreground">{roleInfo.label}</span>.
                               Make sure to save any unsaved work before logging out.
                             </p>
                           </div>
@@ -1818,25 +1770,32 @@ export default function RoleBasedDashboardLayout({
             )}
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header
-          user={actualUser}
-          roleInfo={roleInfo}
-          toggleSidebar={toggleSidebar}
-          isMobile={isMobile}
-          handleLogout={handleLogout}
-          actualRole={actualRole}
-        />
+      {/* ── Fixed Compact Header ── */}
+      <Header
+        user={actualUser}
+        roleInfo={roleInfo}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+        handleLogout={handleLogout}
+        actualRole={actualRole}
+        sidebarWidth={effectiveSidebarWidth}
+      />
 
-        <main className="flex-1 overflow-y-auto overflow-x-auto bg-muted/30">
-          <div className="p-4 md:p-6 animate-fade-in-scale">
-            {children}
-          </div>
-        </main>
-      </div>
+      {/* ── Main Content (offset for fixed sidebar + fixed header) ── */}
+      <main
+        className="transition-all duration-300 overflow-y-auto overflow-x-auto bg-muted/30"
+        style={{
+          marginLeft: effectiveSidebarWidth,
+          paddingTop: HEADER_HEIGHT,
+          minHeight: '100vh',
+        }}
+      >
+        <div className="p-4 md:p-6 animate-fade-in-scale">
+          {children}
+        </div>
+      </main>
 
       <style jsx>{`
         @keyframes fade-in-scale {
@@ -1849,7 +1808,7 @@ export default function RoleBasedDashboardLayout({
             transform: scale(1);
           }
         }
-        
+
         .animate-fade-in-scale {
           animation: fade-in-scale 0.4s ease-out;
         }

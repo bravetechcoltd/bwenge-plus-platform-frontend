@@ -129,7 +129,6 @@ export function useMessaging() {
         newMap.set(conversationId, existing.filter(msg => msg.id !== tempId))
         return newMap
       })
-      console.error("Error sending message:", error)
       throw error
     }
   }
@@ -161,7 +160,6 @@ export function useMessaging() {
       
       return data.conversation || data.data
     } catch (error) {
-      console.error("Error creating conversation:", error)
       throw error
     }
   }
@@ -185,7 +183,6 @@ export function useMessaging() {
       await mutate((key) => typeof key === "string" && key.includes("messages"), undefined, { revalidate: true })
       await mutate((key) => typeof key === "string" && key.includes("conversations"), undefined, { revalidate: true })
     } catch (error) {
-      console.error("Error marking messages as read:", error)
       throw error
     }
   }

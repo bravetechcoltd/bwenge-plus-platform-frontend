@@ -28,16 +28,10 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
     setIsLoading(true)
     
     try {
-      console.log('🔐 [GoogleLogin] Starting Google authentication...')
 
       // Dispatch the loginWithGoogle action
       const result = await dispatch(loginWithGoogle(credentialResponse.credential)).unwrap()
 
-      console.log('✅ [GoogleLogin] Authentication successful:', {
-        userId: result.user.id,
-        email: result.user.email,
-        role: result.user.bwenge_role
-      })
 
       toast.success('Welcome! Login successful')
 
@@ -48,11 +42,9 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
 
       // Navigate to role-specific dashboard
       const dashboardPath = getRoleDashboardPath(result.user.bwenge_role)
-      console.log('🔀 [GoogleLogin] Redirecting to:', dashboardPath)
       router.push(dashboardPath)
 
     } catch (error: any) {
-      console.error('❌ [GoogleLogin] Authentication failed:', error)
 
       // Handle no account found — redirect to register
       if (typeof error === 'string' && (error.includes('No account found') || error.includes('NO_ACCOUNT'))) {
@@ -79,15 +71,14 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
   }
 
   const handleGoogleError = () => {
-    console.error('❌ [GoogleLogin] Google OAuth error')
     toast.error('Google login failed. Please try again.')
   }
 
   return (
     <div className="relative">
       {isLoading && (
-        <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg z-10">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        <div className="absolute inset-0 bg-card/80 flex items-center justify-center rounded-lg z-10">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
         </div>
       )}
       
@@ -110,7 +101,6 @@ export function GoogleOAuthProviderWrapper({ children }: { children: React.React
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
   if (!clientId) {
-    console.error('❌ NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured')
     return <>{children}</>
   }
 

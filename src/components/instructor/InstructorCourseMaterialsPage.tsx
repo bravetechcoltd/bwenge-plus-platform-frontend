@@ -242,7 +242,6 @@ export default function InstructorCourseMaterialsPage() {
         setCourses(data.data?.courses || []);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
     }
   };
 
@@ -263,7 +262,6 @@ export default function InstructorCourseMaterialsPage() {
         setStats(data.data);
       }
     } catch (error) {
-      console.error("Error fetching stats:", error);
     }
   };
 
@@ -287,7 +285,6 @@ export default function InstructorCourseMaterialsPage() {
         toast.error("Failed to load materials");
       }
     } catch (error) {
-      console.error("Error fetching materials:", error);
       toast.error("Failed to load materials");
     } finally {
       setLoading(false);
@@ -319,7 +316,6 @@ export default function InstructorCourseMaterialsPage() {
       setMaterials(allMats);
       setAllMaterials(allMats);
     } catch (error) {
-      console.error("Error fetching all materials:", error);
       toast.error("Failed to load materials");
     } finally {
       setLoading(false);
@@ -408,7 +404,6 @@ export default function InstructorCourseMaterialsPage() {
         toast.error(error.message || "Failed to upload materials");
       }
     } catch (error) {
-      console.error("Error uploading materials:", error);
       toast.error("Failed to upload materials");
     } finally {
       setUploading(false);
@@ -440,7 +435,6 @@ export default function InstructorCourseMaterialsPage() {
         toast.error(error.message || "Failed to delete material");
       }
     } catch (error) {
-      console.error("Error deleting material:", error);
       toast.error("Failed to delete material");
     } finally {
       setDeleting(false);
@@ -497,21 +491,21 @@ export default function InstructorCourseMaterialsPage() {
     switch (type) {
       case "document":
       case "pdf":
-        return <FileText className="w-8 h-8 text-blue-500" />;
+        return <FileText className="w-8 h-8 text-primary" />;
       case "video":
-        return <Video className="w-8 h-8 text-red-500" />;
+        return <Video className="w-8 h-8 text-destructive" />;
       case "image":
-        return <Image className="w-8 h-8 text-green-500" />;
+        return <Image className="w-8 h-8 text-success" />;
       case "presentation":
-        return <Presentation className="w-8 h-8 text-orange-500" />;
+        return <Presentation className="w-8 h-8 text-warning" />;
       case "spreadsheet":
-        return <FileSpreadsheet className="w-8 h-8 text-emerald-500" />;
+        return <FileSpreadsheet className="w-8 h-8 text-success" />;
       case "archive":
-        return <FileArchive className="w-8 h-8 text-amber-500" />;
+        return <FileArchive className="w-8 h-8 text-warning" />;
       case "audio":
-        return <FileAudio className="w-8 h-8 text-pink-500" />;
+        return <FileAudio className="w-8 h-8 text-primary" />;
       default:
-        return <File className="w-8 h-8 text-gray-500" />;
+        return <File className="w-8 h-8 text-muted-foreground" />;
     }
   };
 
@@ -525,15 +519,15 @@ export default function InstructorCourseMaterialsPage() {
   const getTypeBadge = (materialType: string) => {
     const type = mapMaterialType(materialType);
     const colors: Record<string, string> = {
-      document: "bg-blue-100 text-blue-800",
-      pdf: "bg-blue-100 text-blue-800",
-      video: "bg-red-100 text-red-800",
-      image: "bg-green-100 text-green-800",
-      presentation: "bg-orange-100 text-orange-800",
-      spreadsheet: "bg-emerald-100 text-emerald-800",
-      archive: "bg-amber-100 text-amber-800",
+      document: "bg-primary/15 text-primary",
+      pdf: "bg-primary/15 text-primary",
+      video: "bg-destructive/15 text-destructive",
+      image: "bg-success/15 text-success",
+      presentation: "bg-warning/15 text-warning",
+      spreadsheet: "bg-success/15 text-emerald-800",
+      archive: "bg-warning/15 text-warning",
       audio: "bg-pink-100 text-pink-800",
-      other: "bg-gray-100 text-gray-800",
+      other: "bg-muted text-foreground",
     };
     return colors[type] || colors.other;
   };
@@ -551,10 +545,10 @@ export default function InstructorCourseMaterialsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Course Materials
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Manage and organize all your course files and resources
           </p>
         </div>
@@ -582,11 +576,11 @@ export default function InstructorCourseMaterialsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Materials</p>
+                  <p className="text-sm text-muted-foreground">Total Materials</p>
                   <p className="text-3xl font-bold">{stats.total_materials}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -596,11 +590,11 @@ export default function InstructorCourseMaterialsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Storage</p>
+                  <p className="text-sm text-muted-foreground">Total Storage</p>
                   <p className="text-3xl font-bold">{stats.total_size_mb.toFixed(1)} MB</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Folder className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <Folder className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -610,11 +604,11 @@ export default function InstructorCourseMaterialsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Downloads</p>
+                  <p className="text-sm text-muted-foreground">Total Downloads</p>
                   <p className="text-3xl font-bold">{stats.total_downloads.toLocaleString()}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Download className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Download className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -624,11 +618,11 @@ export default function InstructorCourseMaterialsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Storage Used</p>
+                  <p className="text-sm text-muted-foreground">Storage Used</p>
                   <p className="text-3xl font-bold">{stats.storage_used_percentage.toFixed(1)}%</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Archive className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <Archive className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -639,7 +633,7 @@ export default function InstructorCourseMaterialsPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search materials..."
             value={searchTerm}
@@ -715,11 +709,11 @@ export default function InstructorCourseMaterialsPage() {
       {filteredMaterials.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Folder className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <Folder className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Materials Found
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm || filterType !== SELECT_VALUES.ALL_TYPES
                 ? "No materials match your search criteria"
                 : "You haven't uploaded any materials yet."}
@@ -744,7 +738,7 @@ export default function InstructorCourseMaterialsPage() {
               <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 <div className="text-center">
                   {getFileIcon(material.material_type)}
-                  <p className="text-xs text-gray-500 mt-2">{material.file_extension}</p>
+                  <p className="text-xs text-muted-foreground mt-2">{material.file_extension}</p>
                 </div>
                 <Badge
                   className={`absolute top-2 right-2 ${getTypeBadge(material.material_type)}`}
@@ -752,7 +746,7 @@ export default function InstructorCourseMaterialsPage() {
                   {mapMaterialType(material.material_type)}
                 </Badge>
                 {!material.is_downloadable && (
-                  <Badge className="absolute top-2 left-2 bg-gray-800 text-white">
+                  <Badge className="absolute top-2 left-2 bg-card text-white">
                     <Lock className="w-3 h-3 mr-1" />
                     View Only
                   </Badge>
@@ -769,7 +763,7 @@ export default function InstructorCourseMaterialsPage() {
               </CardHeader>
 
               <CardContent className="pb-2 space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <BookOpen className="w-3 h-3" />
                     {selectedCourse !== SELECT_VALUES.ALL_COURSES ? courses.find(c => c.id === selectedCourse)?.title : "Multiple Courses"}
@@ -779,16 +773,16 @@ export default function InstructorCourseMaterialsPage() {
 
                 <div className="flex items-center gap-2 text-xs">
                   {material.is_required && (
-                    <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
+                    <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive">
                       Required
                     </Badge>
                   )}
-                  <span className="text-gray-400">
+                  <span className="text-muted-foreground">
                     {formatDistanceToNow(new Date(material.created_at), { addSuffix: true })}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Download className="w-3 h-3" />
                     {material.download_count}
@@ -819,7 +813,7 @@ export default function InstructorCourseMaterialsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900 truncate">
+                    <h3 className="font-semibold text-foreground truncate">
                       {material.title}
                     </h3>
                     <Badge className={getTypeBadge(material.material_type)}>
@@ -832,15 +826,15 @@ export default function InstructorCourseMaterialsPage() {
                       </Badge>
                     )}
                     {material.is_required && (
-                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
+                      <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive">
                         Required
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-1 mb-2">
+                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
                     {material.description || "No description"}
                   </p>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                     <span>{formatFileSize(material.file_size)}</span>
                     <span>
                       Uploaded {formatDistanceToNow(new Date(material.created_at), { addSuffix: true })}
@@ -868,7 +862,7 @@ export default function InstructorCourseMaterialsPage() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      className="text-red-600"
+                      className="text-destructive"
                       onClick={() => {
                         if (confirm("Are you sure you want to delete this material?")) {
                           handleDeleteMaterial(material.id);
@@ -901,7 +895,7 @@ export default function InstructorCourseMaterialsPage() {
                 {getFileIcon(selectedMaterial.material_type)}
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{selectedMaterial.title}</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {formatFileSize(selectedMaterial.file_size)} • {selectedMaterial.file_extension}
                   </p>
                 </div>
@@ -912,7 +906,7 @@ export default function InstructorCourseMaterialsPage() {
 
               <div className="space-y-2">
                 <Label>Description</Label>
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
                   {selectedMaterial.description || "No description provided"}
                 </p>
               </div>
@@ -1048,9 +1042,9 @@ export default function InstructorCourseMaterialsPage() {
 
             <div className="space-y-2">
               <Label>Files *</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground mb-2">
                   Drag and drop files here, or click to select
                 </p>
                 <Input
@@ -1075,9 +1069,9 @@ export default function InstructorCourseMaterialsPage() {
                 <div className="space-y-2 mt-2">
                   <Label>Selected Files:</Label>
                   {uploadForm.files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
+                    <div key={index} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded">
                       <span className="truncate flex-1">{file.name}</span>
-                      <span className="text-gray-500 ml-2">
+                      <span className="text-muted-foreground ml-2">
                         {formatFileSize(file.size)}
                       </span>
                     </div>

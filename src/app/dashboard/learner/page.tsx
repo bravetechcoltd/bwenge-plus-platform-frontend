@@ -1,453 +1,527 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { BookOpen, Star, ChevronLeft, ChevronRight, MoreHorizontal, Target, Trophy, Crown } from "lucide-react"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { Skeleton } from "@/components/ui/skeleton"
-import Cookies from "js-cookie"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { useAppSelector } from "@/lib/hooks"
+import Cookies from "js-cookie"
+import { toast } from "sonner"
+import { useRealtimeEvents } from "@/hooks/use-realtime"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d"
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
+  BarChart3,
+  AlertCircle,
+  Search,
+} from "lucide-react"
 
-interface EnrolledCourse {
+// ==================== TYPES ====================
+interface Lesson {
   id: string
-  course: {
-    id: string
-    title: string
-    description: string
-    thumbnail_url: string | null
-    instructor?: {
-      first_name: string
-      last_name: string
-      profile_picture_url?: string | null
-    }
-    level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT"
-    category?: {
-      name: string
-    }
-    duration_minutes: number
-    average_rating: string | number  // Backend returns string
-    total_reviews: number
-    language: string
-    is_certificate_available: boolean
-    course_type: "MOOC" | "SPOC"
-    modules?: Array<{
-      id: string
-      title: string
-      lessons: Array<{
-        id: string
-        title: string
-        duration_minutes: number
-        is_preview?: boolean
-        order_index?: number
-      }>
-    }>
-  }
-  progress_percentage: number
-  status: "ACTIVE" | "COMPLETED" | "DROPPED" | "EXPIRED" | "PENDING"
-  enrolled_at: string
-  last_accessed?: string
-  completed_lessons: number
-  total_time_spent_minutes: number
-  certificate_issued?: boolean
-  final_score?: number | null
+  title: string
+  duration_minutes: number
 }
 
-export default function StudentDashboard() {
-  const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([])
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalCourses: 0,
-    completedCourses: 0,
-    activeCourses: 0,
-    totalHoursSpent: 0,
-    averageProgress: 0,
-    certificatesEarned: 0,
-  })
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const { token, user } = useAuth()
-  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({})
+interface Module {
+  id: string
+  title: string
+  lessons: Lesson[]
+}
+
+interface Instructor {
+  id: string
+  first_name: string
+  last_name: string
+  profile_picture_url: string | null
+  email: string
+}
+
+interface Course {
+  id: string
+  title: string
+  description: string
+  thumbnail_url: string
+  instructor: Instructor
+  level: "BEGINNER" | "INTERMEDIATE" | "EXPERT"
+  price: string
+  status: string
+  is_certificate_available: boolean
+  course_type: "MOOC" | "SPOC"
+  duration_minutes: number
+  language: string
+  average_rating: string
+  total_reviews: number
+  enrollment_count: number
+  modules: Module[]
+}
+
+interface Enrollment {
+  id: string
+  user_id: string
+  user: {
+    id: string
+    email: string
+    first_name: string
+    last_name: string
+    profile_picture_url: string | null
+  }
+  course_id: string
+  course: Course
+  progress_percentage: number
+  status: string
+  approval_status: string
+  request_type: string | null
+  access_code_used: string | null
+  access_code_sent: boolean
+  total_time_spent_minutes: number
+  completed_lessons: number
+  enrolled_at: string
+  certificate_issued: boolean
+  final_score: string | null
+}
+
+interface ApiResponse {
+  success: boolean
+  message: string
+  data: Enrollment[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+type FilterTab = "all" | "in-progress" | "completed" | "pending"
+
+// ==================== HELPERS ====================
+function formatTimeFullLabel(minutes: number): string {
+  const hrs = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  if (hrs === 0) return `${mins} min`
+  if (mins === 0) return `${hrs} hrs`
+  return `${hrs} hrs ${mins} min`
+}
+
+function getTotalLessons(modules: Module[]): number {
+  return modules.reduce((sum, m) => sum + m.lessons.length, 0)
+}
+
+function classifyEnrollment(e: Enrollment): FilterTab {
+  if (e.approval_status === "PENDING") return "pending"
+  if (e.status === "COMPLETED" && e.progress_percentage === 100) return "completed"
+  return "in-progress"
+}
+
+// ==================== SKELETON LOADER ====================
+function CardSkeleton() {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <Skeleton className="h-40 w-full rounded-none" />
+      <div className="p-3.5 space-y-2.5">
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-3.5 w-3/5" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+        <Skeleton className="h-1.5 w-full rounded-full" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+        <div className="grid grid-cols-3 gap-1 py-1.5 border-t border-b border-border">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+        <Skeleton className="h-7 w-full rounded-lg" />
+      </div>
+    </div>
+  )
+}
+
+// ==================== MAIN PAGE ====================
+export default function LearnerDashboardPage() {
   const router = useRouter()
+  const { user: reduxUser, isAuthenticated, token: reduxToken } = useAppSelector((state) => state.bwengeAuth)
 
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<FilterTab>("all")
+  const [mounted, setMounted] = useState(false)
+
+  // Resolve auth
+  const getUser = useCallback(() => {
+    if (reduxUser?.id) return reduxUser
+    const cookie = Cookies.get("bwenge_user")
+    if (cookie) {
+      try { return JSON.parse(cookie) } catch { return null }
+    }
+    try {
+      const local = localStorage.getItem("bwengeplus_user")
+      if (local) return JSON.parse(local)
+    } catch { /* noop */ }
+    return null
+  }, [reduxUser])
+
+  const getToken = useCallback(() => {
+    if (reduxToken) return reduxToken
+    const cookie = Cookies.get("bwenge_token")
+    if (cookie) return cookie
+    try { return localStorage.getItem("bwengeplus_token") } catch { return null }
+  }, [reduxToken])
+
+  const user = getUser()
+  const token = getToken()
+
+  // Fetch enrollments
   useEffect(() => {
-    const fetchMyCourses = async () => {
-      if (!user) {
-        setLoading(false)
-        return
-      }
-      
-      setLoading(true)
-      try {
-        const authToken = token || Cookies.get("bwenge_token")
-        if (!authToken) throw new Error("No authentication token")
+    if (!user || !token) {
+      setLoading(false)
+      return
+    }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/enrollments/user-enrollments`, {
+    const fetchEnrollments = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/enrollments/user-enrollments`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             user_id: user.id,
+            include_course_details: true,
+            page: 1,
+            limit: 100,
           }),
         })
 
-        if (response.ok) {
-          const data = await response.json()
-          const enrollmentsData = data.data || []
-
-          const activeEnrollments = enrollmentsData.filter((e: any) => 
-            e.status === "ACTIVE" || e.status === "COMPLETED"
-          ).slice(0, 4)
-
-          setEnrollments(activeEnrollments)
-
-          // Calculate stats
-          const totalCourses = enrollmentsData.length
-          const completedCourses = enrollmentsData.filter((c: any) => c.status === "COMPLETED").length
-          const activeCourses = enrollmentsData.filter((c: any) => c.status === "ACTIVE").length
-          const certificatesEarned = enrollmentsData.filter((c: any) => c.certificate_issued === true).length
-          const averageProgress = totalCourses > 0
-            ? enrollmentsData.reduce((sum: number, c: any) => sum + (c.progress_percentage || 0), 0) / totalCourses
-            : 0
-          const totalHoursSpent = Math.floor(enrollmentsData.reduce((sum: number, c: any) => 
-            sum + (c.total_time_spent_minutes || 0), 0) / 60)
-
-          setStats({
-            totalCourses,
-            completedCourses,
-            activeCourses,
-            totalHoursSpent,
-            averageProgress: Math.round(averageProgress),
-            certificatesEarned,
-          })
+        if (!res.ok) {
+          if (res.status === 401) {
+            toast.error("Session expired. Please login again.")
+            Cookies.remove("bwenge_token")
+            Cookies.remove("bwenge_user")
+            router.push("/login")
+            return
+          }
+          throw new Error("Failed to fetch enrollments")
         }
-      } catch (error) {
-        console.error("Failed to fetch enrolled courses:", error)
+
+        const json: ApiResponse = await res.json()
+        if (json.success) {
+          setEnrollments(json.data)
+        } else {
+          throw new Error(json.message || "Failed to load enrollments")
+        }
+      } catch (err: any) {
+        setError(err.message || "Something went wrong")
+        toast.error("Failed to load your courses")
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMyCourses()
-  }, [user?.id, token])
+    fetchEnrollments()
+  }, [user?.id, token]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Helper function to convert average_rating to number
-  const getRating = (rating: string | number | undefined): number => {
-    if (!rating) return 0
-    if (typeof rating === 'number') return rating
-    const parsed = parseFloat(rating)
-    return isNaN(parsed) ? 0 : parsed
-  }
+  // Trigger progress bar animation after mount
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
 
-  // Calendar functions
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }
-
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
-  }
-
-  const formatDate = (date: Date) => {
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December",
-    ]
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    return {
-      month: months[date.getMonth()],
-      day: days[date.getDay()],
-      date: date.getDate(),
-      year: date.getFullYear(),
-    }
-  }
-
-  const navigateMonth = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev)
-      if (direction === "prev") {
-        newDate.setMonth(prev.getMonth() - 1)
-      } else {
-        newDate.setMonth(prev.getMonth() + 1)
-      }
-      return newDate
+  // ── Real-time: Socket-based dashboard updates ─────────────────────────────
+  const refetchEnrollments = useCallback(() => {
+    if (!user || !token) return
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/enrollments/user-enrollments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ user_id: user.id, include_course_details: true, page: 1, limit: 100 }),
     })
-  }
+      .then((res) => res.json())
+      .then((json) => { if (json.success) setEnrollments(json.data) })
+      .catch(() => {})
+  }, [user?.id, token]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const renderCalendar = () => {
-    const daysInMonth = getDaysInMonth(currentDate)
-    const firstDay = getFirstDayOfMonth(currentDate)
-    const today = new Date()
-    const isCurrentMonth =
-      currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()
+  useRealtimeEvents({
+    "enrollment-approved": (data: any) => {
+      toast.success(`Enrollment approved for ${data.courseName || "a course"}`)
+      refetchEnrollments()
+    },
+    "enrollment-rejected": (data: any) => {
+      toast.error(`Enrollment not approved for ${data.courseName || "a course"}`)
+      refetchEnrollments()
+    },
+    "grade-released": (data: any) => {
+      toast.info(`Grade released: ${data.assessmentTitle || "Assessment"} - ${data.percentage}%`)
+    },
+    "progress-updated": () => refetchEnrollments(),
+    "certificate-issued": (data: any) => {
+      toast.success(`Certificate ready for ${data.courseName || "a course"}!`)
+      refetchEnrollments()
+    },
+    "course-published": () => refetchEnrollments(),
+    "new-lesson-added": () => refetchEnrollments(),
+    "schedule-event-created": (data: any) => {
+      toast.info(`New event: ${data.title || "Scheduled event"}`)
+    },
+  })
 
-    const days = []
-    const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  // ==================== DERIVED DATA ====================
+  const stats = useMemo(() => {
+    const total = enrollments.length
+    const completed = enrollments.filter((e) => e.status === "COMPLETED").length
+    const totalMinutes = enrollments.reduce((sum, e) => sum + e.total_time_spent_minutes, 0)
+    const scores = enrollments
+      .map((e) => (e.final_score ? parseFloat(e.final_score) : null))
+      .filter((s): s is number => s !== null)
+    const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
 
-    dayLabels.forEach((day) => {
-      days.push(
-        <div key={`label-${day}`} className="text-center text-xs font-medium text-muted-foreground p-2">
-          {day}
-        </div>,
-      )
+    return { total, completed, totalMinutes, avgScore }
+  }, [enrollments])
+
+  const sortedEnrollments = useMemo(() => {
+    return [...enrollments].sort((a, b) => {
+      // Float in-progress above completed
+      const aInProgress = a.progress_percentage > 0 && a.progress_percentage < 100 && a.approval_status !== "PENDING" ? 1 : 0
+      const bInProgress = b.progress_percentage > 0 && b.progress_percentage < 100 && b.approval_status !== "PENDING" ? 1 : 0
+      if (aInProgress !== bInProgress) return bInProgress - aInProgress
+      // Then by enrolled_at descending
+      return new Date(b.enrolled_at).getTime() - new Date(a.enrolled_at).getTime()
     })
+  }, [enrollments])
 
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-2"></div>)
-    }
+  const filteredEnrollments = useMemo(() => {
+    if (activeTab === "all") return sortedEnrollments
+    return sortedEnrollments.filter((e) => classifyEnrollment(e) === activeTab)
+  }, [sortedEnrollments, activeTab])
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      const isToday = isCurrentMonth && day === today.getDate()
+  const tabCounts = useMemo(() => ({
+    all: enrollments.length,
+    "in-progress": enrollments.filter((e) => classifyEnrollment(e) === "in-progress").length,
+    completed: enrollments.filter((e) => classifyEnrollment(e) === "completed").length,
+    pending: enrollments.filter((e) => classifyEnrollment(e) === "pending").length,
+  }), [enrollments])
 
-      days.push(
-        <div
-          key={day}
-          className={`p-2 text-center text-sm cursor-pointer hover:bg-accent rounded-md relative ${
-            isToday ? "bg-primary text-primary-foreground font-semibold" : "text-foreground"
-          }`}
-        >
-          {day}
-        </div>,
-      )
-    }
-
-    return days
-  }
-
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case "BEGINNER":
-        return <Target className="w-3 h-3" />
-      case "INTERMEDIATE":
-        return <Trophy className="w-3 h-3" />
-      case "ADVANCED":
-      case "EXPERT":
-        return <Crown className="w-3 h-3" />
-      default:
-        return <Target className="w-3 h-3" />
-    }
-  }
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "BEGINNER":
-        return "bg-green-500 hover:bg-green-600"
-      case "INTERMEDIATE":
-        return "bg-blue-500 hover:bg-blue-600"
-      case "ADVANCED":
-      case "EXPERT":
-        return "bg-purple-500 hover:bg-purple-600"
-      default:
-        return "bg-gray-500 hover:bg-gray-600"
-    }
-  }
-
-  const handleImageError = (enrollmentId: string) => {
-    setImgErrors(prev => ({ ...prev, [enrollmentId]: true }))
-  }
-
-  const currentDateFormatted = formatDate(new Date())
-
-  if (!user) {
-    return null
-  }
-
+  // ==================== RENDER ====================
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-30/50 to-blue-50 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-1">
-      <div className="max-w-7xl mx-auto space-y-6 p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Section - Welcome and Courses */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Welcome Banner */}
-            <div className="bg-gradient-to-br from-[#5b4e96] to-[#6d5ba8] rounded-2xl p-8 text-white relative overflow-hidden">
-              <div className="relative z-10">
-                <h1 className="text-3xl font-bold mb-2">Hi {user?.first_name || "Student"}!</h1>
-                <p className="text-lg opacity-90">
-                  You have completed {stats.completedCourses} course{stats.completedCourses !== 1 ? "s" : ""}. 
-                  {stats.activeCourses > 0 ? ` Continue your ${stats.activeCourses} active course${stats.activeCourses !== 1 ? 's' : ''}.` : ' Start learning today.'}
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div className="bg-white/20 rounded-lg p-3 backdrop-blur-sm">
-                    <div className="text-2xl font-bold">{stats.totalHoursSpent}h</div>
-                    <div className="text-sm opacity-90">Total Study Time</div>
-                  </div>
-                  <div className="bg-white/20 rounded-lg p-3 backdrop-blur-sm">
-                    <div className="text-2xl font-bold">{stats.averageProgress}%</div>
-                    <div className="text-sm opacity-90">Average Progress</div>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute right-4 top-4 opacity-20">
-                <div className="w-32 h-32 rounded-full border-4 border-white flex items-center justify-center">
-                  <BookOpen className="w-16 h-16" />
-                </div>
+    <div className="min-h-screen bg-background">
+      {/* ── Hero Summary Bar ── */}
+      <div className="border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Greeting */}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Avatar className="h-10 w-10 border border-border shrink-0">
+                {user?.profile_picture_url && (
+                  <AvatarImage src={user.profile_picture_url} alt={user.first_name} />
+                )}
+                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                  {user?.first_name?.[0]}{user?.last_name?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h1 className="text-[15px] font-semibold text-card-foreground truncate">
+                  Welcome back, {user?.first_name || "Learner"}
+                </h1>
+                <p className="text-[11px] text-muted-foreground">Your learning dashboard</p>
               </div>
             </div>
 
-            {/* My Courses */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">My Active Courses</CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/dashboard/learner/learning/courses">View All</Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {loading ? (
-                    Array.from({ length: 3 }).map((_, index) => (
-                      <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
-                        <Skeleton className="w-12 h-12 rounded-lg" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-3/4" />
-                          <Skeleton className="h-3 w-1/2" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="w-8 h-4" />
-                          <Skeleton className="w-16 h-2 rounded-full" />
-                          <Skeleton className="w-8 h-4" />
-                          <Skeleton className="w-24 h-8 rounded" />
-                        </div>
-                      </div>
-                    ))
-                  ) : enrollments.length > 0 ? (
-                    enrollments.map((enrollment) => {
-                      const rating = getRating(enrollment.course.average_rating)
-                      return (
-                        <div
-                          key={enrollment.id}
-                          className="flex items-center gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
-                        >
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center flex-shrink-0">
-                            {enrollment.course.thumbnail_url && !imgErrors[enrollment.id] ? (
-                              <img
-                                src={enrollment.course.thumbnail_url}
-                                alt={enrollment.course.title}
-                                className="w-full h-full object-cover"
-                                onError={() => handleImageError(enrollment.id)}
-                              />
-                            ) : (
-                              <BookOpen className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm truncate">{enrollment.course.title}</h4>
-                            <p className="text-xs text-muted-foreground">
-                              {enrollment.course.instructor ? 
-                                `By ${enrollment.course.instructor.first_name} ${enrollment.course.instructor.last_name}` : 
-                                'No instructor'}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className={`px-2 py-0.5 rounded-full text-xs ${getLevelColor(enrollment.course.level)} text-white flex items-center gap-1`}>
-                                {getLevelIcon(enrollment.course.level)}
-                                {enrollment.course.level.charAt(0) + enrollment.course.level.slice(1).toLowerCase()}
-                              </div>
-                              <span className="text-xs px-2 py-0.5 bg-purple-500 text-white rounded-full">
-                                {enrollment.course.course_type}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3 flex-shrink-0">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                              <span className="text-xs font-medium">
-                                {rating > 0 ? rating.toFixed(1) : '0.0'}
-                              </span>
-                            </div>
-                            <div className="w-16">
-                              <Progress value={enrollment.progress_percentage} className="h-2" />
-                            </div>
-                            <span className="text-xs text-muted-foreground w-8">{enrollment.progress_percentage}%</span>
-                            <Button size="sm" variant="outline" asChild>
-                              <Link href={`/courses/${enrollment.course.id}/learn`}>
-                                {enrollment.status === "COMPLETED" ? "Review" : "Continue"}
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      )
-                    })
-                  ) : (
-                    <div className="text-center py-8">
-                      <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h4 className="font-medium mb-2">No active courses</h4>
-                      <p className="text-sm text-muted-foreground mb-4">Start learning by enrolling in a course</p>
-                      <Button asChild>
-                        <Link href="/courses">Browse Courses</Link>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Section - Calendar and Stats */}
-          <div className="space-y-6">
-            {/* Calendar */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">
-                      {currentDateFormatted.month} {currentDate.getFullYear()}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {currentDateFormatted.day}, {currentDateFormatted.date}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => navigateMonth("prev")}>
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => navigateMonth("next")}>
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Learning Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <span className="text-sm font-medium">Courses Enrolled</span>
-                  <span className="font-bold text-lg">{stats.totalCourses}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <span className="text-sm font-medium">Completed</span>
-                  <span className="font-bold text-lg text-green-600">{stats.completedCourses}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20">
-                  <span className="text-sm font-medium">In Progress</span>
-                  <span className="font-bold text-lg text-blue-600">{stats.activeCourses}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-                  <span className="text-sm font-medium">Certificates</span>
-                  <span className="font-bold text-lg text-yellow-600">{stats.certificatesEarned}</span>
-                </div>
-                <Button className="w-full mt-2" asChild>
-                  <Link href="/dashboard/learner/learning/courses">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    View All Courses
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Stat tiles */}
+            <div className="flex items-center gap-0 divide-x divide-border">
+              <StatTile
+                value={loading ? "\u2014" : String(stats.total)}
+                label="Enrolled"
+                icon={<BookOpen className="w-3.5 h-3.5" />}
+              />
+              <StatTile
+                value={loading ? "\u2014" : String(stats.completed)}
+                label="Completed"
+                icon={<CheckCircle className="w-3.5 h-3.5" />}
+              />
+              <StatTile
+                value={loading ? "\u2014" : formatTimeFullLabel(stats.totalMinutes)}
+                label="Learning Time"
+                icon={<Clock className="w-3.5 h-3.5" />}
+              />
+              {stats.avgScore !== null && (
+                <StatTile
+                  value={`${stats.avgScore}%`}
+                  label="Avg Score"
+                  icon={<BarChart3 className="w-3.5 h-3.5" />}
+                />
+              )}
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* ── Main Content ── */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        {/* Error alert */}
+        {error && (
+          <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-[12px]">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{error}</span>
+            <button
+              onClick={() => window.location.reload()}
+              className="ml-auto text-[11px] font-medium underline underline-offset-2"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Filter tabs */}
+        <div className="mb-4 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1 min-w-max">
+            {([
+              { key: "all" as FilterTab, label: "All" },
+              { key: "in-progress" as FilterTab, label: "In Progress" },
+              { key: "completed" as FilterTab, label: "Completed" },
+              { key: "pending" as FilterTab, label: "Pending" },
+            ]).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+                  activeTab === tab.key
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+                {tabCounts[tab.key] > 0 && (
+                  <span className="ml-1 text-[10px] text-muted-foreground">
+                    {tabCounts[tab.key]}
+                  </span>
+                )}
+                {activeTab === tab.key && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading skeletons */}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && filteredEnrollments.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Search className="w-6 h-6 text-muted-foreground" />
+            </div>
+            {enrollments.length === 0 ? (
+              <>
+                <h3 className="text-[14px] font-semibold text-card-foreground mb-1">No courses yet</h3>
+                <p className="text-[12px] text-muted-foreground mb-4 max-w-xs">
+                  Start your learning journey by browsing our course catalog.
+                </p>
+                <Button asChild size="sm" className="h-8 text-[12px]">
+                  <Link href="/dashboard/learner/browse/all">Browse Courses</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-[14px] font-semibold text-card-foreground mb-1">
+                  No {activeTab.replace("-", " ")} courses
+                </h3>
+                <p className="text-[12px] text-muted-foreground">
+                  Try selecting a different filter above.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Course grid — uses BwengeCourseCard3D with enrollment data */}
+        {!loading && filteredEnrollments.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredEnrollments.map((enrollment, idx) => {
+              const { course } = enrollment
+              const totalLessons = getTotalLessons(course.modules)
+
+              return (
+                <BwengeCourseCard3D
+                  key={enrollment.id}
+                  id={course.id}
+                  title={course.title}
+                  description={course.description}
+                  thumbnail_url={course.thumbnail_url}
+                  instructor={{
+                    id: course.instructor.id,
+                    first_name: course.instructor.first_name,
+                    last_name: course.instructor.last_name,
+                    profile_picture_url: course.instructor.profile_picture_url || undefined,
+                  }}
+                  level={course.level}
+                  course_type={course.course_type}
+                  average_rating={parseFloat(course.average_rating) || 0}
+                  total_reviews={course.total_reviews}
+                  duration_minutes={course.duration_minutes}
+                  total_lessons={totalLessons}
+                  is_certificate_available={course.is_certificate_available}
+                  variant="student"
+                  showActions={false}
+                  showInstitution={false}
+                  index={idx}
+                  onLearnMoreClick={(id) => {
+                    if (enrollment.approval_status !== "PENDING") {
+                      router.push(`/courses/${id}/learn`)
+                    }
+                  }}
+                  enrollmentData={{
+                    progress_percentage: enrollment.progress_percentage,
+                    enrollment_status: enrollment.status,
+                    approval_status: enrollment.approval_status,
+                    time_spent_minutes: enrollment.total_time_spent_minutes,
+                    completed_lessons: enrollment.completed_lessons,
+                    total_lessons_count: totalLessons,
+                    certificate_issued: enrollment.certificate_issued,
+                    final_score: enrollment.final_score,
+                    action_href: `/courses/${course.id}/learn`,
+                    animate: mounted,
+                  }}
+                />
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ==================== STAT TILE ====================
+function StatTile({ value, label, icon }: { value: string; label: string; icon: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 px-4 py-1">
+      <span className="text-muted-foreground">{icon}</span>
+      <div className="flex flex-col">
+        <span className="text-[15px] font-bold text-card-foreground leading-tight">{value}</span>
+        <span className="text-[10px] text-muted-foreground leading-tight">{label}</span>
       </div>
     </div>
   )

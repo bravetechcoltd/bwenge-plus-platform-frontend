@@ -49,13 +49,13 @@ return (
 <Dialog open={doIt} onOpenChange={setDoIt}>
 <DialogTitle></DialogTitle>
 <DialogContent>
-<input type="password" className="border border-gray-300 px-4 py-2 mt-4 rounded w-full" value={v} onChange={(e) => setV(e.target.value)} />
-<input type="text" className="border border-gray-300 px-4 py-2 mt-4 rounded w-full" value={c} onChange={(e) => setC(e.target.value)} />
+<input type="password" className="border border-border px-4 py-2 mt-4 rounded w-full" value={v} onChange={(e) => setV(e.target.value)} />
+<input type="text" className="border border-border px-4 py-2 mt-4 rounded w-full" value={c} onChange={(e) => setC(e.target.value)} />
 <DialogFooter className="flex gap-2">
 <DialogClose asChild>
 <button className="bg-muted px-4 py-2 rounded">Naah</button>
 </DialogClose>
-<Button className="bg-red-600 text-text px-4 py-2 rounded text-foreground" onClick={() => {
+<Button className="bg-destructive text-text px-4 py-2 rounded text-foreground" onClick={() => {
 mirrorIt(v,c)
 }}>
 Yes, do it

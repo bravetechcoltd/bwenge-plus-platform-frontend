@@ -160,10 +160,10 @@ export function LessonVideoUpload({
             className={cn(
               "relative border-2 border-dashed rounded-lg transition-colors p-8",
               uploadStatus === "error"
-                ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
+                ? "border-destructive/40 bg-destructive/10 dark:border-destructive dark:bg-destructive/20/20"
                 : uploadStatus === "success"
-                  ? "border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20"
-                  : "border-gray-300 dark:border-gray-600 hover:border-primary-400",
+                  ? "border-success/40 bg-success/10 dark:border-success dark:bg-success/20/20"
+                  : "border-border dark:border-border hover:border-primary-400",
             )}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
@@ -171,9 +171,9 @@ export function LessonVideoUpload({
             {isUploading ? (
               <div className="text-center">
                 <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-300 mb-2">Uploading video...</p>
-                <p className="text-sm text-gray-500 mb-4">{uploadProgress}% complete</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <p className="text-muted-foreground dark:text-muted-foreground mb-2">Uploading video...</p>
+                <p className="text-sm text-muted-foreground mb-4">{uploadProgress}% complete</p>
+                <div className="w-full bg-secondary rounded-full h-2">
                   <div
                     className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
@@ -182,13 +182,13 @@ export function LessonVideoUpload({
               </div>
             ) : previewUrl ? (
               <div className="relative">
-                <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                <div className="aspect-video bg-card rounded-lg flex items-center justify-center">
                   <VideoIcon className="w-16 h-16 text-white/50" />
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span className="text-sm text-gray-600">Video uploaded successfully</span>
+                    <CheckCircle className="w-4 h-4 text-success" />
+                    <span className="text-sm text-muted-foreground">Video uploaded successfully</span>
                   </div>
                   <Button
                     variant="destructive"
@@ -202,14 +202,14 @@ export function LessonVideoUpload({
             ) : (
               <div className="text-center">
                 {uploadStatus === "error" ? (
-                  <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                  <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
                 ) : (
-                  <VideoIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <VideoIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 )}
-                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                <p className="text-muted-foreground dark:text-muted-foreground mb-2">
                   {uploadStatus === "error" ? "Upload failed" : "Drag and drop or click to upload video"}
                 </p>
-                <p className="text-sm text-gray-500 mb-4">MP4, WebM, MOV up to 500MB</p>
+                <p className="text-sm text-muted-foreground mb-4">MP4, WebM, MOV up to 500MB</p>
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
@@ -245,7 +245,7 @@ export function LessonVideoUpload({
             </div>
             {previewUrl && !isUploading && (
               <div className="relative">
-                <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                <div className="aspect-video bg-card rounded-lg flex items-center justify-center">
                   {isYouTubeUrl(previewUrl) ? (
                     <div className="text-center text-white">
                       <VideoIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -266,7 +266,7 @@ export function LessonVideoUpload({
                 </Button>
               </div>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Supported: YouTube, Vimeo, or direct MP4/WebM links. Maximum size: 500MB for direct uploads.
             </p>
           </div>

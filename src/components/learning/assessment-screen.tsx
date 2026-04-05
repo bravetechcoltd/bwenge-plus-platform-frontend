@@ -191,7 +191,7 @@ export function AssessmentScreen({
           const enrollment = data.data?.find((e: any) => e.course_id === assessment.course_id)
           if (enrollment) setEnrollmentId(enrollment.id)
         }
-      } catch (error) { console.error("❌ [fetchEnrollment]", error) }
+      } catch { }
     }
     fetchEnrollment()
 
@@ -251,7 +251,7 @@ export function AssessmentScreen({
           }
         }
       }
-    } catch (error) { console.error("❌ [fetchSavedAnswers]", error) }
+    } catch { }
     finally { setLoadingSavedAnswers(false) }
   }
 
@@ -343,7 +343,6 @@ export function AssessmentScreen({
         }
       }
     } catch (error: any) {
-      console.error("❌ [handleSubmit]", error)
       toast({ title: "Submission Error", description: error.message || "Failed to submit answers.", variant: "destructive" })
     } finally { setLoading(false) }
   }
@@ -356,7 +355,7 @@ export function AssessmentScreen({
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentToken}` },
         body: JSON.stringify({ courseId: assessment.course_id, userId: user.id, lessonId: assessment.lesson_id, moduleId: assessment.module_id, assessmentId: assessment.id, score, percentage: score, isCompleted: true, passed, time_spent_seconds: assessment.time_limit_minutes * 60 - timeRemaining }),
       })
-    } catch (error) { console.error("❌ [updateProgress]", error) }
+    } catch { }
   }
 
   const handleComplete = () => onComplete(score, passed)
@@ -397,11 +396,11 @@ export function AssessmentScreen({
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${answer.is_correct ? "bg-green-100 text-green-700" : answer.is_graded === false ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>{index + 1}</div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${answer.is_correct ? "bg-success/15 text-success" : answer.is_graded === false ? "bg-warning/15 text-warning" : "bg-destructive/15 text-destructive"}`}>{index + 1}</div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-base">{questionText}</h4>
                     <div className="flex items-center gap-2 mt-2">
-                      {answer.is_correct ? <span className="flex items-center gap-1 text-sm font-medium text-green-600"><CheckCircle className="w-4 h-4" /> Correct</span> : answer.is_graded === false ? <span className="flex items-center gap-1 text-sm font-medium text-yellow-600"><Clock className="w-4 h-4" /> Pending Grading</span> : <span className="flex items-center gap-1 text-sm font-medium text-red-600"><AlertCircle className="w-4 h-4" /> Incorrect</span>}
+                      {answer.is_correct ? <span className="flex items-center gap-1 text-sm font-medium text-success"><CheckCircle className="w-4 h-4" /> Correct</span> : answer.is_graded === false ? <span className="flex items-center gap-1 text-sm font-medium text-warning"><Clock className="w-4 h-4" /> Pending Grading</span> : <span className="flex items-center gap-1 text-sm font-medium text-destructive"><AlertCircle className="w-4 h-4" /> Incorrect</span>}
                       <span className="text-sm text-muted-foreground">({answer.points_earned} / {answer.points_possible} points)</span>
                     </div>
                   </div>
@@ -414,14 +413,14 @@ export function AssessmentScreen({
                     const isCorrectOption = option === answer.question.correct_answer
                     const showCorrectOption = showCorrectAnswers && isCorrectOption
                     return (
-                      <div key={optIdx} className={`p-3 border-2 rounded-lg ${showCorrectOption ? "border-green-300 bg-green-50 dark:bg-green-950/20" : isUserAnswer && !answer.is_correct ? "border-red-300 bg-red-50 dark:bg-red-950/20" : "border-gray-200 bg-gray-50 dark:bg-gray-950/20"}`}>
+                      <div key={optIdx} className={`p-3 border-2 rounded-lg ${showCorrectOption ? "border-success/40 bg-success/10 dark:bg-success/20/20" : isUserAnswer && !answer.is_correct ? "border-destructive/40 bg-destructive/10 dark:bg-destructive/20/20" : "border-border bg-muted/50 dark:bg-background/20"}`}>
                         <div className="flex items-start gap-3">
-                          {showCorrectOption ? <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /> : isUserAnswer && !answer.is_correct ? <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" /> : <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />}
+                          {showCorrectOption ? <CheckCircle className="w-5 h-5 text-success flex-shrink-0" /> : isUserAnswer && !answer.is_correct ? <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" /> : <div className="w-5 h-5 rounded-full border-2 border-border flex-shrink-0" />}
                           <div className="flex-1">
                             <p className="text-sm font-medium">{option}</p>
-                            {showCorrectOption && <span className="text-xs text-green-600 font-semibold">Correct Answer</span>}
-                            {isUserAnswer && !answer.is_correct && <span className="text-xs text-red-600 font-semibold">Your Answer</span>}
-                            {isUserAnswer && answer.is_correct && showCorrectAnswers && <span className="text-xs text-green-600 font-semibold">Your Answer (Correct)</span>}
+                            {showCorrectOption && <span className="text-xs text-success font-semibold">Correct Answer</span>}
+                            {isUserAnswer && !answer.is_correct && <span className="text-xs text-destructive font-semibold">Your Answer</span>}
+                            {isUserAnswer && answer.is_correct && showCorrectAnswers && <span className="text-xs text-success font-semibold">Your Answer (Correct)</span>}
                           </div>
                         </div>
                       </div>
@@ -431,10 +430,10 @@ export function AssessmentScreen({
               )}
               <div className="border-t pt-4"><p className="text-sm text-muted-foreground font-medium mb-2">Your Answer:</p><div className="p-3 bg-muted/50 rounded-lg"><p className="text-sm font-medium">{answer.user_answer || "Not answered"}</p></div></div>
               {showCorrectAnswers && answer.question?.correct_answer && answer.is_graded !== false && (
-                <div className="mt-3"><p className="text-sm text-muted-foreground font-medium mb-2">Correct Answer:</p><div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200"><p className="text-sm font-medium text-green-900 dark:text-green-100">{answer.question.correct_answer}</p></div></div>
+                <div className="mt-3"><p className="text-sm text-muted-foreground font-medium mb-2">Correct Answer:</p><div className="p-3 bg-success/10 dark:bg-success/20/20 rounded-lg border border-success/30"><p className="text-sm font-medium text-success dark:text-success">{answer.question.correct_answer}</p></div></div>
               )}
               {answer.instructor_feedback && (
-                <div className="mt-3"><p className="text-sm text-muted-foreground font-medium mb-2">Instructor Feedback:</p><div className="p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200"><p className="text-sm text-purple-900 dark:text-purple-100">{answer.instructor_feedback}</p></div></div>
+                <div className="mt-3"><p className="text-sm text-muted-foreground font-medium mb-2">Instructor Feedback:</p><div className="p-3 bg-primary/10 dark:bg-primary/20/20 rounded-lg border border-primary/30"><p className="text-sm text-primary dark:text-primary">{answer.instructor_feedback}</p></div></div>
               )}
             </CardContent>
           </Card>
@@ -457,32 +456,32 @@ export function AssessmentScreen({
         <Pssnt onComplete={(s, p) => onComplete(s, p)} />
         <Card>
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4"><Clock className="w-16 h-16 text-blue-500" /></div>
+            <div className="flex justify-center mb-4"><Clock className="w-16 h-16 text-primary" /></div>
             <CardTitle className="text-2xl">Assessment Submitted</CardTitle>
             <p className="text-muted-foreground">{assessment.title}</p>
           </CardHeader>
           <CardContent className="text-center space-y-6">
-            <div className="p-6 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Pending Instructor Review</h3>
-              <p className="text-blue-700 dark:text-blue-300">Your assessment has been submitted successfully and is awaiting manual grading by your instructor. You'll be notified once your assessment has been graded.</p>
+            <div className="p-6 bg-primary/10 dark:bg-primary/20/20 rounded-lg">
+              <h3 className="text-lg font-semibold text-primary dark:text-primary mb-2">Pending Instructor Review</h3>
+              <p className="text-primary dark:text-primary">Your assessment has been submitted successfully and is awaiting manual grading by your instructor. You'll be notified once your assessment has been graded.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-primary">{totalQuestions}</div><div className="text-sm text-muted-foreground">Questions Answered</div></div>
-              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-blue-600">{submittedOn}</div><div className="text-sm text-muted-foreground">Submitted On</div></div>
-              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-green-600">{Number(currentScorePct).toFixed(2)}%</div><div className="text-sm text-muted-foreground">Current Score</div></div>
+              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-primary">{submittedOn}</div><div className="text-sm text-muted-foreground">Submitted On</div></div>
+              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-success">{Number(currentScorePct).toFixed(2)}%</div><div className="text-sm text-muted-foreground">Current Score</div></div>
             </div>
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
-              <div className="flex items-start gap-3"><AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div className="text-left"><p className="font-medium text-amber-800 dark:text-amber-200 mb-1">What happens next?</p>
-                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1"><li>• Your instructor will review your answers</li><li>• Once graded, you can proceed to the next lesson/module</li><li>• You'll receive an email notification when grading is complete</li></ul>
+            <div className="p-4 bg-warning/10 dark:bg-warning/20/20 rounded-lg">
+              <div className="flex items-start gap-3"><AlertCircle className="w-5 h-5 text-warning mt-0.5" />
+                <div className="text-left"><p className="font-medium text-warning dark:text-warning mb-1">What happens next?</p>
+                  <ul className="text-sm text-warning dark:text-warning space-y-1"><li>• Your instructor will review your answers</li><li>• Once graded, you can proceed to the next lesson/module</li><li>• You'll receive an email notification when grading is complete</li></ul>
                 </div>
               </div>
             </div>
             {gradedCount > 0 && (
-              <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                <div className="flex items-start gap-3"><Eye className="w-5 h-5 text-purple-600 mt-0.5" />
-                  <div className="text-left"><p className="font-medium text-purple-800 dark:text-purple-200 mb-1">Previous Attempt</p>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">You have {gradedCount} graded question{gradedCount !== 1 ? "s" : ""} from previous attempt(s). <Button variant="link" className="ml-2 p-0 h-auto" onClick={() => setShowReview(true)}>Review Answers</Button></p>
+              <div className="p-4 bg-primary/10 dark:bg-primary/20/20 rounded-lg">
+                <div className="flex items-start gap-3"><Eye className="w-5 h-5 text-primary mt-0.5" />
+                  <div className="text-left"><p className="font-medium text-primary dark:text-primary mb-1">Previous Attempt</p>
+                    <p className="text-sm text-primary dark:text-primary">You have {gradedCount} graded question{gradedCount !== 1 ? "s" : ""} from previous attempt(s). <Button variant="link" className="ml-2 p-0 h-auto" onClick={() => setShowReview(true)}>Review Answers</Button></p>
                   </div>
                 </div>
               </div>
@@ -496,16 +495,16 @@ export function AssessmentScreen({
                       <div className="flex items-start justify-between">
                         <div className="flex-1"><div className="font-medium mb-1">Question {index + 1}</div><p className="text-sm text-muted-foreground">{answer.question?.text || ""}</p></div>
                         <div className="flex items-center gap-2 ml-4">
-                          {answer.is_correct ? <CheckCircle className="w-5 h-5 text-green-500" /> : answer.is_graded ? <AlertCircle className="w-5 h-5 text-red-500" /> : <Clock className="w-5 h-5 text-yellow-500" />}
-                          <span className={`text-sm font-semibold ${answer.is_correct ? "text-green-600" : answer.is_graded ? "text-red-600" : "text-yellow-600"}`}>{answer.points_earned} / {answer.points_possible} pts</span>
+                          {answer.is_correct ? <CheckCircle className="w-5 h-5 text-success" /> : answer.is_graded ? <AlertCircle className="w-5 h-5 text-destructive" /> : <Clock className="w-5 h-5 text-warning" />}
+                          <span className={`text-sm font-semibold ${answer.is_correct ? "text-success" : answer.is_graded ? "text-destructive" : "text-warning"}`}>{answer.points_earned} / {answer.points_possible} pts</span>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">Your answer:</p>
-                      <p className={`text-sm ${answer.is_correct ? "text-green-700" : answer.is_graded ? "text-red-700" : "text-yellow-700"}`}>{answer.user_answer || "Not answered"}</p>
-                      {answer.instructor_feedback && <div className="p-3 bg-purple-50 rounded text-sm text-purple-900"><p className="font-medium mb-1">Instructor Feedback:</p><p>{answer.instructor_feedback}</p></div>}
-                      {!answer.is_graded && !answer.instructor_feedback && <div className="p-3 bg-yellow-50 rounded text-sm text-yellow-800"><p className="font-medium mb-1">Pending Review:</p><p>This answer is awaiting instructor grading.</p></div>}
+                      <p className={`text-sm ${answer.is_correct ? "text-success" : answer.is_graded ? "text-destructive" : "text-warning"}`}>{answer.user_answer || "Not answered"}</p>
+                      {answer.instructor_feedback && <div className="p-3 bg-primary/10 rounded text-sm text-primary"><p className="font-medium mb-1">Instructor Feedback:</p><p>{answer.instructor_feedback}</p></div>}
+                      {!answer.is_graded && !answer.instructor_feedback && <div className="p-3 bg-warning/10 rounded text-sm text-warning"><p className="font-medium mb-1">Pending Review:</p><p>This answer is awaiting instructor grading.</p></div>}
                     </CardContent>
                   </Card>
                 ))}
@@ -524,29 +523,29 @@ export function AssessmentScreen({
         <Pssnt onComplete={(s, p) => onComplete(s, p)} />
         <Card>
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4"><XCircle className="w-16 h-16 text-red-500" /></div>
+            <div className="flex justify-center mb-4"><XCircle className="w-16 h-16 text-destructive" /></div>
             <CardTitle className="text-2xl">Assessment Result</CardTitle>
             <p className="text-muted-foreground">{assessment.title}</p>
           </CardHeader>
           <CardContent className="text-center space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 rounded-lg"><div className="text-2xl font-bold text-red-600">{Number(score).toFixed(2)}%</div><div className="text-sm text-muted-foreground">Your Score</div></div>
+              <div className="p-4 bg-destructive/10 dark:bg-destructive/20/20 border border-destructive/30 rounded-lg"><div className="text-2xl font-bold text-destructive">{Number(score).toFixed(2)}%</div><div className="text-sm text-muted-foreground">Your Score</div></div>
               <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-primary">{assessment.passing_score}%</div><div className="text-sm text-muted-foreground">Required to Pass</div></div>
-              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-blue-600">{submittedOn}</div><div className="text-sm text-muted-foreground">Submitted On</div></div>
+              <div className="p-4 border rounded-lg"><div className="text-2xl font-bold text-primary">{submittedOn}</div><div className="text-sm text-muted-foreground">Submitted On</div></div>
             </div>
             {attemptNumber > 0 && (
               <div className="p-3 bg-muted/40 rounded-lg text-sm text-muted-foreground flex items-center justify-center gap-2">
                 <Info className="w-4 h-4 flex-shrink-0" />Attempt {attemptNumber} completed — you can retake as many times as needed to pass
               </div>
             )}
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
-              <div className="flex items-start gap-3"><AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                <div className="text-left"><p className="font-medium text-red-800 dark:text-red-200 mb-1">Below Passing Score — Retake Required to Progress</p><p className="text-sm text-red-700 dark:text-red-300">You scored {Number(score).toFixed(2)}%, below the required {assessment.passing_score}%. Review your answers, then retake. There is no attempt limit.</p></div>
+            <div className="p-4 bg-destructive/10 dark:bg-destructive/20/20 rounded-lg">
+              <div className="flex items-start gap-3"><AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
+                <div className="text-left"><p className="font-medium text-destructive dark:text-destructive mb-1">Below Passing Score — Retake Required to Progress</p><p className="text-sm text-destructive dark:text-destructive">You scored {Number(score).toFixed(2)}%, below the required {assessment.passing_score}%. Review your answers, then retake. There is no attempt limit.</p></div>
               </div>
             </div>
-            <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
-              <div className="flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div className="text-left"><p className="font-medium text-amber-800 dark:text-amber-200 mb-1">Cannot Proceed to Next Step</p><p className="text-sm text-amber-700 dark:text-amber-300">You must achieve at least {assessment.passing_score}% to unlock the next lesson/module. Retake as many times as needed — no attempt limit.</p></div>
+            <div className="p-4 bg-warning/10 dark:bg-warning/20/20 rounded-lg">
+              <div className="flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
+                <div className="text-left"><p className="font-medium text-warning dark:text-warning mb-1">Cannot Proceed to Next Step</p><p className="text-sm text-warning dark:text-warning">You must achieve at least {assessment.passing_score}% to unlock the next lesson/module. Retake as many times as needed — no attempt limit.</p></div>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -568,24 +567,24 @@ export function AssessmentScreen({
       <div className="max-w-4xl mx-auto p-6">
         <Card className="shadow-none border-0">
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">{displayPassed ? <CheckCircle className="w-16 h-16 text-green-500" /> : <AlertCircle className="w-16 h-16 text-red-500" />}</div>
+            <div className="flex justify-center mb-4">{displayPassed ? <CheckCircle className="w-16 h-16 text-success" /> : <AlertCircle className="w-16 h-16 text-destructive" />}</div>
             <CardTitle className="text-2xl">{displayPassed ? "Congratulations!" : "Assessment Complete"}</CardTitle>
             <p className="text-muted-foreground">{assessment.title}</p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-primary/5 rounded-lg"><div className="text-sm text-muted-foreground">Your Score</div><div className="text-3xl font-bold text-primary mt-1">{score || previousScore || 0}%</div></div>
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg"><div className="text-sm text-muted-foreground">Passing Score</div><div className="text-3xl font-bold text-blue-600 mt-1">{assessment.passing_score}%</div></div>
-              <div className="text-center p-4 bg-slate-50 dark:bg-slate-900/20 rounded-lg"><div className="text-sm text-muted-foreground">Questions</div><div className="text-3xl font-bold text-slate-600 dark:text-slate-400 mt-1">{totalQuestions}</div></div>
+              <div className="text-center p-4 bg-primary/10 dark:bg-primary/20/20 rounded-lg"><div className="text-sm text-muted-foreground">Passing Score</div><div className="text-3xl font-bold text-primary mt-1">{assessment.passing_score}%</div></div>
+              <div className="text-center p-4 bg-muted/50 dark:bg-card/20 rounded-lg"><div className="text-sm text-muted-foreground">Questions</div><div className="text-3xl font-bold text-muted-foreground dark:text-muted-foreground mt-1">{totalQuestions}</div></div>
             </div>
             {displayPassed ? (
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <p className="text-green-700 dark:text-green-300 font-medium">Great job! You've passed this assessment. You can now proceed to the next step.</p>
+              <div className="p-4 bg-success/10 dark:bg-success/20/20 rounded-lg">
+                <p className="text-success dark:text-success font-medium">Great job! You've passed this assessment. You can now proceed to the next step.</p>
                 <Button size="sm" onClick={handleComplete} className="flex items-center gap-2 mt-4" disabled={isStepping}>{isStepping ? "Loading..." : "Next"}<ChevronRight className="w-4 h-4 ml-1" /></Button>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg"><p className="text-red-700 dark:text-red-300 font-medium">You need {assessment.passing_score}% to pass. Review your answers and retake — there is no attempt limit.</p></div>
+                <div className="p-4 bg-destructive/10 dark:bg-destructive/20/20 rounded-lg"><p className="text-destructive dark:text-destructive font-medium">You need {assessment.passing_score}% to pass. Review your answers and retake — there is no attempt limit.</p></div>
                 <div className="flex gap-3 justify-center">
                   <Button variant="outline" onClick={() => setShowReview(!showReview)} className="flex items-center gap-2"><Eye className="w-4 h-4" />{showReview ? "Hide Review" : "Review Answers"}</Button>
                   <Button onClick={handleRetake} disabled={loadingRetake} className="flex items-center gap-2">{loadingRetake ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}Retake Assessment</Button>
@@ -613,17 +612,17 @@ export function AssessmentScreen({
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 border rounded-lg text-center"><div className="text-2xl font-bold text-primary">{totalQuestions}</div><div className="text-sm text-muted-foreground">Questions</div></div>
-                <div className="p-4 border rounded-lg text-center"><div className="text-2xl font-bold text-blue-600">{assessment.time_limit_minutes || 0}</div><div className="text-sm text-muted-foreground">Minutes</div></div>
-                <div className="p-4 border rounded-lg text-center"><div className="text-2xl font-bold text-green-600">{assessment.passing_score}%</div><div className="text-sm text-muted-foreground">To Pass</div></div>
+                <div className="p-4 border rounded-lg text-center"><div className="text-2xl font-bold text-primary">{assessment.time_limit_minutes || 0}</div><div className="text-sm text-muted-foreground">Minutes</div></div>
+                <div className="p-4 border rounded-lg text-center"><div className="text-2xl font-bold text-success">{assessment.passing_score}%</div><div className="text-sm text-muted-foreground">To Pass</div></div>
               </div>
-              <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+              <div className="p-3 bg-success/10 dark:bg-success/20/20 rounded-lg text-sm text-success dark:text-success flex items-center gap-2">
                 <Info className="w-4 h-4 flex-shrink-0" /><span>Unlimited retakes — attempt as many times as needed to pass.{attemptNumber > 0 && <span className="ml-1 font-medium">(Previous attempts: {attemptNumber})</span>}</span>
               </div>
               {assessment.instructions && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg"><div className="flex items-start gap-3"><FileText className="w-5 h-5 text-blue-600 mt-0.5" /><div><p className="font-medium text-blue-800 dark:text-blue-200">Instructions:</p><ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">{assessment.instructions.split("\n").map((line, index) => <li key={index}>• {line}</li>)}</ul></div></div></div>
+                <div className="p-4 bg-primary/10 dark:bg-primary/20/20 rounded-lg"><div className="flex items-start gap-3"><FileText className="w-5 h-5 text-primary mt-0.5" /><div><p className="font-medium text-primary dark:text-primary">Instructions:</p><ul className="text-sm text-primary dark:text-primary mt-2 space-y-1">{assessment.instructions.split("\n").map((line, index) => <li key={index}>• {line}</li>)}</ul></div></div></div>
               )}
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
-                <div className="flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" /><div><p className="font-medium text-amber-800 dark:text-amber-200">Important Instructions:</p><ul className="text-sm text-amber-700 dark:text-amber-300 mt-2 space-y-1"><li>• Once you begin, the timer will start automatically</li><li>• You cannot pause the assessment once started</li><li>• The assessment will auto-submit when time runs out</li><li>• Make sure you have a stable internet connection</li><li>• You must achieve {assessment.passing_score}% to proceed to the next step</li></ul></div></div>
+              <div className="p-4 bg-warning/10 dark:bg-warning/20/20 rounded-lg">
+                <div className="flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-warning mt-0.5" /><div><p className="font-medium text-warning dark:text-warning">Important Instructions:</p><ul className="text-sm text-warning dark:text-warning mt-2 space-y-1"><li>• Once you begin, the timer will start automatically</li><li>• You cannot pause the assessment once started</li><li>• The assessment will auto-submit when time runs out</li><li>• Make sure you have a stable internet connection</li><li>• You must achieve {assessment.passing_score}% to proceed to the next step</li></ul></div></div>
               </div>
             </div>
             <DialogFooter><Button onClick={handleStartAssessment} className="flex items-center gap-2"><Play className="w-4 h-4" />Begin Assessment</Button></DialogFooter>
@@ -700,7 +699,7 @@ export function AssessmentScreen({
                 <button type="button" onClick={() => setExpanded((v) => !v)} className="mt-1 text-sm text-primary hover:underline self-start">{expanded ? "Show less" : "Show more"}</button>
               </div>
             </div>
-            <Badge variant="outline" className={`flex items-center gap-1 ${timeRemaining <= 300 ? "text-red-600 border-red-200" : ""}`}><Clock className="w-3 h-3" />{formatTime(timeRemaining)}</Badge>
+            <Badge variant="outline" className={`flex items-center gap-1 ${timeRemaining <= 300 ? "text-destructive border-destructive/30" : ""}`}><Clock className="w-3 h-3" />{formatTime(timeRemaining)}</Badge>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm"><span>Question {currentQuestionIndex + 1} of {totalQuestions}</span><span>{Math.round(progress)}% Complete</span></div>
@@ -717,7 +716,7 @@ export function AssessmentScreen({
                 <AlertDialogTrigger asChild><Button disabled={loading}>{loading ? "Submitting..." : "Submit Assessment"}</Button></AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-500" />Submit Assessment?</AlertDialogTitle>
+                    <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-warning" />Submit Assessment?</AlertDialogTitle>
                     <AlertDialogDescription>Are you sure you want to submit? Once submitted, you cannot change your answers.{assessment.passing_score > 0 && <span className="block mt-2 font-medium">You need {assessment.passing_score}% to pass.</span>}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter><AlertDialogCancel>Review Answers</AlertDialogCancel><AlertDialogAction onClick={handleSubmit}>Yes, Submit Assessment</AlertDialogAction></AlertDialogFooter>

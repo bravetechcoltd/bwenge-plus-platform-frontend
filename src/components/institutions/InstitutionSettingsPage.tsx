@@ -51,8 +51,10 @@ import {
 interface InstitutionLimits {
   max_instructors: number;
   max_members: number;
+  total_capacity?: number;
   current_instructors: number;
   current_members: number;
+  total_current?: number;
   instructors_remaining: number;
   members_remaining: number;
   can_add_instructor: boolean;
@@ -327,11 +329,11 @@ export default function InstitutionSettingsPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               No Institution Selected
             </h2>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Please select an institution from the dashboard to access
               settings.
             </p>
@@ -348,7 +350,7 @@ export default function InstitutionSettingsPage() {
     <div className="container mx-auto p-4 md:p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Institution Settings</h1>
-        <p className="text-gray-500">
+        <p className="text-muted-foreground">
           Configure your institution's preferences and security settings
         </p>
       </div>
@@ -558,7 +560,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Two-Factor Authentication</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Require 2FA for all administrators
                     </p>
                   </div>
@@ -700,7 +702,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Change Admin Password</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Update your administrator password
                     </p>
                   </div>
@@ -716,7 +718,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Two-Factor Setup</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Configure 2FA for your account
                     </p>
                   </div>
@@ -760,7 +762,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Allow Public Courses</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Allow instructors to create public courses
                     </p>
                   </div>
@@ -778,7 +780,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Require SPOC Approval</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Require approval for SPOC course enrollments
                     </p>
                   </div>
@@ -796,7 +798,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Auto-approve Instructors</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Automatically approve instructor requests
                     </p>
                   </div>
@@ -814,7 +816,7 @@ export default function InstitutionSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="max_instructors">
                     Maximum Instructors
-                    <span className="text-xs text-gray-500 ml-2">(System Admin Only)</span>
+                    <span className="text-xs text-muted-foreground ml-2">(System Admin Only)</span>
                   </Label>
                   <Input
                     id="max_instructors"
@@ -829,15 +831,15 @@ export default function InstitutionSettingsPage() {
                         max_instructors: parseInt(e.target.value) || 10,
                       })
                     }
-                    className={institutionLimits?.can_add_instructor ? "w-32" : "w-32 bg-gray-100 cursor-not-allowed opacity-60"}
+                    className={institutionLimits?.can_add_instructor ? "w-32" : "w-32 bg-muted cursor-not-allowed opacity-60"}
                   />
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-muted-foreground space-y-1">
                     <p>Max: {institutionLimits?.max_instructors || 'Unlimited'} | Current: {institutionLimits?.current_instructors || 0} | Remaining: {institutionLimits?.instructors_remaining || 0}</p>
                     {institutionLimits && !institutionLimits.can_add_instructor && (
-                      <p className="text-amber-600">⚠️ Instructor limit reached. Cannot add more instructors.</p>
+                      <p className="text-warning">⚠️ Instructor limit reached. Cannot add more instructors.</p>
                     )}
                     {institutionLimits?.can_add_instructor && (
-                      <p className="text-xs text-blue-600">You can increase the limit up to {institutionLimits.current_instructors + institutionLimits.instructors_remaining} instructors.</p>
+                      <p className="text-xs text-primary">You can increase the limit up to {institutionLimits.current_instructors + institutionLimits.instructors_remaining} instructors.</p>
                     )}
                   </div>
                 </div>
@@ -967,7 +969,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Allow Self Registration</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Allow users to request membership
                     </p>
                   </div>
@@ -985,7 +987,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Require Approval for Members</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Manually approve new member requests
                     </p>
                   </div>
@@ -1003,7 +1005,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Member Directory</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Allow members to view other members
                     </p>
                   </div>
@@ -1021,7 +1023,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Allow Role Changes</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Allow administrators to change member roles
                     </p>
                   </div>
@@ -1039,7 +1041,7 @@ export default function InstitutionSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="max_members">
                     Maximum Members
-                    <span className="text-xs text-gray-500 ml-2">(System Admin Only)</span>
+                    <span className="text-xs text-muted-foreground ml-2">(System Admin Only)</span>
                   </Label>
                   <Input
                     id="max_members"
@@ -1054,15 +1056,15 @@ export default function InstitutionSettingsPage() {
                         max_members: parseInt(e.target.value) || 100,
                       })
                     }
-                    className={institutionLimits?.can_add_member ? "w-32" : "w-32 bg-gray-100 cursor-not-allowed opacity-60"}
+                    className={institutionLimits?.can_add_member ? "w-32" : "w-32 bg-muted cursor-not-allowed opacity-60"}
                   />
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-muted-foreground space-y-1">
                     <p>Max: {institutionLimits?.max_members || 'Unlimited'} | Current: {institutionLimits?.current_members || 0} | Remaining: {institutionLimits?.members_remaining || 0}</p>
                     {institutionLimits && !institutionLimits.can_add_member && (
-                      <p className="text-amber-600">⚠️ Member limit reached. Cannot add more members.</p>
+                      <p className="text-warning">⚠️ Member limit reached. Cannot add more members.</p>
                     )}
                     {institutionLimits?.can_add_member && (
-                      <p className="text-xs text-blue-600">You can increase the limit up to {institutionLimits.current_members + institutionLimits.members_remaining} members.</p>
+                      <p className="text-xs text-primary">You can increase the limit up to {institutionLimits.current_members + institutionLimits.members_remaining} members.</p>
                     )}
                   </div>
                 </div>
@@ -1122,7 +1124,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Email Notifications</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Receive notifications via email
                     </p>
                   </div>
@@ -1140,7 +1142,7 @@ export default function InstitutionSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Push Notifications</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Receive push notifications
                     </p>
                   </div>
@@ -1306,10 +1308,10 @@ export default function InstitutionSettingsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-center">
-              <div className="w-48 h-48 bg-gray-100 mx-auto mb-4 flex items-center justify-center">
-                <Shield className="w-16 h-16 text-gray-400" />
+              <div className="w-48 h-48 bg-muted mx-auto mb-4 flex items-center justify-center">
+                <Shield className="w-16 h-16 text-muted-foreground" />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Scan the QR code with your authenticator app
               </p>
             </div>

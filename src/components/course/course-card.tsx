@@ -45,15 +45,15 @@ export function CourseCard({ course, showActions = true, showInstitution = true 
   const getLevelColor = (level: CourseLevel) => {
     switch (level) {
       case CourseLevel.BEGINNER:
-        return "bg-green-500 hover:bg-green-600"
+        return "bg-success/100 hover:bg-success"
       case CourseLevel.INTERMEDIATE:
-        return "bg-blue-500 hover:bg-blue-600"
+        return "bg-primary hover:bg-primary"
       case CourseLevel.ADVANCED:
-        return "bg-purple-500 hover:bg-purple-600"
+        return "bg-primary/100 hover:bg-primary"
       case CourseLevel.EXPERT:
-        return "bg-red-500 hover:bg-red-600"
+        return "bg-destructive/100 hover:bg-destructive"
       default:
-        return "bg-gray-500 hover:bg-gray-600"
+        return "bg-muted/500 hover:bg-secondary"
     }
   }
 
@@ -100,7 +100,7 @@ export function CourseCard({ course, showActions = true, showInstitution = true 
           </Badge>
         </div>
         {course.is_popular && (
-          <Badge className="absolute top-2 right-2 bg-orange-500 hover:bg-orange-600">
+          <Badge className="absolute top-2 right-2 bg-warning/100 hover:bg-warning">
             Popular
           </Badge>
         )}
@@ -119,7 +119,7 @@ export function CourseCard({ course, showActions = true, showInstitution = true 
       <CardHeader className="pb-3 flex-1">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <Star className="w-4 h-4 fill-yellow-400 text-warning" />
             <span className="text-sm font-medium">{course.average_rating.toFixed(1)}</span>
             <span className="text-xs text-muted-foreground">({course.total_reviews})</span>
           </div>

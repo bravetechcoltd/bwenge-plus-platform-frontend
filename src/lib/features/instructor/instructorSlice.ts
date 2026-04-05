@@ -422,7 +422,7 @@ export const fetchInstructorCourses = createAsyncThunk(
       params.append("limit", limit.toString());
       params.append("include_stats", include_stats.toString());
       
-      const response = await api.get(`/instructor/courses?${params.toString()}`);
+      const response = await api.get(`/instructor/my-courses?${params.toString()}`);
       
       if (response.data.success) {
         return {
@@ -461,8 +461,6 @@ export const fetchCourseStudents = createAsyncThunk(
       const params = new URLSearchParams();
       
       // Add filters
-      console.log("🔄 Building query params for fetchCourseStudents");
-      console.log("📌 Filters received:", filters);
       
       if (filters.status) params.append("status", filters.status);
       if (filters.search) params.append("search", filters.search);
@@ -476,11 +474,9 @@ export const fetchCourseStudents = createAsyncThunk(
       params.append("include_details", include_details.toString());
       
       const url = `/instructor/courses/${courseId}/students?${params.toString()}`;
-      console.log("🌐 Making API call to:", url);
       
       const response = await api.get(url);
       
-      console.log("✅ API Response:", response.data);
       
       if (response.data.success) {
         return {
@@ -492,10 +488,8 @@ export const fetchCourseStudents = createAsyncThunk(
           filters: response.data.data.filters,
         };
       }
-      console.error("❌ API returned success: false", response.data.message);
       return rejectWithValue(response.data.message);
     } catch (error: any) {
-      console.error("❌ API call failed:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch course students"
       );

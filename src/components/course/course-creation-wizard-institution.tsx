@@ -90,7 +90,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
         if (savedCourseData) {
           const parsed = JSON.parse(savedCourseData)
           setCourseData(prev => ({ ...prev, ...parsed }))
-          console.log("✅ Loaded course data from storage")
         }
 
         const savedModules = localStorage.getItem(STORAGE_KEYS.MODULES)
@@ -112,13 +111,11 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             }))
           }))
           setModules(modulesWithDates)
-          console.log("✅ Loaded modules from storage:", modulesWithDates.length)
         }
 
         const savedStep = localStorage.getItem(STORAGE_KEYS.CURRENT_STEP)
         if (savedStep) {
           setCurrentStep(parseInt(savedStep))
-          console.log("✅ Loaded current step from storage:", savedStep)
         }
 
         setIsDataLoaded(true)
@@ -129,7 +126,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
           })
         }
       } catch (error) {
-        console.error("❌ Error loading from storage:", error)
         setIsDataLoaded(true)
       }
     }
@@ -149,12 +145,9 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             localStorage.setItem(STORAGE_KEYS.THUMBNAIL_NAME, thumbnailFile.name)
           }
           lastSaveRef.current = currentData
-          console.log("💾 Auto-saved to storage")
         }
       } catch (error) {
-        console.error("❌ Error saving to storage:", error)
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-          console.warn("⚠️ Storage quota exceeded, clearing old data")
           clearStorage()
         }
       }
@@ -170,7 +163,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
     localStorage.removeItem(STORAGE_KEYS.MODULES)
     localStorage.removeItem(STORAGE_KEYS.CURRENT_STEP)
     localStorage.removeItem(STORAGE_KEYS.THUMBNAIL_NAME)
-    console.log("🗑️ Storage cleared")
   }
 
   const clearStorageOnSuccess = () => {
@@ -181,24 +173,14 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   // ==================== AUTH DEBUG ====================
 
   useEffect(() => {
-    console.log("=".repeat(80))
-    console.log("🔍 [CourseCreationWizard] AUTHENTICATION DEBUG")
-    console.log("=".repeat(80))
-    console.log("📋 [useAuth Hook]:", { hasUser: !!user, hasToken: !!token, userId: user?.id, email: user?.email, role: user?.bwenge_role })
     const cookieToken = Cookies.get("bwenge_token")
     const cookieUser = Cookies.get("bwenge_user")
-    console.log("🍪 [Cookies]:", { hasCookieToken: !!cookieToken, hasCookieUser: !!cookieUser })
     const localToken = localStorage.getItem("bwengeplus_token")
     const localUser = localStorage.getItem("bwengeplus_user")
-    console.log("💾 [localStorage]:", { hasLocalToken: !!localToken, hasLocalUser: !!localUser })
     if (!user && !cookieUser && !localUser) {
-      console.error("❌ [CRITICAL] No authentication found anywhere!")
     } else if (!user && (cookieUser || localUser)) {
-      console.warn("⚠️ [WARNING] Auth data exists but useAuth hook not initialized yet")
     } else if (user) {
-      console.log("✅ [SUCCESS] User authenticated and ready")
     }
-    console.log("=".repeat(80))
   }, [user, token])
 
   // ==================== FILE MAP CHANGE DEBUG ====================
@@ -206,23 +188,17 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   // registered from CourseTreeBuilder → TreeBuilderStep → Wizard.
 
   useEffect(() => {
-    console.log("🗂️ [Wizard] videoFilesMap updated:", videoFilesMap.size, "entries")
     videoFilesMap.forEach((file, lessonId) => {
-      console.log(`  → lessonId="${lessonId}" file="${file.name}" (${file.size} bytes)`)
     })
   }, [videoFilesMap])
 
   useEffect(() => {
-    console.log("🗂️ [Wizard] thumbnailFilesMap updated:", thumbnailFilesMap.size, "entries")
     thumbnailFilesMap.forEach((file, lessonId) => {
-      console.log(`  → lessonId="${lessonId}" file="${file.name}" (${file.size} bytes)`)
     })
   }, [thumbnailFilesMap])
 
   useEffect(() => {
-    console.log("🗂️ [Wizard] materialFilesMap updated:", materialFilesMap.size, "entries")
     materialFilesMap.forEach((files, lessonId) => {
-      console.log(`  → lessonId="${lessonId}" files=[${files.map(f => f.name).join(", ")}]`)
     })
   }, [materialFilesMap])
 
@@ -230,11 +206,9 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!token || !user) { console.log("⏸️ [fetchData] Skipping - no authentication"); return }
-      console.log("📡 [fetchData] Starting data fetch...")
+      if (!token || !user) { return }
       setInLoading(true)
       try {
-        console.log("📁 [fetchData] Fetching categories...")
         const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/categories`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -242,23 +216,18 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
           const data = await categoriesResponse.json()
           const categoriesArray = data.data?.categories || data.data || []
           setCategories(categoriesArray)
-          console.log("✅ [fetchData] Categories loaded:", categoriesArray.length)
         }
 
         if (user.bwenge_role === "SYSTEM_ADMIN") {
-          console.log("🏛️ [fetchData] Fetching institutions...")
           const institutionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/institutions`, {
             headers: { Authorization: `Bearer ${token}` },
           })
           if (institutionsResponse.ok) {
             const data = await institutionsResponse.json()
             setInstitutions(data.data || [])
-            console.log("✅ [fetchData] Institutions loaded:", data.data?.length)
           }
         }
-        console.log("✅ [fetchData] All data fetched successfully")
       } catch (error) {
-        console.error("❌ [fetchData] Error:", error)
         toast.error("Failed to load initial data")
       } finally {
         setInLoading(false)
@@ -330,7 +299,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   // when necessary to avoid unnecessary re-renders.
 
   const handleVideoFilesChange = useCallback((map: Map<string, File>) => {
-    console.log("📹 [Wizard] handleVideoFilesChange called with", map.size, "entries")
     
     // Update ref immediately for synchronous access
     videoFilesMapRef.current = new Map(map)
@@ -342,7 +310,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   }, [])
 
   const handleThumbnailFilesChange = useCallback((map: Map<string, File>) => {
-    console.log("🖼️ [Wizard] handleThumbnailFilesChange called with", map.size, "entries")
     
     thumbnailFilesMapRef.current = new Map(map)
     
@@ -352,7 +319,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   }, [])
 
   const handleMaterialFilesChange = useCallback((map: Map<string, File[]>) => {
-    console.log("📎 [Wizard] handleMaterialFilesChange called with", map.size, "entries")
     
     materialFilesMapRef.current = new Map(map)
     
@@ -364,15 +330,9 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   // ==================== COURSE SUBMISSION ====================
 
   const handleCourseSubmission = async () => {
-    console.log("=".repeat(80))
-    console.log("🚀 [handleCourseSubmission] SUBMISSION START")
-    console.log("=".repeat(80))
 
-    console.log("🔐 [handleCourseSubmission] Checking authentication...")
 
     if (!user || !token) {
-      console.error("❌ [handleCourseSubmission] AUTHENTICATION FAILED")
-      console.log("📊 [handleCourseSubmission] Auth State:", { hasUser: !!user, hasToken: !!token, userId: user?.id, email: user?.email })
       const cookieToken = Cookies.get("bwenge_token")
       const localToken = localStorage.getItem("bwengeplus_token")
       if (cookieToken || localToken) {
@@ -384,36 +344,14 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       return
     }
 
-    console.log("✅ [handleCourseSubmission] Authentication verified")
-    console.log("👤 [handleCourseSubmission] User details:", {
-      id: user.id, email: user.email, role: user.bwenge_role,
-      primary_institution_id: user.primary_institution_id,
-      institution_ids: user.institution_ids,
-    })
 
-    // ── DEBUG: snapshot of file maps at submission time ────────────────────
-    console.log("📂 [handleCourseSubmission] File maps at submission time:")
-    console.log("  videoFilesMap size:", videoFilesMapRef.current.size)
-    videoFilesMapRef.current.forEach((f, id) => console.log(`    video lessonId="${id}" → "${f.name}"`))
-    console.log("  thumbnailFilesMap size:", thumbnailFilesMapRef.current.size)
-    thumbnailFilesMapRef.current.forEach((f, id) => console.log(`    thumb lessonId="${id}" → "${f.name}"`))
-    console.log("  materialFilesMap size:", materialFilesMapRef.current.size)
-    materialFilesMapRef.current.forEach((files, id) => console.log(`    mat   lessonId="${id}" → [${files.map(f => f.name).join(", ")}]`))
 
     // ── DEBUG: modules state at submission time ────────────────────────────
-    console.log("📦 [handleCourseSubmission] Modules state at submission time:")
     modules.forEach((mod, mi) => {
-      console.log(`  module[${mi}] id="${mod.id}" title="${mod.title}"`)
       mod.lessons?.forEach((les, li) => {
-        console.log(`    lesson[${li}] id="${les.id}" title="${les.title}"`)
-        console.log(`      video_url="${les.video_url || ""}"`)
-        console.log(`      thumbnail_url="${les.thumbnail_url || ""}"`)
         const videoFile = videoFilesMapRef.current.get(les.id)
         const thumbFile = thumbnailFilesMapRef.current.get(les.id)
         const matFiles = materialFilesMapRef.current.get(les.id) || []
-        console.log(`      → videoFile in map: ${videoFile ? videoFile.name : "NONE"}`)
-        console.log(`      → thumbFile in map: ${thumbFile ? thumbFile.name : "NONE"}`)
-        console.log(`      → matFiles in map: [${matFiles.map(f => f.name).join(", ") || "NONE"}]`)
       })
     })
 
@@ -425,9 +363,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       // ==================== COURSE THUMBNAIL ====================
       if (thumbnailFile) {
         formData.append('thumbnail', thumbnailFile)
-        console.log("🖼️ [handleCourseSubmission] Course thumbnail attached:", thumbnailFile.name, thumbnailFile.size, "bytes")
       } else {
-        console.log("⚠️ [handleCourseSubmission] No course thumbnail selected")
       }
 
       // ==================== COURSE PAYLOAD ====================
@@ -453,7 +389,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       }
 
       // ==================== INSTITUTION ID HANDLING ====================
-      console.log("🏢 [handleCourseSubmission] Processing institution assignment...")
 
       if (user.bwenge_role === "INSTITUTION_ADMIN" ||
           (user.bwenge_role === "INSTRUCTOR" && user.is_institution_member)) {
@@ -465,33 +400,26 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
         coursePayload.institution_id = targetInstitutionId
         if (user.bwenge_role === "INSTRUCTOR") {
           coursePayload.instructor_id = user.id
-          console.log("👨🏫 [handleCourseSubmission] Instructor creating course - set as primary instructor")
         }
-        console.log("✅ [handleCourseSubmission] Institution member - Using institution_id:", targetInstitutionId)
       } else if (user.bwenge_role === "SYSTEM_ADMIN") {
         if (courseData.course_type === "SPOC") {
           if (courseData.institution_id) {
             coursePayload.institution_id = courseData.institution_id
-            console.log("✅ [handleCourseSubmission] System Admin - Using selected institution_id:", courseData.institution_id)
           } else {
             toast.error("Please select an institution for SPOC course")
             return
           }
         } else {
           coursePayload.institution_id = null
-          console.log("ℹ️ [handleCourseSubmission] System Admin - MOOC course, no institution required")
         }
       } else if (user.primary_institution_id) {
         coursePayload.institution_id = user.primary_institution_id
-        console.log("✅ [handleCourseSubmission] User with institution - Using primary_institution_id:", user.primary_institution_id)
       }
 
-      console.log("🏢 [handleCourseSubmission] Final institution_id:", coursePayload.institution_id || "null")
 
       // ==================== INSTRUCTOR ASSIGNMENT ====================
       if (user.bwenge_role === "SYSTEM_ADMIN" && courseData.instructor_id) {
         coursePayload.instructor_id = courseData.instructor_id
-        console.log("👨‍🏫 [handleCourseSubmission] Admin assigned instructor:", courseData.instructor_id)
       }
 
       // ==================== SPOC-SPECIFIC SETTINGS ====================
@@ -499,7 +427,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
         if (courseData.max_enrollments) {
           coursePayload.max_enrollments = courseData.max_enrollments
         }
-        console.log("🎓 [handleCourseSubmission] SPOC course settings applied")
       }
 
       // ==================== CATEGORY ASSIGNMENT ====================
@@ -584,14 +511,6 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
         }),
       }))
 
-      console.log("📦 [handleCourseSubmission] Payload summary:", {
-        title: coursePayload.title,
-        course_type: coursePayload.course_type,
-        institution_id: coursePayload.institution_id || "null",
-        instructor_id: coursePayload.instructor_id || "Will use logged-in user",
-        modules_count: coursePayload.modules.length,
-        total_lessons: coursePayload.modules.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0),
-      })
 
       // ==================== APPEND COURSE PAYLOAD TO FORMDATA ====================
       Object.keys(coursePayload).forEach(key => {
@@ -621,9 +540,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].video`
             formData.append(fieldName, videoFile, videoFile.name)
             appendedVideoCount++
-            console.log(`🎬 [handleCourseSubmission] Appended video: "${fieldName}" = "${videoFile.name}" (${videoFile.size} bytes)`)
           } else {
-            console.log(`🎬 [handleCourseSubmission] No video file for lesson id="${lesson.id}" (module[${modIdx}].lesson[${lesIdx}])`)
           }
 
           // ── Lesson thumbnail ──────────────────────────────────────────────
@@ -632,9 +549,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].thumbnail`
             formData.append(fieldName, thumbFile, thumbFile.name)
             appendedThumbCount++
-            console.log(`🖼️ [handleCourseSubmission] Appended thumbnail: "${fieldName}" = "${thumbFile.name}" (${thumbFile.size} bytes)`)
           } else {
-            console.log(`🖼️ [handleCourseSubmission] No thumb file for lesson id="${lesson.id}" (module[${modIdx}].lesson[${lesIdx}])`)
           }
 
           // ── Lesson materials ──────────────────────────────────────────────
@@ -643,33 +558,22 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].materials[${matIdx}]`
             formData.append(fieldName, matFile, matFile.name)
             appendedMatCount++
-            console.log(`📎 [handleCourseSubmission] Appended material: "${fieldName}" = "${matFile.name}" (${matFile.size} bytes)`)
           })
         })
       })
 
       // ── DEBUG: full FormData inventory ─────────────────────────────────
-      console.log("=".repeat(60))
-      console.log("📋 [handleCourseSubmission] FULL FORMDATA INVENTORY")
-      console.log("=".repeat(60))
       let fdEntryCount = 0
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
-          console.log(`  [FILE ] ${key} → "${value.name}" (${value.size} bytes, ${value.type})`)
         } else {
           const preview = typeof value === "string" && value.length > 120
             ? value.substring(0, 120) + "…"
             : value
-          console.log(`  [FIELD] ${key} → ${preview}`)
         }
         fdEntryCount++
       }
-      console.log(`📋 Total FormData entries: ${fdEntryCount}`)
-      console.log(`📋 Summary: videos=${appendedVideoCount}, thumbnails=${appendedThumbCount}, materials=${appendedMatCount}`)
-      console.log("=".repeat(60))
 
-      console.log("📡 [handleCourseSubmission] Sending request to API...")
-      console.log("🔑 [handleCourseSubmission] Using token:", token.substring(0, 20) + "...")
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/create`, {
         method: "POST",
@@ -679,33 +583,20 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
         body: formData,
       })
 
-      console.log("📨 [handleCourseSubmission] Response status:", response.status)
 
       const result = await response.json()
 
-      console.log("📬 [handleCourseSubmission] Response data:", {
-        success: result.success,
-        message: result.message,
-        courseId: result.data?.id,
-        institution_id: result.data?.institution_id,
-        summary: result.summary
-      })
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to create course")
       }
 
-      console.log("✅ [handleCourseSubmission] Course created successfully!")
-      console.log("=".repeat(80))
 
       clearStorageOnSuccess()
       toast.success("Course created successfully!")
 
       return result
     } catch (error: any) {
-      console.error("❌ [handleCourseSubmission] Error:", error)
-      console.error("📋 [handleCourseSubmission] Error details:", { message: error.message, stack: error.stack })
-      console.log("=".repeat(80))
       toast.error(error.message || "Failed to create course")
       throw error
     } finally {
@@ -716,16 +607,15 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
   // ==================== AUTH GUARD ====================
 
   if (!user && !Cookies.get("bwenge_token") && !localStorage.getItem("bwengeplus_token")) {
-    console.log("⚠️ [Render] No authentication found - showing error")
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive/30 bg-destructive/10">
           <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-bold text-red-900 mb-2">Authentication Required</h2>
-            <p className="text-red-700 mb-4">You must be logged in to create a course.</p>
+            <h2 className="text-xl font-bold text-destructive mb-2">Authentication Required</h2>
+            <p className="text-destructive mb-4">You must be logged in to create a course.</p>
             <button
               onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive"
             >
               Go to Login
             </button>
@@ -746,7 +636,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             <div key={step.id} className="flex flex-col items-center min-w-0 flex-1 relative px-2">
               {index < steps.length - 1 && (
                 <div className={`hidden md:block absolute top-3 left-1/2 w-full h-0.5 ${
-                  index < currentStep ? "bg-[#0158B7]" : "bg-gray-200"
+                  index < currentStep ? "bg-[#0158B7]" : "bg-secondary"
                 }`} />
               )}
 
@@ -758,8 +648,8 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
                   ${index === currentStep
                     ? "bg-[#0158B7] text-white shadow-lg ring-2 ring-[#0158B7] ring-offset-2"
                     : index < currentStep
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-200 text-gray-400"
+                      ? "bg-success/100 text-white"
+                      : "bg-secondary text-muted-foreground"
                   }
                   ${index <= currentStep ? "cursor-pointer hover:scale-105" : "cursor-not-allowed"}
                 `}
@@ -768,10 +658,10 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
               </button>
 
               <div className="text-center">
-                <p className={`text-xs font-medium ${index <= currentStep ? "text-gray-900" : "text-gray-400"}`}>
+                <p className={`text-xs font-medium ${index <= currentStep ? "text-foreground" : "text-muted-foreground"}`}>
                   {step.title}
                 </p>
-                <p className="text-[10px] text-gray-500 mt-1">{step.description}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{step.description}</p>
               </div>
             </div>
           ))}
@@ -779,7 +669,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       </div>
 
       {/* Step Content */}
-      <Card className="min-h-[600px] border border-gray-200 bg-white shadow-sm">
+      <Card className="min-h-[600px] border border-border bg-card shadow-sm">
         <CardContent className="p-6 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div

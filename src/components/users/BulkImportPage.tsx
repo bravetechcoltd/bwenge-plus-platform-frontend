@@ -289,9 +289,9 @@ export default function BulkImportPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -304,10 +304,10 @@ export default function BulkImportPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
               <UploadCloud className="w-7 h-7 text-primary" /> Bulk Import Users
             </h1>
-            <p className="text-gray-500 mt-1">Upload a CSV file to add many users at once</p>
+            <p className="text-muted-foreground mt-1">Upload a CSV file to add many users at once</p>
           </div>
           <Button variant="outline" size="sm" onClick={downloadTemplate}>
             <Download className="w-4 h-4 mr-2" /> Download Template
@@ -331,20 +331,20 @@ export default function BulkImportPage() {
                 {!selectedFile ? (
                   <div
                     className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
-                      dragOver ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      dragOver ? "border-primary bg-primary/5" : "border-border hover:border-border hover:bg-muted/50"
                     }`}
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={handleDrop}
                   >
-                    <UploadCloud className="w-14 h-14 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-700 font-semibold text-lg">Drop your CSV here</p>
-                    <p className="text-gray-400 mt-1 text-sm">or click to browse files</p>
+                    <UploadCloud className="w-14 h-14 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground font-semibold text-lg">Drop your CSV here</p>
+                    <p className="text-muted-foreground mt-1 text-sm">or click to browse files</p>
                     <Button variant="outline" className="mt-4" size="sm">
                       Browse File
                     </Button>
-                    <p className="text-xs text-gray-400 mt-3">Supported: .csv · Max 5MB · Max 500 rows</p>
+                    <p className="text-xs text-muted-foreground mt-3">Supported: .csv · Max 5MB · Max 500 rows</p>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -362,7 +362,7 @@ export default function BulkImportPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-sm">{selectedFile.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {(selectedFile.size / 1024).toFixed(1)} KB · {parsedUsers.length} rows detected
                           </p>
                         </div>
@@ -370,7 +370,7 @@ export default function BulkImportPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-muted-foreground hover:text-destructive"
                         onClick={() => {
                           setSelectedFile(null);
                           setParsedUsers([]);
@@ -384,17 +384,17 @@ export default function BulkImportPage() {
 
                     {/* Summary */}
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 rounded-lg bg-gray-50 text-center">
+                      <div className="p-3 rounded-lg bg-muted/50 text-center">
                         <p className="text-2xl font-bold">{parsedUsers.length}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Total Rows</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Total Rows</p>
                       </div>
-                      <div className="p-3 rounded-lg bg-green-50 text-center">
-                        <p className="text-2xl font-bold text-green-700">{validUsers.length}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Valid</p>
+                      <div className="p-3 rounded-lg bg-success/10 text-center">
+                        <p className="text-2xl font-bold text-success">{validUsers.length}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Valid</p>
                       </div>
-                      <div className="p-3 rounded-lg bg-red-50 text-center">
-                        <p className="text-2xl font-bold text-red-700">{invalidUsers.length}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Invalid</p>
+                      <div className="p-3 rounded-lg bg-destructive/10 text-center">
+                        <p className="text-2xl font-bold text-destructive">{invalidUsers.length}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Invalid</p>
                       </div>
                     </div>
 
@@ -403,7 +403,7 @@ export default function BulkImportPage() {
                       <Label className="flex items-center gap-1.5">
                         Default Role (for rows without a role column)
                         <Tooltip>
-                          <TooltipTrigger><Info className="w-3 h-3 text-gray-400" /></TooltipTrigger>
+                          <TooltipTrigger><Info className="w-3 h-3 text-muted-foreground" /></TooltipTrigger>
                           <TooltipContent>If a row has a "role" column with a valid value, that takes priority.</TooltipContent>
                         </Tooltip>
                       </Label>
@@ -422,12 +422,12 @@ export default function BulkImportPage() {
 
                     {/* Import Progress */}
                     {importing && (
-                      <div className="space-y-2 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                      <div className="space-y-2 p-4 rounded-xl bg-primary/10 border border-primary/20">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-blue-700 font-medium flex items-center gap-2">
+                          <span className="text-primary font-medium flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" /> Importing users...
                           </span>
-                          <span className="text-blue-600">{importProgress}%</span>
+                          <span className="text-primary">{importProgress}%</span>
                         </div>
                         <Progress value={importProgress} className="h-2" />
                       </div>
@@ -435,12 +435,12 @@ export default function BulkImportPage() {
 
                     {/* Import Result */}
                     {importResult && (
-                      <Alert className={importResult.failed === 0 ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}>
-                        {importResult.failed === 0 ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : <AlertCircle className="w-4 h-4 text-amber-600" />}
-                        <AlertTitle className={importResult.failed === 0 ? "text-green-800" : "text-amber-800"}>
+                      <Alert className={importResult.failed === 0 ? "border-success/30 bg-success/10" : "border-warning/30 bg-warning/10"}>
+                        {importResult.failed === 0 ? <CheckCircle2 className="w-4 h-4 text-success" /> : <AlertCircle className="w-4 h-4 text-warning" />}
+                        <AlertTitle className={importResult.failed === 0 ? "text-success" : "text-warning"}>
                           Import {importResult.failed === 0 ? "Completed" : "Finished with Errors"}
                         </AlertTitle>
-                        <AlertDescription className={importResult.failed === 0 ? "text-green-700" : "text-amber-700"}>
+                        <AlertDescription className={importResult.failed === 0 ? "text-success" : "text-warning"}>
                           {importResult.succeeded} users added successfully.
                           {importResult.failed > 0 && ` ${importResult.failed} rows failed.`}
                           {importResult.errors?.length > 0 && (
@@ -488,10 +488,10 @@ export default function BulkImportPage() {
                     <Tabs value={previewTab} onValueChange={v => setPreviewTab(v as any)}>
                       <TabsList>
                         <TabsTrigger value="valid" className="gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-green-600" />Valid ({validUsers.length})
+                          <CheckCircle2 className="w-3 h-3 text-success" />Valid ({validUsers.length})
                         </TabsTrigger>
                         <TabsTrigger value="invalid" className="gap-1.5">
-                          <XCircle className="w-3 h-3 text-red-500" />Issues ({invalidUsers.length})
+                          <XCircle className="w-3 h-3 text-destructive" />Issues ({invalidUsers.length})
                         </TabsTrigger>
                       </TabsList>
                     </Tabs>
@@ -501,7 +501,7 @@ export default function BulkImportPage() {
                   <div className="overflow-x-auto max-h-80">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-gray-50">
+                        <TableRow className="bg-muted/50">
                           <TableHead className="pl-6 w-12">#</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Name</TableHead>
@@ -513,22 +513,22 @@ export default function BulkImportPage() {
                       </TableHeader>
                       <TableBody>
                         {(previewTab === "valid" ? validUsers : invalidUsers).slice(0, 50).map(user => (
-                          <TableRow key={user.rowIndex} className={!user.valid ? "bg-red-50" : ""}>
-                            <TableCell className="pl-6 text-gray-400 text-xs">{user.rowIndex}</TableCell>
-                            <TableCell className="text-sm">{user.email || <span className="text-red-400 italic">missing</span>}</TableCell>
+                          <TableRow key={user.rowIndex} className={!user.valid ? "bg-destructive/10" : ""}>
+                            <TableCell className="pl-6 text-muted-foreground text-xs">{user.rowIndex}</TableCell>
+                            <TableCell className="text-sm">{user.email || <span className="text-destructive italic">missing</span>}</TableCell>
                             <TableCell className="text-sm">
                               {user.first_name} {user.last_name}
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">{user.role}</Badge>
                             </TableCell>
-                            <TableCell className="text-sm text-gray-500">{user.phone || "—"}</TableCell>
-                            <TableCell className="text-sm text-gray-500">{user.country || "—"}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{user.phone || "—"}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{user.country || "—"}</TableCell>
                             {previewTab === "invalid" && (
                               <TableCell>
                                 <div className="space-y-0.5">
                                   {user.errors.map((e, i) => (
-                                    <p key={i} className="text-xs text-red-600">• {e}</p>
+                                    <p key={i} className="text-xs text-destructive">• {e}</p>
                                   ))}
                                 </div>
                               </TableCell>
@@ -538,7 +538,7 @@ export default function BulkImportPage() {
                       </TableBody>
                     </Table>
                     {(previewTab === "valid" ? validUsers : invalidUsers).length > 50 && (
-                      <p className="text-center text-xs text-gray-400 py-3">
+                      <p className="text-center text-xs text-muted-foreground py-3">
                         Showing 50 of {(previewTab === "valid" ? validUsers : invalidUsers).length} rows
                       </p>
                     )}
@@ -559,7 +559,7 @@ export default function BulkImportPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div>
-                  <p className="font-semibold text-gray-700 mb-1.5">Required columns:</p>
+                  <p className="font-semibold text-muted-foreground mb-1.5">Required columns:</p>
                   <div className="space-y-1">
                     {[
                       ["email", "User's email address"],
@@ -567,14 +567,14 @@ export default function BulkImportPage() {
                     ].map(([col, desc]) => (
                       <div key={col} className="flex items-start gap-2">
                         <Badge variant="outline" className="font-mono text-xs px-1.5 flex-shrink-0 mt-0.5">{col}</Badge>
-                        <span className="text-gray-500 text-xs">{desc}</span>
+                        <span className="text-muted-foreground text-xs">{desc}</span>
                       </div>
                     ))}
                   </div>
                 </div>
                 <Separator />
                 <div>
-                  <p className="font-semibold text-gray-700 mb-1.5">Optional columns:</p>
+                  <p className="font-semibold text-muted-foreground mb-1.5">Optional columns:</p>
                   <div className="space-y-1">
                     {[
                       ["last_name", "Family name"],
@@ -584,14 +584,14 @@ export default function BulkImportPage() {
                     ].map(([col, desc]) => (
                       <div key={col} className="flex items-start gap-2">
                         <Badge variant="secondary" className="font-mono text-xs px-1.5 flex-shrink-0 mt-0.5">{col}</Badge>
-                        <span className="text-gray-500 text-xs">{desc}</span>
+                        <span className="text-muted-foreground text-xs">{desc}</span>
                       </div>
                     ))}
                   </div>
                 </div>
                 <Separator />
                 <div>
-                  <p className="font-semibold text-gray-700 mb-1">Valid roles:</p>
+                  <p className="font-semibold text-muted-foreground mb-1">Valid roles:</p>
                   <div className="flex flex-wrap gap-1">
                     {VALID_ROLES.map(r => (
                       <Badge key={r} variant="outline" className="font-mono text-xs">{r}</Badge>
@@ -616,8 +616,8 @@ export default function BulkImportPage() {
                   </div>
                 ) : pastJobs.length === 0 ? (
                   <div className="text-center py-8">
-                    <TableIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">No past imports</p>
+                    <TableIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No past imports</p>
                   </div>
                 ) : (
                   <div className="divide-y">
@@ -625,20 +625,20 @@ export default function BulkImportPage() {
                       <div key={job.id} className="px-5 py-3">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            {job.status === "COMPLETED" && <CheckCircle2 className="w-4 h-4 text-green-600" />}
-                            {job.status === "FAILED" && <XCircle className="w-4 h-4 text-red-500" />}
-                            {job.status === "PROCESSING" && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
-                            {job.status === "PENDING" && <Clock className="w-4 h-4 text-amber-500" />}
+                            {job.status === "COMPLETED" && <CheckCircle2 className="w-4 h-4 text-success" />}
+                            {job.status === "FAILED" && <XCircle className="w-4 h-4 text-destructive" />}
+                            {job.status === "PROCESSING" && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+                            {job.status === "PENDING" && <Clock className="w-4 h-4 text-warning" />}
                             <span className="text-sm font-medium">{job.total} users</span>
                           </div>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-muted-foreground">
                             {new Date(job.created_at).toLocaleDateString()}
                           </span>
                         </div>
                         {job.status === "COMPLETED" && (
                           <div className="flex items-center gap-3 text-xs">
-                            <span className="text-green-600">✓ {job.succeeded} ok</span>
-                            {job.failed > 0 && <span className="text-red-500">✗ {job.failed} failed</span>}
+                            <span className="text-success">✓ {job.succeeded} ok</span>
+                            {job.failed > 0 && <span className="text-destructive">✗ {job.failed} failed</span>}
                           </div>
                         )}
                         {job.status === "PROCESSING" && (
@@ -664,7 +664,7 @@ export default function BulkImportPage() {
               <DialogDescription>
                 You're about to import <strong>{validUsers.length}</strong> user{validUsers.length !== 1 ? "s" : ""} into this institution.
                 {invalidUsers.length > 0 && (
-                  <span className="block mt-1 text-amber-600">
+                  <span className="block mt-1 text-warning">
                     ⚠ {invalidUsers.length} row{invalidUsers.length !== 1 ? "s" : ""} will be skipped due to validation errors.
                   </span>
                 )}
@@ -672,17 +672,17 @@ export default function BulkImportPage() {
             </DialogHeader>
             <div className="py-2">
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-3 rounded-lg bg-gray-50">
+                <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-xl font-bold">{validUsers.length}</p>
-                  <p className="text-xs text-gray-500">Will import</p>
+                  <p className="text-xs text-muted-foreground">Will import</p>
                 </div>
-                <div className="p-3 rounded-lg bg-red-50">
-                  <p className="text-xl font-bold text-red-600">{invalidUsers.length}</p>
-                  <p className="text-xs text-gray-500">Skipped</p>
+                <div className="p-3 rounded-lg bg-destructive/10">
+                  <p className="text-xl font-bold text-destructive">{invalidUsers.length}</p>
+                  <p className="text-xs text-muted-foreground">Skipped</p>
                 </div>
-                <div className="p-3 rounded-lg bg-blue-50">
-                  <p className="text-xl font-bold text-blue-600">{parsedUsers.length}</p>
-                  <p className="text-xs text-gray-500">Total rows</p>
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <p className="text-xl font-bold text-primary">{parsedUsers.length}</p>
+                  <p className="text-xs text-muted-foreground">Total rows</p>
                 </div>
               </div>
             </div>

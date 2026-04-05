@@ -55,6 +55,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useRealtimeEvents } from "@/hooks/use-realtime"
 
 // Types for API responses
 interface Institution {
@@ -232,6 +233,28 @@ export default function InstitutionAdminDashboard() {
       setIsLoading(false);
     }
   };
+
+  // ── Real-time: Socket-based dashboard updates ─────────────────────────────
+  useRealtimeEvents({
+    "enrollment-approved": () => fetchDashboardData(),
+    "enrollment-rejected": () => fetchDashboardData(),
+    "enrollment-count-updated": () => fetchDashboardData(),
+    "new-notification": (data: any) => {
+      // Refresh for enrollment requests and course events
+      if (data?.notification_type?.includes("ENROLLMENT") ||
+          data?.notification_type?.includes("COURSE") ||
+          data?.notification_type?.includes("INSTRUCTOR") ||
+          data?.notification_type?.includes("STUDENT")) {
+        fetchDashboardData();
+      }
+    },
+    "course-published": () => {
+      toast.info("A course has been published");
+      fetchDashboardData();
+    },
+    "new-review": () => fetchDashboardData(),
+    "space-member-joined": () => fetchDashboardData(),
+  });
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);

@@ -106,23 +106,23 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
             className="fixed inset-0 z-[101] flex items-center justify-center p-4 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
               {/* Header with top padding */}
-              <div className="relative p-8 pb-4 border-b border-gray-200">
+              <div className="relative p-8 pb-4 border-b border-border">
                 <button
                   onClick={onClose}
-                  className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-lg transition-colors z-10"
+                  className="absolute right-4 top-4 p-2 hover:bg-muted rounded-lg transition-colors z-10"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
                 
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Shield className="w-7 h-7 text-blue-600" />
+                  <div className="w-14 h-14 bg-primary/15 rounded-xl flex items-center justify-center">
+                    <Shield className="w-7 h-7 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-                    <p className="text-sm text-gray-600">
+                    <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+                    <p className="text-sm text-muted-foreground">
                       {message || "Sign in to continue"}
                     </p>
                   </div>
@@ -133,7 +133,7 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
               <div className="p-8 pt-4 space-y-6">
                 {/* Google Login */}
                 <div className="space-y-4">
-                  <p className="text-sm font-medium text-gray-700 text-center">
+                  <p className="text-sm font-medium text-muted-foreground text-center">
                     Continue with
                   </p>
                   <div className="flex justify-center">
@@ -154,26 +154,26 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                 {/* Divider */}
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
+                    <div className="w-full border-t border-border"></div>
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="px-4 bg-white text-gray-500">OR</span>
+                    <span className="px-4 bg-card text-muted-foreground">OR</span>
                   </div>
                 </div>
 
                 {/* Email Login Form */}
                 <form onSubmit={handleEmailLogin} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="your@email.com"
                         required
                         disabled={isLoading}
@@ -182,16 +182,16 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 pr-12 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="••••••••"
                         required
                         disabled={isLoading}
@@ -199,7 +199,7 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -209,7 +209,7 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                   <div className="flex items-center justify-between">
                     <Link
                       href="/forgot-password"
-                      className="text-sm text-blue-600 hover:text-blue-700"
+                      className="text-sm text-primary hover:text-primary"
                     >
                       Forgot password?
                     </Link>
@@ -218,7 +218,7 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {isLoading ? (
                       <>
@@ -232,11 +232,11 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
                 </form>
 
                 {/* Register Link */}
-                <p className="text-center text-sm text-gray-600 pt-2">
+                <p className="text-center text-sm text-muted-foreground pt-2">
                   Don't have an account?{' '}
                   <Link
                     href={`/register?redirect=${encodeURIComponent(redirectTo)}`}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-primary hover:text-primary font-medium"
                     onClick={onClose}
                   >
                     Sign up
@@ -245,12 +245,12 @@ export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalP
               </div>
 
               {/* Footer with bottom padding */}
-              <div className="p-8 pt-4 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
-                <p className="text-xs text-gray-500 text-center">
+              <div className="p-8 pt-4 bg-muted/50 border-t border-border rounded-b-2xl">
+                <p className="text-xs text-muted-foreground text-center">
                   By signing in, you agree to our{' '}
-                  <Link href="/terms" className="text-blue-600 hover:underline">Terms</Link>
+                  <Link href="/terms" className="text-primary hover:underline">Terms</Link>
                   {' '}and{' '}
-                  <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
                 </p>
               </div>
             </div>

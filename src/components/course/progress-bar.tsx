@@ -41,11 +41,11 @@ export function ProgressBar({
   }
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 90) return "bg-green-600"
-    if (progress >= 70) return "bg-blue-600"
-    if (progress >= 50) return "bg-yellow-600"
-    if (progress >= 30) return "bg-orange-600"
-    return "bg-red-600"
+    if (progress >= 90) return "bg-success"
+    if (progress >= 70) return "bg-primary"
+    if (progress >= 50) return "bg-warning"
+    if (progress >= 30) return "bg-warning"
+    return "bg-destructive"
   }
 
   return (
@@ -75,7 +75,7 @@ export function ProgressBar({
         <div className="flex flex-wrap items-center justify-between text-sm text-muted-foreground gap-2">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-4 h-4 text-success" />
               <span>
                 {completedLessons}/{totalLessons} lessons
               </span>
@@ -88,7 +88,7 @@ export function ProgressBar({
             )}
             {showCertificate && (
               <div className="flex items-center gap-1">
-                <Award className="w-4 h-4 text-yellow-600" />
+                <Award className="w-4 h-4 text-warning" />
                 <span>{certificateEarned ? "Certificate Earned" : "Certificate Available"}</span>
               </div>
             )}

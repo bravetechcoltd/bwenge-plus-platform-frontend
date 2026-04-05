@@ -90,7 +90,6 @@ export default function InstitutionInstructorsPage() {
         setInstructors(data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch instructors:", error);
       toast.error("Failed to load instructors");
     } finally {
       setLoading(false);
@@ -150,8 +149,8 @@ export default function InstitutionInstructorsPage() {
   return (
     <div className="container mx-auto p-4 md:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Instructors</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Instructors</h1>
+        <p className="text-muted-foreground">
           Manage all instructors in your institution
         </p>
       </div>
@@ -167,7 +166,7 @@ export default function InstitutionInstructorsPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search instructors..."
                   value={search}
@@ -196,11 +195,11 @@ export default function InstitutionInstructorsPage() {
         <CardContent>
           {filteredInstructors.length === 0 ? (
             <div className="text-center py-8">
-              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                 No Instructors Found
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {search || filterRole !== "all" 
                   ? "Try different search criteria" 
                   : "Add your first instructor to get started"}
@@ -242,7 +241,7 @@ export default function InstitutionInstructorsPage() {
                             <p className="font-medium">
                               {instructor.first_name} {instructor.last_name}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {instructor.email}
                             </p>
                           </div>
@@ -250,22 +249,22 @@ export default function InstitutionInstructorsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge className={
-                          instructor.institution_role === "ADMIN" ? "bg-purple-100 text-purple-700" :
-                          instructor.institution_role === "INSTRUCTOR" ? "bg-green-100 text-green-700" :
-                          "bg-blue-100 text-blue-700"
+                          instructor.institution_role === "ADMIN" ? "bg-primary/15 text-primary" :
+                          instructor.institution_role === "INSTRUCTOR" ? "bg-success/15 text-success" :
+                          "bg-primary/15 text-primary"
                         }>
                           {instructor.institution_role}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-gray-400" />
+                          <BookOpen className="w-4 h-4 text-muted-foreground" />
                           <span>{instructor.courses_count}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         {instructor.is_active ? (
-                          <Badge className="bg-green-100 text-green-700">Active</Badge>
+                          <Badge className="bg-success/15 text-success">Active</Badge>
                         ) : (
                           <Badge variant="outline">Inactive</Badge>
                         )}
@@ -293,7 +292,7 @@ export default function InstitutionInstructorsPage() {
                               Edit Role
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem className="text-destructive">
                               Deactivate
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -314,12 +313,12 @@ export default function InstitutionInstructorsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Instructors</p>
+                <p className="text-sm text-muted-foreground">Total Instructors</p>
                 <p className="text-2xl font-bold">
                   {instructors.filter(i => i.institution_role === "INSTRUCTOR").length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-blue-500" />
+              <Users className="w-8 h-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -327,12 +326,12 @@ export default function InstitutionInstructorsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Instructors</p>
+                <p className="text-sm text-muted-foreground">Active Instructors</p>
                 <p className="text-2xl font-bold">
                   {instructors.filter(i => i.is_active).length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-green-500" />
+              <Users className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -340,12 +339,12 @@ export default function InstitutionInstructorsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Courses</p>
+                <p className="text-sm text-muted-foreground">Total Courses</p>
                 <p className="text-2xl font-bold">
                   {instructors.reduce((sum, i) => sum + i.courses_count, 0)}
                 </p>
               </div>
-              <BookOpen className="w-8 h-8 text-purple-500" />
+              <BookOpen className="w-8 h-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -353,12 +352,12 @@ export default function InstitutionInstructorsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Admins</p>
+                <p className="text-sm text-muted-foreground">Admins</p>
                 <p className="text-2xl font-bold">
                   {instructors.filter(i => i.institution_role === "ADMIN").length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-amber-500" />
+              <Users className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -430,11 +429,11 @@ export default function InstitutionInstructorsPage() {
                   <h3 className="text-lg font-semibold">
                     {selectedInstructor.first_name} {selectedInstructor.last_name}
                   </h3>
-                  <p className="text-gray-500">{selectedInstructor.email}</p>
+                  <p className="text-muted-foreground">{selectedInstructor.email}</p>
                   <Badge className={
-                    selectedInstructor.institution_role === "ADMIN" ? "bg-purple-100 text-purple-700" :
-                    selectedInstructor.institution_role === "INSTRUCTOR" ? "bg-green-100 text-green-700" :
-                    "bg-blue-100 text-blue-700"
+                    selectedInstructor.institution_role === "ADMIN" ? "bg-primary/15 text-primary" :
+                    selectedInstructor.institution_role === "INSTRUCTOR" ? "bg-success/15 text-success" :
+                    "bg-primary/15 text-primary"
                   }>
                     {selectedInstructor.institution_role}
                   </Badge>
@@ -443,25 +442,25 @@ export default function InstitutionInstructorsPage() {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <Label className="text-gray-500">Courses Teaching</Label>
+                  <Label className="text-muted-foreground">Courses Teaching</Label>
                   <p className="font-medium">{selectedInstructor.courses_count}</p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Status</Label>
+                  <Label className="text-muted-foreground">Status</Label>
                   <p>
                     {selectedInstructor.is_active ? (
-                      <span className="text-green-600 font-medium">Active</span>
+                      <span className="text-success font-medium">Active</span>
                     ) : (
-                      <span className="text-gray-500">Inactive</span>
+                      <span className="text-muted-foreground">Inactive</span>
                     )}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Joined Date</Label>
+                  <Label className="text-muted-foreground">Joined Date</Label>
                   <p>{new Date(selectedInstructor.joined_at).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Member Since</Label>
+                  <Label className="text-muted-foreground">Member Since</Label>
                   <p>{Math.floor((new Date().getTime() - new Date(selectedInstructor.joined_at).getTime()) / (1000 * 60 * 60 * 24 * 30))} months</p>
                 </div>
               </div>

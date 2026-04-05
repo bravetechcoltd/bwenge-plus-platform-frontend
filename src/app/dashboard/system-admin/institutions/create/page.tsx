@@ -88,25 +88,25 @@ export default function CreateEditInstitutionPage() {
       value: "UNIVERSITY",
       label: "University",
       description: "Educational institution for higher learning",
-      color: "bg-blue-50 border-blue-200 text-blue-700",
+      color: "bg-primary/10 border-primary/30 text-primary",
     },
     {
       value: "GOVERNMENT",
       label: "Government",
       description: "Government organization or agency",
-      color: "bg-green-50 border-green-200 text-green-700",
+      color: "bg-success/10 border-success/30 text-success",
     },
     {
       value: "PRIVATE_COMPANY",
       label: "Private Company",
       description: "Corporate training and development",
-      color: "bg-purple-50 border-purple-200 text-purple-700",
+      color: "bg-primary/10 border-primary/30 text-primary",
     },
     {
       value: "NGO",
       label: "NGO",
       description: "Non-governmental organization",
-      color: "bg-amber-50 border-amber-200 text-amber-700",
+      color: "bg-warning/10 border-warning/30 text-warning",
     },
   ];
 
@@ -226,7 +226,6 @@ export default function CreateEditInstitutionPage() {
       }
       router.push("/dashboard/system-admin/institutions");
     } catch (error: any) {
-      console.error("❌ Submission error:", error);
       toast.error(error || "Operation failed");
     }
   };
@@ -239,12 +238,12 @@ export default function CreateEditInstitutionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted/50 p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <Link
             href="/dashboard/system-admin/institutions"
-            className="inline-flex items-center text-[#5B7FA2] hover:text-blue-800 mb-4 text-sm font-medium"
+            className="inline-flex items-center text-[#5B7FA2] hover:text-primary mb-4 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Institutions
@@ -252,10 +251,10 @@ export default function CreateEditInstitutionPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground">
                 {isEditMode ? "Edit Institution" : "Create New Institution"}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-muted-foreground mt-1">
                 {isEditMode
                   ? "Update institution details and limits"
                   : "Add a new institution to the platform"}
@@ -267,17 +266,17 @@ export default function CreateEditInstitutionPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 text-sm">{error}</p>
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+                <p className="text-destructive text-sm">{error}</p>
               </div>
             )}
 
             {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Institution Logo
               </label>
               <div className="flex items-start gap-4">
@@ -286,25 +285,25 @@ export default function CreateEditInstitutionPage() {
                     <img
                       src={logoPreview}
                       alt="Logo preview"
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-border"
                     />
                     <button
                       type="button"
                       onClick={removeLogo}
-                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      className="absolute -top-2 -right-2 p-1 bg-destructive/100 text-white rounded-full hover:bg-destructive"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  <div className="w-32 h-32 border-2 border-dashed border-border rounded-lg flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <label className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <Upload className="w-4 h-4 mr-2 text-gray-600" />
-                    <span className="text-sm text-gray-700">
+                  <label className="flex items-center justify-center px-4 py-2 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <Upload className="w-4 h-4 mr-2 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
                       {logoPreview ? "Change Logo" : "Upload Logo"}
                     </span>
                     <input
@@ -314,7 +313,7 @@ export default function CreateEditInstitutionPage() {
                       className="hidden"
                     />
                   </label>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     PNG, JPG or WEBP. Max 5MB.
                   </p>
                 </div>
@@ -323,27 +322,27 @@ export default function CreateEditInstitutionPage() {
 
             {/* Institution Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Institution Name <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
+                Institution Name <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.name ? "border-red-500" : "border-gray-300"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary ${
+                  errors.name ? "border-destructive" : "border-border"
                 }`}
                 placeholder="e.g., Harvard University"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                <p className="text-destructive text-sm mt-1">{errors.name}</p>
               )}
             </div>
 
             {/* Institution Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Institution Type <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-muted-foreground mb-3">
+                Institution Type <span className="text-destructive">*</span>
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {institutionTypes.map((type) => (
@@ -354,7 +353,7 @@ export default function CreateEditInstitutionPage() {
                     className={`text-left p-4 rounded-lg border-2 transition-all ${
                       formData.type === type.value
                         ? `${type.color} border-current`
-                        : "bg-white border-gray-200 hover:border-gray-300"
+                        : "bg-card border-border hover:border-border"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -362,7 +361,7 @@ export default function CreateEditInstitutionPage() {
                         className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                           formData.type === type.value
                             ? "border-current"
-                            : "border-gray-300"
+                            : "border-border"
                         }`}
                       >
                         {formData.type === type.value && (
@@ -381,35 +380,35 @@ export default function CreateEditInstitutionPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleChange("description", e.target.value)}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary resize-none"
                 placeholder="Describe your institution..."
               />
             </div>
 
             {/* Limits Section - NEW */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-100 to-blue-100 px-4 py-3 border-b border-indigo-200">
-                <h4 className="text-sm font-semibold text-indigo-800 flex items-center uppercase tracking-wide">
-                  <Users className="w-4 h-4 mr-2 text-indigo-600" />
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-primary/30 rounded-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-100 to-blue-100 px-4 py-3 border-b border-primary/30">
+                <h4 className="text-sm font-semibold text-primary flex items-center uppercase tracking-wide">
+                  <Users className="w-4 h-4 mr-2 text-primary" />
                   Institution Capacity Limits
                 </h4>
-                <p className="text-xs text-indigo-600 mt-1">
+                <p className="text-xs text-primary mt-1">
                   Set maximum number of instructors and members for this institution
                 </p>
               </div>
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
                       <div className="flex items-center gap-2">
-                        <UserCog className="w-4 h-4 text-indigo-600" />
+                        <UserCog className="w-4 h-4 text-primary" />
                         Maximum Instructors
                       </div>
                     </label>
@@ -420,22 +419,22 @@ export default function CreateEditInstitutionPage() {
                       onChange={(e) =>
                         handleChange("max_instructors", parseInt(e.target.value) || 0)
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                        errors.max_instructors ? "border-red-500" : "border-gray-300"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-primary/50 ${
+                        errors.max_instructors ? "border-destructive" : "border-border"
                       }`}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Set to 0 for unlimited instructors
                     </p>
                     {errors.max_instructors && (
-                      <p className="text-red-500 text-sm mt-1">{errors.max_instructors}</p>
+                      <p className="text-destructive text-sm mt-1">{errors.max_instructors}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
                       <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-indigo-600" />
+                        <Users className="w-4 h-4 text-primary" />
                         Maximum Members
                       </div>
                     </label>
@@ -446,15 +445,15 @@ export default function CreateEditInstitutionPage() {
                       onChange={(e) =>
                         handleChange("max_members", parseInt(e.target.value) || 0)
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
-                        errors.max_members ? "border-red-500" : "border-gray-300"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-primary/50 ${
+                        errors.max_members ? "border-destructive" : "border-border"
                       }`}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Set to 0 for unlimited members
                     </p>
                     {errors.max_members && (
-                      <p className="text-red-500 text-sm mt-1">{errors.max_members}</p>
+                      <p className="text-destructive text-sm mt-1">{errors.max_members}</p>
                     )}
                   </div>
                 </div>
@@ -463,17 +462,17 @@ export default function CreateEditInstitutionPage() {
             </div>
 
             {/* Settings */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-800 mb-4">
+            <div className="bg-muted/50 border border-border rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-foreground mb-4">
                 Institution Settings
               </h4>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
+                    <p className="text-sm font-medium text-muted-foreground">
                       Allow Public Courses
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Enable courses to be publicly accessible
                     </p>
                   </div>
@@ -483,16 +482,16 @@ export default function CreateEditInstitutionPage() {
                     onChange={(e) =>
                       handleChange("allow_public_courses", e.target.checked)
                     }
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-5 h-5 text-primary border-border rounded focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
+                    <p className="text-sm font-medium text-muted-foreground">
                       Require SPOC Approval
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Require approval for SPOC course enrollments
                     </p>
                   </div>
@@ -502,7 +501,7 @@ export default function CreateEditInstitutionPage() {
                     onChange={(e) =>
                       handleChange("require_approval_for_spoc", e.target.checked)
                     }
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-5 h-5 text-primary border-border rounded focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -510,109 +509,109 @@ export default function CreateEditInstitutionPage() {
 
             {/* Admin Information - Only show for creation */}
             {!isEditMode && (
-              <div className="bg-white border border-blue-200 rounded-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
-                  <h4 className="text-sm font-semibold text-blue-800 flex items-center uppercase tracking-wide">
-                    <User className="w-4 h-4 mr-2 text-blue-600" />
+              <div className="bg-card border border-primary/30 rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-primary/30">
+                  <h4 className="text-sm font-semibold text-primary flex items-center uppercase tracking-wide">
+                    <User className="w-4 h-4 mr-2 text-primary" />
                     Institution Administrator
                   </h4>
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-primary mt-1">
                     Create the primary administrator account for this institution
                   </p>
                 </div>
                 <div className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
+                        First Name <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.admin_first_name}
                         onChange={(e) => handleChange("admin_first_name", e.target.value)}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.admin_first_name ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary ${
+                          errors.admin_first_name ? "border-destructive" : "border-border"
                         }`}
                         placeholder="John"
                       />
                       {errors.admin_first_name && (
-                        <p className="text-red-500 text-sm mt-1">{errors.admin_first_name}</p>
+                        <p className="text-destructive text-sm mt-1">{errors.admin_first_name}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Last Name <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
+                        Last Name <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.admin_last_name}
                         onChange={(e) => handleChange("admin_last_name", e.target.value)}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.admin_last_name ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary ${
+                          errors.admin_last_name ? "border-destructive" : "border-border"
                         }`}
                         placeholder="Doe"
                       />
                       {errors.admin_last_name && (
-                        <p className="text-red-500 text-sm mt-1">{errors.admin_last_name}</p>
+                        <p className="text-destructive text-sm mt-1">{errors.admin_last_name}</p>
                       )}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Email Address <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="email"
                       value={formData.admin_email}
                       onChange={(e) => handleChange("admin_email", e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.admin_email ? "border-red-500" : "border-gray-300"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary ${
+                        errors.admin_email ? "border-destructive" : "border-border"
                       }`}
                       placeholder="admin@institution.edu"
                     />
                     {errors.admin_email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.admin_email}</p>
+                      <p className="text-destructive text-sm mt-1">{errors.admin_email}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Login credentials will be sent to this email
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Phone Number (Optional)
                       </label>
                       <input
                         type="tel"
                         value={formData.admin_phone}
                         onChange={(e) => handleChange("admin_phone", e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary"
                         placeholder="+1 234 567 8900"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Username (Optional)
                       </label>
                       <input
                         type="text"
                         value={formData.admin_username}
                         onChange={(e) => handleChange("admin_username", e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary"
                         placeholder="admin_username"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Auto-generated if not provided
                       </p>
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <p className="text-sm text-amber-800">
+                  <div className="bg-warning/10 border border-warning/30 rounded-lg p-3">
+                    <p className="text-sm text-warning">
                       <strong>Note:</strong> A temporary password will be generated and sent to the admin's email. 
                       They will be required to change it upon first login.
                     </p>
@@ -622,17 +621,17 @@ export default function CreateEditInstitutionPage() {
             )}
 
             {/* Form Actions */}
-            <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <Link
                 href="/dashboard/system-admin/institutions"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-center"
+                className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors text-center"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={isCreating || isUpdating}
-                className="flex-1 bg-[#5B7FA2] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-[#5B7FA2] text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isCreating || isUpdating ? (
                   <>

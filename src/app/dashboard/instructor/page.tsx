@@ -1,797 +1,500 @@
-// @ts-nocheck
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import React, { useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import {
   fetchInstructorDashboardSummary,
   selectDashboardSummary,
   selectIsLoadingSummary,
   selectSummaryError,
-} from "@/lib/features/instructor/instructorSlice";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@/lib/features/instructor/instructorSlice"
+import { useRealtimeEvents } from "@/hooks/use-realtime"
+import { toast } from "sonner"
 import {
   BookOpen,
   Users,
-  AlertCircle,
   Star,
-  Award,
-  TrendingUp,
-  Clock,
-  BarChart3,
-  FileText,
-  CheckCircle,
-  UserPlus,
-  Upload,
-  Plus,
+  ClipboardList,
   RefreshCw,
+  Clock,
+  AlertCircle,
+  ArrowRight,
+  PlusCircle,
+  FileEdit,
+  MessageCircle,
+  CheckCircle,
+  GraduationCap,
+  BarChart3,
   ChevronRight,
-  Loader2,
-  Calendar,
-  UserCheck,
-  Activity,
-  Target,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { formatDistanceToNow } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
+  Image,
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Progress } from "@/components/ui/progress"
 
-export default function InstructorDashboardPage() {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const dashboardSummary = useAppSelector(selectDashboardSummary);
-  const isLoading = useAppSelector(selectIsLoadingSummary);
-  const error = useAppSelector(selectSummaryError);
-  
-  const [autoRefresh, setAutoRefresh] = useState(false);
+// ────────────────────────────── Helpers ──���──────────────────────────
+
+function relativeTime(dateStr: string): string {
+  if (!dateStr) return ""
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diffSec = Math.floor((now - then) / 1000)
+  if (diffSec < 60) return "just now"
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  const diffDay = Math.floor(diffHr / 24)
+  if (diffDay < 30) return `${diffDay}d ago`
+  return new Date(dateStr).toLocaleDateString()
+}
+
+function renderStars(rating: number) {
+  const full = Math.floor(rating)
+  const half = rating - full >= 0.5
+  const stars = []
+  for (let i = 0; i < 5; i++) {
+    if (i < full) {
+      stars.push(<Star key={i} className="h-3 w-3 fill-warning text-warning" />)
+    } else if (i === full && half) {
+      stars.push(<Star key={i} className="h-3 w-3 fill-warning/50 text-warning" />)
+    } else {
+      stars.push(<Star key={i} className="h-3 w-3 text-muted-foreground/30" />)
+    }
+  }
+  return stars
+}
+
+const STATUS_CHIP: Record<string, string> = {
+  PUBLISHED: "bg-success/15 text-success border-success/30",
+  DRAFT: "bg-warning/15 text-warning border-warning/30",
+  ARCHIVED: "bg-muted text-muted-foreground border-muted-foreground/30",
+}
+
+// ──────��─────────────────────── Component ───────────────────────────
+
+export default function InstructorDashboard() {
+  const router = useRouter()
+  const dispatch = useAppDispatch()
+  const data = useAppSelector(selectDashboardSummary)
+  const loading = useAppSelector(selectIsLoadingSummary)
+  const error = useAppSelector(selectSummaryError)
+
+  const refresh = useCallback(() => {
+    dispatch(fetchInstructorDashboardSummary())
+  }, [dispatch])
 
   useEffect(() => {
-    dispatch(fetchInstructorDashboardSummary());
-    
-    // Set up auto-refresh every 5 minutes if enabled
-    if (autoRefresh) {
-      const interval = setInterval(() => {
-        dispatch(fetchInstructorDashboardSummary());
-      }, 5 * 60 * 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [dispatch, autoRefresh]);
+    refresh()
+  }, [refresh])
 
-  const handleRefresh = () => {
-    dispatch(fetchInstructorDashboardSummary());
-  };
+  // ── Real-time: Auto-refresh dashboard on relevant events ──────────────────
+  useRealtimeEvents({
+    "enrollment-approved": () => refresh(),
+    "enrollment-rejected": () => refresh(),
+    "enrollment-count-updated": () => refresh(),
+    "new-notification": () => refresh(),
+    "assessment-submitted": (data: any) => {
+      toast.info(`New submission from ${data.studentName || "a student"}`)
+      refresh()
+    },
+    "new-review": (data: any) => {
+      toast.info("New course review received")
+      refresh()
+    },
+    "progress-updated": () => refresh(),
+    "grade-released": () => refresh(),
+  })
 
-  const handleInstructorStudentsCourseClick = () => {
-    router.push(`/dashboard/instructor/students`);
-  };
+  if (loading && !data) return <DashboardSkeleton />
 
-  const handleActionClick = (action: any) => {
-    if (action.link) {
-      router.push(action.link);
-    }
-  };
-
-  // Format date
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return "";
-    }
-  };
-
-  // Loading state
-  if (isLoading && !dashboardSummary) {
+  if (error && !data) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-[400px]" />
-          <Skeleton className="h-[400px]" />
-          <Skeleton className="h-[400px]" />
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-lg font-medium">{error}</p>
+        <Button onClick={refresh} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" /> Retry
+        </Button>
       </div>
-    );
+    )
   }
 
-  // Error state
-  if (error && !dashboardSummary) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card className="border-red-200">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-700 mb-2">
-                Failed to load dashboard
-              </h3>
-              <p className="text-red-600 mb-4">{error}</p>
-              <Button onClick={handleRefresh} variant="outline">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!data) return null
 
-  const user = {
-    first_name: "Instructor", // This would come from auth context
-  };
+  const { overview, students, engagement, recent_activity, attention_required, top_courses } = data
+
+  // Sort top courses by enrollment descending
+  const coursesByEnrollment = [...(top_courses?.by_enrollment || [])].sort(
+    (a, b) => b.enrollment_count - a.enrollment_count
+  )
+
+  const kpiTiles = [
+    {
+      label: "Courses Published",
+      value: overview.active_courses,
+      icon: BookOpen,
+      color: "text-primary",
+      sub: `${overview.total_courses} total`,
+    },
+    {
+      label: "Enrolled Learners",
+      value: students.total_students,
+      icon: Users,
+      color: "text-success",
+      sub: `${students.active_students} active`,
+    },
+    {
+      label: "Average Rating",
+      value: engagement.average_course_rating?.toFixed(1) || "0.0",
+      icon: Star,
+      color: "text-warning",
+      sub: `${engagement.total_reviews} reviews`,
+    },
+    {
+      label: "Pending Reviews",
+      value: attention_required.pending_assignments + attention_required.pending_approvals,
+      icon: ClipboardList,
+      color:
+        attention_required.pending_assignments + attention_required.pending_approvals > 0
+          ? "text-warning"
+          : "text-muted-foreground",
+      sub: attention_required.total_items > 0 ? `${attention_required.total_items} items need attention` : "All clear",
+    },
+  ]
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      {/* Section 1: Page Header */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user.first_name}!
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Today is {formatDate(new Date().toISOString())}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={autoRefresh ? "bg-blue-50 border-blue-200" : ""}
-            >
-              <Clock className="h-4 w-4 mr-2" />
-              Auto-refresh {autoRefresh ? "ON" : "OFF"}
-            </Button>
-          </div>
+    <div className="space-y-6 p-1">
+      {/* Header + Freshness */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Instructor Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Your courses and learner activity</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {loading ? "Refreshing..." : "Just updated"}
+          </span>
+          <Button onClick={refresh} variant="ghost" size="icon" className="h-8 w-8" disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </Button>
         </div>
       </div>
 
-      {/* Section 2: Summary Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Card 1: Total Courses */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push("/dashboard/instructor/courses")}>
-          <CardContent className="p-6">
+      {/* TIER 1 - Personal KPI Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiTiles.map((tile) => (
+          <div
+            key={tile.label}
+            className="bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 hover:shadow-sm transition-shadow"
+          >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Courses</p>
-                <h3 className="text-3xl font-bold text-gray-900">
-                  {dashboardSummary?.overview.total_courses || 0}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {dashboardSummary?.overview.active_courses || 0} active,{" "}
-                  {dashboardSummary?.overview.draft_courses || 0} draft
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <BookOpen className="h-6 w-6 text-blue-600" />
-              </div>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tile.label}</span>
+              <tile.icon className={`h-4 w-4 ${tile.color}`} />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 2: Total Students */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => dashboardSummary?.top_courses.by_enrollment[0] && handleInstructorStudentsCourseClick(dashboardSummary.top_courses.by_enrollment[0].id)}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Students</p>
-                <h3 className="text-3xl font-bold text-gray-900">
-                  {dashboardSummary?.students.total_students || 0}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {dashboardSummary?.students.active_students || 0} active this week
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <Users className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 3: Pending Items */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => dashboardSummary?.attention_required.total_items > 0 && router.push("/dashboard/instructor/assignments/pending")}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Attention Required</p>
-                <h3 className="text-3xl font-bold text-gray-900">
-                  {dashboardSummary?.attention_required.total_items || 0}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Items need your attention
-                </p>
-              </div>
-              <div className="relative">
-                <div className="p-3 bg-red-100 rounded-full">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
-                </div>
-                {dashboardSummary?.attention_required.total_items > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-red-500">
-                    {dashboardSummary.attention_required.total_items}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Average Rating */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Average Rating</p>
-                <h3 className="text-3xl font-bold text-gray-900">
-                  {dashboardSummary?.engagement.average_course_rating.toFixed(1) || "0.0"}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  From {dashboardSummary?.engagement.total_reviews || 0} reviews
-                </p>
-              </div>
-              <div className="p-3 bg-amber-100 rounded-full">
-                <Star className="h-6 w-6 text-amber-600" />
-              </div>
-            </div>
-            <div className="flex items-center gap-1 mt-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`h-4 w-4 ${
-                    star <= Math.floor(dashboardSummary?.engagement.average_course_rating || 0)
-                      ? "text-amber-500 fill-amber-500"
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            <span className="text-2xl font-bold leading-none">{typeof tile.value === "number" ? tile.value.toLocaleString() : tile.value}</span>
+            <span className="text-[11px] text-muted-foreground">{tile.sub}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Section 3: Quick Actions */}
-      {dashboardSummary?.quick_actions && dashboardSummary.quick_actions.length > 0 && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-blue-600" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Tasks that need your immediate attention
-            </CardDescription>
+      {/* TIER 2 - Two Column Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left: My Courses Panel (60%) */}
+        <Card className="lg:col-span-3 border border-border shadow-none">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary" />
+                My Courses
+                <Badge variant="secondary" className="ml-1 text-xs font-bold">{overview.total_courses}</Badge>
+              </CardTitle>
+              <Button
+                onClick={() => router.push("/dashboard/instructor/courses/create")}
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+              >
+                <PlusCircle className="h-3 w-3 mr-1" /> Create New Course
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {dashboardSummary.quick_actions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className={`h-auto p-4 justify-start text-left hover:shadow-md transition-all ${
-                    action.priority === "high"
-                      ? "border-red-200 hover:bg-red-50"
-                      : action.priority === "medium"
-                      ? "border-amber-200 hover:bg-amber-50"
-                      : "border-blue-200 hover:bg-blue-50"
-                  }`}
-                  onClick={() => handleActionClick(action)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      action.priority === "high"
-                        ? "bg-red-100 text-red-600"
-                        : action.priority === "medium"
-                        ? "bg-amber-100 text-amber-600"
-                        : "bg-blue-100 text-blue-600"
-                    }`}>
-                      {action.type === "grade_assignments" && <FileText className="h-5 w-5" />}
-                      {action.type === "approve_enrollments" && <UserCheck className="h-5 w-5" />}
-                      {action.type === "publish_courses" && <Upload className="h-5 w-5" />}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{action.label}</h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {action.priority === "high" ? "High priority" : 
-                         action.priority === "medium" ? "Medium priority" : "Low priority"}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Section 4: Recent Activity Feed */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-blue-600" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>
-                Latest student activities across your courses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {dashboardSummary?.recent_activity.latest_activities &&
-              dashboardSummary.recent_activity.latest_activities.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboardSummary.recent_activity.latest_activities.map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={activity.student.profile_picture_url} />
-                        <AvatarFallback>
-                          {activity.student.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900">
-                          <span className="font-semibold">{activity.student.name}</span>{" "}
-                          {activity.type === "lesson_completion" ? "completed" : "submitted"}{" "}
-                          <span className="font-medium">{activity.lesson_title}</span>{" "}
-                          in{" "}
-                          <span className="text-blue-600 cursor-pointer hover:underline">
-                            {activity.course_title}
-                          </span>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatDistanceToNow(new Date(activity.timestamp), {
-                            addSuffix: true,
-                          })}
-                        </p>
-                      </div>
-                      <div className={`p-1 rounded ${
-                        activity.type === "lesson_completion"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-blue-100 text-blue-600"
-                      }`}>
-                        {activity.type === "lesson_completion" ? (
-                          <CheckCircle className="h-4 w-4" />
-                        ) : (
-                          <FileText className="h-4 w-4" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Activity className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No recent activity in your courses</p>
-                </div>
-              )}
-              
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {dashboardSummary?.recent_activity.new_enrollments || 0} new enrollments
-                    </p>
-                    <p className="text-xs text-gray-500">In the last 7 days</p>
-                  </div>
+            <ScrollArea className="h-[400px] pr-2">
+              {coursesByEnrollment.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">You haven&apos;t created any courses yet</p>
                   <Button
-                    variant="ghost"
+                    onClick={() => router.push("/dashboard/instructor/courses/create")}
+                    variant="outline"
                     size="sm"
-                    onClick={() => router.push("/dashboard/instructor/courses")}
                   >
-                    View All
-                    <ChevronRight className="ml-1 h-4 w-4" />
+                    <PlusCircle className="h-4 w-4 mr-1" /> Create Your First Course
                   </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              ) : (
+                <div className="space-y-0">
+                  {coursesByEnrollment.map((course, i) => {
+                    // Find rating data from by_rating array
+                    const ratingInfo = top_courses?.by_rating?.find((c) => c.id === course.id)
+                    const completionInfo = top_courses?.by_completion?.find((c) => c.id === course.id)
+                    const avgRating = ratingInfo?.average_rating || 0
+                    const completionRate = completionInfo?.completion_rate || 0
 
-        {/* Section 5: Top Courses Showcase */}
-        <div>
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-amber-600" />
-                Top Courses
-              </CardTitle>
-              <CardDescription>
-                Your best performing courses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="enrollment">
-                <TabsList className="grid grid-cols-3 mb-4 gap-1">
-                  <TabsTrigger value="enrollment">
-                    Popular
-                  </TabsTrigger>
-                  <TabsTrigger value="rating">
-                    Top Rated
-                  </TabsTrigger>
-                  <TabsTrigger value="completion">
-                    Completion
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="enrollment" className="space-y-3">
-                  {dashboardSummary?.top_courses.by_enrollment &&
-                  dashboardSummary.top_courses.by_enrollment.length > 0 ? (
-                    dashboardSummary.top_courses.by_enrollment.map((course, index) => (
+                    return (
                       <div
                         key={course.id}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => handleInstructorStudentsCourseClick(course.id)}
+                        className={`flex items-center gap-3 py-2.5 px-3 rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                        onClick={() => router.push(`/dashboard/instructor/courses/${course.id}`)}
                       >
-                        <div className="relative">
-                          <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
-                            {course.thumbnail_url ? (
-                              <img
-                                src={course.thumbnail_url}
-                                alt={course.title}
-                                className="h-full w-full rounded object-cover"
-                              />
-                            ) : (
-                              <BookOpen className="h-6 w-6 text-gray-400" />
-                            )}
-                          </div>
-                          {index === 0 && (
-                            <div className="absolute -top-1 -right-1 h-5 w-5 bg-amber-500 rounded-full flex items-center justify-center">
-                              <span className="text-xs font-bold text-white">1</span>
-                            </div>
+                        {/* Thumbnail */}
+                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {course.thumbnail_url ? (
+                            <img src={course.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Image className="h-4 w-4 text-muted-foreground/50" />
                           )}
                         </div>
+
+                        {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 truncate">
-                            {course.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {course.enrollment_count} students
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-gray-500">No courses available</p>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="rating" className="space-y-3">
-                  {dashboardSummary?.top_courses.by_rating &&
-                  dashboardSummary.top_courses.by_rating.length > 0 ? (
-                    dashboardSummary.top_courses.by_rating.map((course, index) => (
-                      <div
-                        key={course.id}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => handleInstructorStudentsCourseClick(course.id)}
-                      >
-                        <div className="relative">
-                          <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
-                            {course.thumbnail_url ? (
-                              <img
-                                src={course.thumbnail_url}
-                                alt={course.title}
-                                className="h-full w-full rounded object-cover"
-                              />
-                            ) : (
-                              <BookOpen className="h-6 w-6 text-gray-400" />
-                            )}
-                          </div>
-                          {index === 0 && (
-                            <div className="absolute -top-1 -right-1 h-5 w-5 bg-amber-500 rounded-full flex items-center justify-center">
-                              <span className="text-xs font-bold text-white">1</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 truncate">
-                            {course.title}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="flex items-center">
-                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                              <span className="text-xs font-medium ml-1">
-                                {course.average_rating.toFixed(1)}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              ({course.total_reviews} reviews)
+                          <p className="text-sm font-medium truncate">{course.title}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Users className="h-3 w-3" /> {course.enrollment_count}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              {renderStars(avgRating)}
                             </span>
                           </div>
                         </div>
+
+                        {/* Completion bar + status */}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="w-16 hidden md:block">
+                            <Progress value={completionRate} className="h-1.5" />
+                            <p className="text-[10px] text-muted-foreground text-right mt-0.5">{completionRate}%</p>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] px-1.5 py-0 h-5 ${STATUS_CHIP["PUBLISHED"] || ""}`}
+                          >
+                            Published
+                          </Badge>
+                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-gray-500">No courses available</p>
+                    )
+                  })}
+
+                  {/* Show draft courses too */}
+                  {overview.draft_courses > 0 && (
+                    <div className="pt-3 mt-2 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground px-3 mb-2">
+                        + {overview.draft_courses} draft course{overview.draft_courses > 1 ? "s" : ""} not shown above
+                      </p>
                     </div>
                   )}
-                </TabsContent>
-                
-
-<TabsContent value="completion" className="space-y-3">
-  {dashboardSummary?.top_courses.by_completion &&
-  dashboardSummary.top_courses.by_completion.length > 0 ? (
-    dashboardSummary.top_courses.by_completion.map((course, index) => {
-      // Parse completion_rate to number safely
-      const completionRate = typeof course.completion_rate === 'string' 
-        ? parseFloat(course.completion_rate) 
-        : course.completion_rate || 0;
-      
-      return (
-        <div
-          key={course.id}
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-          onClick={() => handleInstructorStudentsCourseClick(course.id)}
-        >
-          <div className="relative">
-            <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
-              {course.thumbnail_url ? (
-                <img
-                  src={course.thumbnail_url}
-                  alt={course.title}
-                  className="h-full w-full rounded object-cover"
-                />
-              ) : (
-                <BookOpen className="h-6 w-6 text-gray-400" />
-              )}
-            </div>
-            {index === 0 && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 bg-amber-500 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-white">1</span>
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-gray-900 truncate">
-              {course.title}
-            </h4>
-            <div className="mt-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Completion</span>
-                <span className="text-xs font-medium">
-                  {completionRate.toFixed(1)}%
-                </span>
-              </div>
-              <Progress value={completionRate} className="h-1" />
-            </div>
-          </div>
-        </div>
-      );
-    })
-  ) : (
-    <div className="text-center py-4">
-      <p className="text-gray-500">No courses available</p>
-    </div>
-  )}
-</TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Section 6: Attention Required */}
-      {dashboardSummary?.attention_required &&
-        dashboardSummary.attention_required.total_items > 0 && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              Attention Required
-              <Badge variant="destructive" className="ml-2">
-                {dashboardSummary.attention_required.total_items} items
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              Items that need your immediate action
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Pending Assignments */}
-              {dashboardSummary.attention_required.pending_assignments > 0 && (
-                <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded">
-                      <FileText className="h-5 w-5 text-red-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {dashboardSummary.attention_required.pending_assignments} assignments waiting to be graded
-                      </h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Oldest: 5 days ago
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => router.push("/dashboard/instructor/assignments/pending")}
-                  >
-                    Grade Now
-                  </Button>
                 </div>
               )}
-
-              {/* Draft Courses */}
-              {dashboardSummary.attention_required.draft_courses > 0 && (
-                <div className="flex items-center justify-between p-3 border border-amber-200 rounded-lg bg-amber-50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 rounded">
-                      <Upload className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {dashboardSummary.attention_required.draft_courses} courses ready to publish
-                      </h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Review and publish to make them available to students
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
-                    onClick={() => router.push("/dashboard/instructor/courses?status=DRAFT")}
-                  >
-                    Review & Publish
-                  </Button>
-                </div>
-              )}
-
-              {/* Pending Approvals */}
-              {dashboardSummary.attention_required.pending_approvals > 0 && (
-                <div className="flex items-center justify-between p-3 border border-blue-200 rounded-lg bg-blue-50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded">
-                      <UserCheck className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {dashboardSummary.attention_required.pending_approvals} enrollment requests
-                      </h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Students waiting for approval to join your courses
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    onClick={() => router.push("/dashboard/instructor/enrollments/pending")}
-                  >
-                    Review Requests
-                  </Button>
-                </div>
-              )}
-            </div>
+            </ScrollArea>
           </CardContent>
         </Card>
-      )}
 
-      {/* Section 7: Institutions (if Multiple) */}
-      {dashboardSummary?.institutions &&
-        dashboardSummary.institutions.length > 1 && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
-              Your Institutions
+        {/* Right: Learner Activity Panel (40%) */}
+        <Card className="lg:col-span-2 border border-border shadow-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-success" />
+              Learner Activity
             </CardTitle>
-            <CardDescription>
-              Courses and students across your institutions
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {dashboardSummary.institutions.map((institution) => (
-                <Card
-                  key={institution.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/instructor/courses?institution_id=${institution.id}`
-                    )
-                  }
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      {institution.logo_url ? (
-                        <img
-                          src={institution.logo_url}
-                          alt={institution.name}
-                          className="h-12 w-12 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="h-12 w-12 rounded bg-blue-100 flex items-center justify-center">
-                          <Users className="h-6 w-6 text-blue-600" />
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="font-semibold text-gray-900">
-                          {institution.name}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          {institution.courses_count} courses
+          <CardContent className="space-y-4">
+            {/* Activity feed */}
+            <ScrollArea className="h-[300px] pr-2">
+              {(recent_activity?.latest_activities || []).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <Users className="h-10 w-10 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No learner activity yet</p>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {recent_activity.latest_activities.slice(0, 8).map((activity, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-2.5 py-2 px-2 rounded-md ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                    >
+                      {/* Avatar */}
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {activity.student?.profile_picture_url ? (
+                          <img
+                            src={activity.student.profile_picture_url}
+                            alt=""
+                            className="h-full w-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <Users className="h-3 w-3 text-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs truncate">
+                          <span className="font-medium">{activity.student?.name || "Learner"}</span>{" "}
+                          <span className="text-muted-foreground">
+                            {activity.type === "lesson_completion"
+                              ? `completed ${activity.lesson_title || "a lesson"}`
+                              : activity.type === "enrollment"
+                              ? `enrolled in ${activity.course_title || "a course"}`
+                              : activity.type === "assessment_submission"
+                              ? `submitted assessment in ${activity.course_title || "a course"}`
+                              : `active in ${activity.course_title || "a course"}`}
+                          </span>
                         </p>
                       </div>
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0">
+                        {relativeTime(activity.timestamp)}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Students</span>
-                        <span className="text-sm font-medium">
-                          {institution.students_count}
-                        </span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Courses</span>
-                        <span className="text-sm font-medium">
-                          {institution.courses_count}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+
+            <Separator />
+
+            {/* Weekly pulse numbers */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/40 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold">{recent_activity?.new_enrollments || 0}</p>
+                <p className="text-xs text-muted-foreground">New enrollments</p>
+                <p className="text-[10px] text-muted-foreground">last 7 days</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold">{recent_activity?.recent_lesson_completions || 0}</p>
+                <p className="text-xs text-muted-foreground">Lessons completed</p>
+                <p className="text-[10px] text-muted-foreground">last 7 days</p>
+              </div>
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* TIER 3 - Pending Actions Strip */}
+      {attention_required.total_items > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-warning" />
+            Needs Your Attention
+          </h2>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {attention_required.pending_assignments > 0 && (
+              <ActionCard
+                count={attention_required.pending_assignments}
+                label="Submissions awaiting grading"
+                icon={<ClipboardList className="h-5 w-5" />}
+                color="bg-warning/10 border-warning/30 text-warning"
+                onClick={() => router.push("/dashboard/instructor/assignments/pending")}
+              />
+            )}
+            {attention_required.pending_approvals > 0 && (
+              <ActionCard
+                count={attention_required.pending_approvals}
+                label="Enrollment requests pending"
+                icon={<Users className="h-5 w-5" />}
+                color="bg-primary/10 border-primary/30 text-primary"
+                onClick={() => router.push("/dashboard/instructor/enrollments/pending")}
+              />
+            )}
+            {attention_required.draft_courses > 0 && (
+              <ActionCard
+                count={attention_required.draft_courses}
+                label="Courses still in draft"
+                icon={<FileEdit className="h-5 w-5" />}
+                color="bg-warning/10 border-warning/30 text-warning"
+                onClick={() => router.push("/dashboard/instructor/courses")}
+              />
+            )}
+            {attention_required.low_rated_courses > 0 && (
+              <ActionCard
+                count={attention_required.low_rated_courses}
+                label="Low-rated courses"
+                icon={<Star className="h-5 w-5" />}
+                color="bg-destructive/10 border-destructive/30 text-destructive"
+                onClick={() => router.push("/dashboard/instructor/courses")}
+              />
+            )}
+            {attention_required.inactive_courses > 0 && (
+              <ActionCard
+                count={attention_required.inactive_courses}
+                label="Inactive courses"
+                icon={<BarChart3 className="h-5 w-5" />}
+                color="bg-muted border-muted-foreground/30 text-muted-foreground"
+                onClick={() => router.push("/dashboard/instructor/courses")}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
-  );
+  )
+}
+
+// ────────────────────────────── Sub-components ─────────────────────
+
+function ActionCard({
+  count,
+  label,
+  icon,
+  color,
+  onClick,
+}: {
+  count: number
+  label: string
+  icon: React.ReactNode
+  color: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-xl border px-4 py-3 min-w-[220px] hover:shadow-sm transition-shadow cursor-pointer ${color}`}
+    >
+      <div className="flex-shrink-0">{icon}</div>
+      <div className="text-left">
+        <p className="text-lg font-bold leading-none">{count}</p>
+        <p className="text-xs mt-0.5 opacity-80">{label}</p>
+      </div>
+      <ArrowRight className="h-4 w-4 ml-auto opacity-50" />
+    </button>
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6 p-1">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-52" />
+          <Skeleton className="h-4 w-64 mt-1.5" />
+        </div>
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[90px] rounded-xl" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Skeleton className="lg:col-span-3 h-[470px] rounded-xl" />
+        <Skeleton className="lg:col-span-2 h-[470px] rounded-xl" />
+      </div>
+      <Skeleton className="h-[80px] rounded-xl" />
+    </div>
+  )
 }

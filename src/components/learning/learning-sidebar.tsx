@@ -427,15 +427,15 @@ export default function LearningSidebar({
                             >
                               <div className="flex items-start gap-2.5">
                                 <div className="flex-shrink-0 mt-0.5">
-                                  {isLessonCompleted ? <CheckCircle className="w-4 h-4 text-green-600" /> : isLessonLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : hasVideo && !hasContent ? <Video className="w-4 h-4 text-purple-500" /> : <BookOpen className="w-4 h-4 text-blue-500" />}
+                                  {isLessonCompleted ? <CheckCircle className="w-4 h-4 text-success" /> : isLessonLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : hasVideo && !hasContent ? <Video className="w-4 h-4 text-primary" /> : <BookOpen className="w-4 h-4 text-primary" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium truncate">{lesson.title}</p>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge variant={isLessonActive ? "default" : "outline"} className={`text-xs font-medium ${isLessonActive && "bg-primary-foreground/20 rounded"}`}>Lesson</Badge>
-                                    {hasContent && hasVideo && <div className="flex items-center gap-1"><BookOpen className="w-3 h-3 text-blue-500" /><Video className="w-3 h-3 text-purple-500" /></div>}
-                                    {hasContent && !hasVideo && <BookOpen className="w-3 h-3 text-blue-500" />}
-                                    {!hasContent && hasVideo && <Video className="w-3 h-3 text-purple-500" />}
+                                    {hasContent && hasVideo && <div className="flex items-center gap-1"><BookOpen className="w-3 h-3 text-primary" /><Video className="w-3 h-3 text-primary" /></div>}
+                                    {hasContent && !hasVideo && <BookOpen className="w-3 h-3 text-primary" />}
+                                    {!hasContent && hasVideo && <Video className="w-3 h-3 text-primary" />}
                                     {lesson.duration_minutes ? <span className="text-xs text-muted-foreground flex items-center gap-0.5"><Clock className="w-3 h-3" />{lesson.duration_minutes}m</span> : <span className="text-xs text-muted-foreground">Self Paced</span>}
                                   </div>
                                 </div>
@@ -460,16 +460,16 @@ export default function LearningSidebar({
                                   key={assessmentStep.id}
                                   onClick={() => { if (!isAssessmentLocked) { onStepSelect(assessmentStep.id); setIsMobileOpen(false) } }}
                                   disabled={isAssessmentLocked}
-                                  className={`w-full text-left p-2.5 rounded border transition-all ml-4 ${isAssessmentActive ? gradedFailed ? "bg-red-100 dark:bg-red-900/30 text-foreground border-red-300 shadow-sm" : "bg-orange-100 dark:bg-orange-900/30 text-foreground border-orange-300 shadow-sm" : isAssessmentLocked ? "opacity-50 cursor-not-allowed hover:bg-muted/30" : gradedFailed ? "hover:bg-red-50/50 border-transparent hover:border-red-200" : "hover:bg-muted/50 border-transparent hover:border-orange-200"}`}
+                                  className={`w-full text-left p-2.5 rounded border transition-all ml-4 ${isAssessmentActive ? gradedFailed ? "bg-destructive/15 dark:bg-destructive/20/30 text-foreground border-destructive/40 shadow-sm" : "bg-warning/15 dark:bg-warning/20/30 text-foreground border-orange-300 shadow-sm" : isAssessmentLocked ? "opacity-50 cursor-not-allowed hover:bg-muted/30" : gradedFailed ? "hover:bg-destructive/10/50 border-transparent hover:border-destructive/30" : "hover:bg-muted/50 border-transparent hover:border-warning/30"}`}
                                 >
                                   <div className="flex items-start gap-2.5">
                                     <div className="flex-shrink-0 mt-0.5">
-                                      {isAssessmentCompleted ? <CheckCircle className="w-4 h-4 text-green-600" /> : isAssessmentLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : gradedFailed ? <XCircle className="w-4 h-4 text-red-500" /> : stillPending ? <Clock className="w-4 h-4 text-blue-500" /> : <Award className="w-4 h-4 text-orange-500" />}
+                                      {isAssessmentCompleted ? <CheckCircle className="w-4 h-4 text-success" /> : isAssessmentLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : gradedFailed ? <XCircle className="w-4 h-4 text-destructive" /> : stillPending ? <Clock className="w-4 h-4 text-primary" /> : <Award className="w-4 h-4 text-warning" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className={`text-sm font-medium truncate ${gradedFailed ? "text-red-700 dark:text-red-300" : "text-orange-700 dark:text-orange-300"}`}>{assessmentStep.title}</p>
+                                      <p className={`text-sm font-medium truncate ${gradedFailed ? "text-destructive dark:text-destructive" : "text-warning dark:text-warning"}`}>{assessmentStep.title}</p>
                                       <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="outline" className={`text-xs font-medium ${gradedFailed ? "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800" : stillPending ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" : "bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800"}`}>
+                                        <Badge variant="outline" className={`text-xs font-medium ${gradedFailed ? "bg-destructive/10 dark:bg-destructive/20/30 text-destructive dark:text-destructive border-destructive/30 dark:border-destructive/30" : stillPending ? "bg-primary/10 dark:bg-primary/20/30 text-primary dark:text-primary border-primary/30 dark:border-primary/30" : "bg-warning/10 dark:bg-warning/20/30 text-warning dark:text-warning border-warning/30 dark:border-orange-800"}`}>
                                           {gradedFailed ? "Failed — Retake" : stillPending ? "Awaiting Grade" : getStepTypeLabel(assessmentStep.type)}
                                         </Badge>
                                         {assessmentStep.duration ? <span className="text-xs text-muted-foreground flex items-center gap-0.5"><Clock className="w-3 h-3" />{assessmentStep.duration}m</span> : <span className="text-xs text-muted-foreground">Self Paced</span>}
@@ -497,16 +497,16 @@ export default function LearningSidebar({
                             <button
                               onClick={() => { if (!isFinalLocked) { onStepSelect(stepId); setIsMobileOpen(false) } }}
                               disabled={isFinalLocked}
-                              className={`w-full text-left p-2.5 rounded-md border transition-all ${isFinalActive ? finalGradedFailed ? "bg-red-100 text-foreground border-red-300 shadow-sm" : "bg-primary text-primary-foreground border-primary shadow-sm" : isFinalLocked ? "opacity-50 cursor-not-allowed" : finalGradedFailed ? "hover:bg-red-50/50 border-transparent hover:border-red-200" : "hover:bg-muted border-transparent hover:border-primary/20"}`}
+                              className={`w-full text-left p-2.5 rounded-md border transition-all ${isFinalActive ? finalGradedFailed ? "bg-destructive/15 text-foreground border-destructive/40 shadow-sm" : "bg-primary text-primary-foreground border-primary shadow-sm" : isFinalLocked ? "opacity-50 cursor-not-allowed" : finalGradedFailed ? "hover:bg-destructive/10/50 border-transparent hover:border-destructive/30" : "hover:bg-muted border-transparent hover:border-primary/20"}`}
                             >
                               <div className="flex items-start gap-2.5">
                                 <div className="flex-shrink-0 mt-0.5">
-                                  {isFinalCompleted ? <CheckCircle className="w-4 h-4 text-green-600" /> : isFinalLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : finalGradedFailed ? <XCircle className="w-4 h-4 text-red-500" /> : finalStillPending ? <Clock className="w-4 h-4 text-blue-500" /> : <ShieldQuestion className="w-4 h-4 text-ring" />}
+                                  {isFinalCompleted ? <CheckCircle className="w-4 h-4 text-success" /> : isFinalLocked ? <Lock className="w-4 h-4 text-muted-foreground" /> : finalGradedFailed ? <XCircle className="w-4 h-4 text-destructive" /> : finalStillPending ? <Clock className="w-4 h-4 text-primary" /> : <ShieldQuestion className="w-4 h-4 text-ring" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-sm font-medium truncate ${finalGradedFailed ? "text-red-700 dark:text-red-300" : "text-chart-2"}`}>{module.final_assessment.title || "Final Assessment"}</p>
+                                  <p className={`text-sm font-medium truncate ${finalGradedFailed ? "text-destructive dark:text-destructive" : "text-chart-2"}`}>{module.final_assessment.title || "Final Assessment"}</p>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant={isFinalActive ? "default" : "outline"} className={`text-xs font-medium ${isFinalActive && !finalGradedFailed && "bg-primary-foreground/20 rounded"} ${finalGradedFailed ? "bg-red-50 text-red-700 border-red-200" : finalStillPending ? "bg-blue-50 text-blue-700 border-blue-200" : ""}`}>
+                                    <Badge variant={isFinalActive ? "default" : "outline"} className={`text-xs font-medium ${isFinalActive && !finalGradedFailed && "bg-primary-foreground/20 rounded"} ${finalGradedFailed ? "bg-destructive/10 text-destructive border-destructive/30" : finalStillPending ? "bg-primary/10 text-primary border-primary/30" : ""}`}>
                                       {finalGradedFailed ? "Failed — Retake" : finalStillPending ? "Awaiting Grade" : module.final_assessment.type === "ASSESSMENT" ? "Quiz" : "Project"}
                                     </Badge>
                                     {module.final_assessment.time_limit_minutes && <span className="text-xs text-muted-foreground flex items-center gap-0.5"><Clock className="w-3 h-3" />{module.final_assessment.time_limit_minutes}m</span>}
@@ -528,10 +528,10 @@ export default function LearningSidebar({
             <button
               onClick={() => { if (allStepsCompleted) { onCourseCompletionSelect(); setIsMobileOpen(false) } }}
               disabled={!allStepsCompleted}
-              className={`w-full text-left p-3 rounded border-2 transition-all ${currentStepId === "course-completion" ? "bg-primary text-primary-foreground border-primary" : allStepsCompleted ? "hover:bg-green-50 dark:hover:bg-green-950/20 border-green-200 dark:border-green-800" : "opacity-50 cursor-not-allowed border-transparent"}`}
+              className={`w-full text-left p-3 rounded border-2 transition-all ${currentStepId === "course-completion" ? "bg-primary text-primary-foreground border-primary" : allStepsCompleted ? "hover:bg-success/10 dark:hover:bg-success/20/20 border-success/30 dark:border-success/30" : "opacity-50 cursor-not-allowed border-transparent"}`}
             >
               <div className="flex items-center gap-3">
-                {allStepsCompleted ? <Award className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-muted-foreground" />}
+                {allStepsCompleted ? <Award className="w-5 h-5 text-success" /> : <Lock className="w-5 h-5 text-muted-foreground" />}
                 <div className="flex-1">
                   <p className="font-semibold text-sm">Course Completion</p>
                   <p className="text-xs text-muted-foreground">

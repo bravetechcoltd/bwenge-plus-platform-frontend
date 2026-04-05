@@ -23,7 +23,7 @@ const institutionRoleOptions = [
     value: "ADMIN",
     label: "Administrator",
     icon: Shield,
-    color: "text-purple-600 bg-purple-50",
+    color: "text-primary bg-primary/10",
     description: "Full administrative access to the institution",
     compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN"],
   },
@@ -31,7 +31,7 @@ const institutionRoleOptions = [
     value: "CONTENT_CREATOR",
     label: "Content Creator",
     icon: Edit,
-    color: "text-blue-600 bg-blue-50",
+    color: "text-primary bg-primary/10",
     description: "Can create and manage course content",
     compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR"],
   },
@@ -39,7 +39,7 @@ const institutionRoleOptions = [
     value: "INSTRUCTOR",
     label: "Instructor",
     icon: GraduationCap,
-    color: "text-green-600 bg-green-50",
+    color: "text-success bg-success/10",
     description: "Teaches courses, manages enrollments",
     compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR"],
   },
@@ -47,7 +47,7 @@ const institutionRoleOptions = [
     value: "MEMBER",
     label: "Member",
     icon: User,
-    color: "text-gray-600 bg-gray-50",
+    color: "text-muted-foreground bg-muted/50",
     description: "Basic access to institution resources",
     compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR", "LEARNER"],
   },
@@ -102,7 +102,7 @@ export default function InstitutionRoleSelector({
           <button
             type="button"
             onClick={() => onChange(suggestedRole)}
-            className="text-xs text-blue-600 hover:text-blue-800"
+            className="text-xs text-primary hover:text-primary"
           >
             Use suggested role
           </button>
@@ -114,7 +114,7 @@ export default function InstitutionRoleSelector({
         onValueChange={(value) => onChange(value || null)}
         disabled={disabled}
       >
-        <SelectTrigger className={`w-full ${!isCurrentValueCompatible ? 'border-amber-300' : ''}`}>
+        <SelectTrigger className={`w-full ${!isCurrentValueCompatible ? 'border-warning/40' : ''}`}>
           <SelectValue>
             {selectedRole ? (
               <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export default function InstitutionRoleSelector({
                 </Badge>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-gray-500">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="w-4 h-4" />
                 <span>Select institution role</span>
               </div>
@@ -144,7 +144,7 @@ export default function InstitutionRoleSelector({
                     {role.value}
                   </Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {role.description}
                 </p>
               </div>
@@ -157,7 +157,7 @@ export default function InstitutionRoleSelector({
             .map((role) => (
               <div
                 key={role.value}
-                className="px-3 py-2 text-sm text-gray-400 cursor-not-allowed"
+                className="px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function InstitutionRoleSelector({
                       {role.value}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-amber-600 mt-1">
+                  <div className="flex items-center gap-1 text-xs text-warning mt-1">
                     <AlertCircle className="w-3 h-3" />
                     <span>Incompatible with {bwengeRole.replace(/_/g, ' ')} role</span>
                   </div>
@@ -179,14 +179,14 @@ export default function InstitutionRoleSelector({
       
       {/* Warnings and suggestions */}
       {bwengeRole && !isCurrentValueCompatible && value && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800">
+              <p className="text-sm font-medium text-warning">
                 Incompatible Role Assignment
               </p>
-              <p className="text-xs text-amber-700 mt-1">
+              <p className="text-xs text-warning mt-1">
                 {value} is not typically assigned to users with {bwengeRole.replace(/_/g, ' ')} role.
                 {suggestedRole && (
                   <>
@@ -201,14 +201,14 @@ export default function InstitutionRoleSelector({
       )}
       
       {bwengeRole && suggestedRole && !value && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-blue-800">
+              <p className="text-sm font-medium text-primary">
                 Suggested Role
               </p>
-              <p className="text-xs text-blue-700 mt-1">
+              <p className="text-xs text-primary mt-1">
                 Based on the user's BwengePlus role ({bwengeRole.replace(/_/g, ' ')}), 
                 we suggest assigning them as <span className="font-medium">{suggestedRole}</span> in the institution.
               </p>
@@ -219,7 +219,7 @@ export default function InstitutionRoleSelector({
       
       {/* Role compatibility info */}
       {bwengeRole && (
-        <div className="mt-2 text-xs text-gray-500">
+        <div className="mt-2 text-xs text-muted-foreground">
           <p>
             <span className="font-medium">Compatible roles for {bwengeRole.replace(/_/g, ' ')}:</span>
             {" "}

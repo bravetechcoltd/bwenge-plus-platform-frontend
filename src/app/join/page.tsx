@@ -1,506 +1,379 @@
-"use client";
+"use client"
 
-import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import Cookies from "js-cookie";
-import { toast } from "sonner";
+import React, { useState, useEffect, useMemo, Suspense } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useDispatch, useSelector } from "react-redux"
+import type { AppDispatch, RootState } from "@/lib/store"
+import { loginAndJoin, registerAndJoin, clearError } from "@/lib/features/auth/auth-slice"
+import { getRoleDashboardPath } from "@/app/utils/roleNavigation"
 import {
   Building2, Loader2, CheckCircle2, XCircle, GraduationCap,
-  UserCog, Crown, ArrowRight, LogIn, UserPlus, Home, Clock,
-  ShieldCheck, Sparkles, Lock, Mail, Eye, EyeOff, User, AlertCircle,
-} from "lucide-react";
-import type { AppDispatch, RootState } from "@/lib/store";
-import { loginBwenge, registerBwenge, clearError, fetchBwengeProfile } from "@/lib/features/auth/auth-slice";
-import { getRoleDashboardPath } from "@/app/utils/roleNavigation";
+  UserCog, Crown, LogIn, UserPlus, Home, Clock,
+  ShieldCheck, Sparkles, Lock, Mail, Eye, EyeOff, User, AlertCircle, ArrowRight, Check,
+} from "lucide-react"
+import Link from "next/link"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
 
 const ROLE_META: Record<string, { label: string; Icon: any; color: string; bg: string }> = {
-  MEMBER:          { label: "Member / Student",  Icon: GraduationCap, color: "text-blue-600",   bg: "bg-blue-50"   },
-  INSTRUCTOR:      { label: "Instructor",         Icon: UserCog,       color: "text-green-600",  bg: "bg-green-50"  },
-  CONTENT_CREATOR: { label: "Content Creator",    Icon: Sparkles,      color: "text-amber-600",  bg: "bg-amber-50"  },
-  ADMIN:           { label: "Administrator",      Icon: Crown,         color: "text-purple-600", bg: "bg-purple-50" },
-};
+  MEMBER:          { label: "Member / Student",  Icon: GraduationCap, color: "text-primary",  bg: "bg-primary/10"  },
+  INSTRUCTOR:      { label: "Instructor",         Icon: UserCog,       color: "text-emerald-600", bg: "bg-emerald-500/10" },
+  CONTENT_CREATOR: { label: "Content Creator",    Icon: Sparkles,      color: "text-amber-600",   bg: "bg-amber-500/10"  },
+  ADMIN:           { label: "Administrator",      Icon: Crown,         color: "text-primary",  bg: "bg-primary/10"  },
+}
 
 interface InviteInfo {
-  institution: { id: string; name: string; logo_url?: string; description?: string; type: string; slug: string };
-  role: string;
-  expires_at?: string;
-  invitation_id: string;
+  institution: { id: string; name: string; logo_url?: string; description?: string; type: string; slug: string }
+  role: string
+  expires_at?: string
+  invitation_id: string
 }
 
-/* ── Floating background particles ────────────────────────────────────── */
-function Particles() {
-  const pts = useMemo(() => Array.from({ length: 18 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    s: Math.random() * 3 + 1,
-    d: Math.random() * 10 + 14,
-    delay: Math.random() * 6,
-  })), []);
+/* ── Logo ── */
+function Logo() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {pts.map(p => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full bg-white/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.s, height: p.s }}
-          animate={{ y: [-10, -55], opacity: [0, 0.8, 0.8, 0] }}
-          transition={{ duration: p.d, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
-        />
-      ))}
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+        <svg viewBox="0 0 40 40" className="w-3.5 h-3.5" fill="none">
+          <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
+          <polygon points="20,3 8,10 20,14 32,10" fill="white" />
+          <rect x="10" y="14" width="9" height="16" rx="1.5" fill="white" />
+          <rect x="21" y="14" width="9" height="16" rx="1.5" fill="white" />
+        </svg>
+      </div>
+      <span className="text-sm font-bold text-foreground tracking-tight">BwengePlus</span>
     </div>
-  );
+  )
 }
 
-/* ── Institution card shown on right/top panel ─────────────────────────── */
-function InstitutionCard({ info }: { info: InviteInfo }) {
-  const role = ROLE_META[info.role] ?? ROLE_META.MEMBER;
-  const RoleIcon = role.Icon;
+/* ── Simple Input ── */
+function Input({
+  id, name, type = "text", value, onChange, placeholder, required, disabled, rightEl,
+}: {
+  id?: string; name?: string; type?: string; value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string; required?: boolean; disabled?: boolean; rightEl?: React.ReactNode
+}) {
   return (
-    <div className="flex flex-col items-center text-center space-y-4 px-4">
-      {/* Logo */}
-      <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-xl overflow-hidden">
-        {info.institution.logo_url ? (
-          <img src={info.institution.logo_url} alt={info.institution.name} className="w-full h-full object-cover" />
-        ) : (
-          <Building2 className="w-10 h-10 text-white/80" />
-        )}
-      </div>
-
-      {/* Name + type */}
-      <div>
-        <h2 className="text-2xl font-bold text-white">{info.institution.name}</h2>
-        <p className="text-white/60 text-xs uppercase tracking-widest mt-0.5">{info.institution.type?.replace(/_/g, " ")}</p>
-      </div>
-
-      {/* Description */}
-      {info.institution.description && (
-        <p className="text-white/70 text-sm leading-relaxed max-w-xs line-clamp-3">
-          {info.institution.description}
-        </p>
-      )}
-
-      {/* Role badge */}
-      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm`}>
-        <RoleIcon className="w-4 h-4 text-white" />
-        <span className="text-white text-sm font-semibold">You'll join as {role.label}</span>
-      </div>
-
-      {/* Expiry */}
-      {info.expires_at && (
-        <div className="flex items-center gap-1.5 text-white/50 text-xs">
-          <Clock className="w-3.5 h-3.5" />
-          <span>Link expires {new Date(info.expires_at).toLocaleDateString()}</span>
-        </div>
-      )}
-
-      {/* Trust badge */}
-      <div className="flex items-center gap-1.5 text-white/60 text-xs mt-2">
-        <ShieldCheck className="w-3.5 h-3.5 text-green-300" />
-        <span>Secured by BwengePlus</span>
-      </div>
+    <div className="relative">
+      <input
+        id={id} name={name} type={type} value={value}
+        onChange={onChange} placeholder={placeholder}
+        required={required} disabled={disabled}
+        className={`w-full ${rightEl ? "pr-9" : "pr-3"} pl-3 py-2 text-sm
+          bg-white/80 dark:bg-white/5 border border-border rounded-lg outline-none
+          transition-colors duration-150 focus:border-primary
+          text-foreground placeholder:text-muted-foreground/60
+          disabled:opacity-50 disabled:cursor-not-allowed`}
+      />
+      {rightEl && <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10">{rightEl}</div>}
     </div>
-  );
+  )
 }
 
-/* ── Stable layout wrapper — defined OUTSIDE JoinPageInner so it keeps the
-     same component identity across re-renders and never unmounts its children ── */
-function Layout({ inviteInfo, children }: { inviteInfo: InviteInfo | null; children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden bg-primary relative">
-      <Particles />
-      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-
-      {/* Back home */}
-      <Link
-        href="/"
-        className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-medium transition-all"
-      >
-        <Home className="w-3.5 h-3.5" /> Home
-      </Link>
-
-      {/* Left – action panel */}
-      <div className="w-full lg:w-[44%] flex items-center justify-center p-4 sm:p-6 relative z-20 min-h-screen lg:min-h-0">
-        {children}
-      </div>
-
-      {/* Right – institution info */}
-      <div className="hidden lg:flex w-full lg:w-[56%] relative flex-col items-center justify-center p-10">
-        {inviteInfo && <InstitutionCard info={inviteInfo} />}
-        {!inviteInfo && (
-          <div className="flex items-center gap-3 text-white/60">
-            <Building2 className="w-8 h-8" />
-            <span className="text-lg font-medium">BwengePlus Institutions</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Main inner component (uses useSearchParams) ──────────────────────── */
 function JoinPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") ?? "";
-  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token") ?? ""
+  const dispatch = useDispatch<AppDispatch>()
   const {
-    user, isAuthenticated, token: reduxToken,
+    user, isAuthenticated,
     isLoading: authLoading, error: authError,
     requiresVerification, verificationEmail,
-  } = useSelector((state: RootState) => state.bwengeAuth);
+  } = useSelector((state: RootState) => state.bwengeAuth)
 
-  // States
-  const [phase, setPhase] = useState<"loading" | "preview" | "joining" | "done" | "error">("loading");
-  const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [authTab, setAuthTab] = useState<"login" | "register">("login");
+  const [phase, setPhase] = useState<"loading" | "preview" | "joining" | "done" | "error">("loading")
+  const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null)
+  const [errorMsg, setErrorMsg] = useState("")
+  const [authTab, setAuthTab] = useState<"login" | "register">("login")
 
-  // Login form
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [showPw, setShowPw] = useState(false);
-  // Register form
-  const [regForm, setRegForm] = useState({ first_name: "", last_name: "", email: "", password: "" });
-  const [showRegPw, setShowRegPw] = useState(false);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" })
+  const [showPw, setShowPw] = useState(false)
+  const [regForm, setRegForm] = useState({ first_name: "", last_name: "", email: "", password: "", motivation: "" })
+  const [showRegPw, setShowRegPw] = useState(false)
 
-  const getToken = useCallback(() => reduxToken || Cookies.get("bwenge_token") || "", [reduxToken]);
-
-  /* Step 1 – verify token */
+  /* Token verification */
   useEffect(() => {
-    if (!token) {
-      setErrorMsg("No invite token found in this link.");
-      setPhase("error");
-      return;
-    }
-    (async () => {
+    if (!token) { setErrorMsg("No invite token found in this link."); setPhase("error"); return }
+    ;(async () => {
       try {
-        const res = await fetch(`${API_URL}/institutions/invite/verify?token=${token}`);
-        const data = await res.json();
-        if (data.success) {
-          setInviteInfo(data.data);
-          setPhase("preview");
-        } else {
-          setErrorMsg(data.message || "Invalid invite link.");
-          setPhase("error");
-        }
-      } catch {
-        setErrorMsg("Could not verify the invite link. Please try again.");
-        setPhase("error");
-      }
-    })();
-  }, [token]);
+        const res = await fetch(`${API_URL}/institutions/invite/verify?token=${token}`)
+        const data = await res.json()
+        if (data.success) { setInviteInfo(data.data); setPhase("preview") }
+        else { setErrorMsg(data.message || "Invalid invite link."); setPhase("error") }
+      } catch { setErrorMsg("Could not verify the invite link. Please try again."); setPhase("error") }
+    })()
+  }, [token])
 
-  /* Step 2 – accept invite (called after we confirm user is authed) */
-  const acceptInvite = useCallback(async () => {
-    setPhase("joining");
-    try {
-      const res = await fetch(`${API_URL}/institutions/invite/accept`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ token }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        // Refresh Redux user state so institution_ids, primary_institution_id,
-        // institution_role are all current before redirecting to the dashboard.
-        try {
-          const refreshed = await dispatch(fetchBwengeProfile()).unwrap();
-          // Sync the individual institution cookies that storeAuthData normally sets
-          if (refreshed?.primary_institution_id) {
-            Cookies.set("bwenge_primary_institution_id", refreshed.primary_institution_id, { expires: 7 });
-          }
-          if (refreshed?.institution_role) {
-            Cookies.set("bwenge_institution_role", refreshed.institution_role, { expires: 7 });
-          }
-          if (refreshed?.institution_ids?.length) {
-            Cookies.set("bwenge_institution_ids", JSON.stringify(refreshed.institution_ids), { expires: 7 });
-          }
-        } catch {
-          // profile refresh is best-effort; membership was still created successfully
-        }
-        setPhase("done");
-        toast.success(data.message || "Successfully joined!");
-        setTimeout(() => {
-          // After profile refresh, user bwenge_role may have been promoted (e.g. to INSTRUCTOR)
-          // so re-read from the store isn't possible here yet — use the response role to decide
-          const joinedRole = data.data?.role ?? user?.bwenge_role ?? "LEARNER";
-          const roleMap: Record<string, string> = {
-            ADMIN: "INSTITUTION_ADMIN",
-            INSTRUCTOR: "INSTRUCTOR",
-            CONTENT_CREATOR: "CONTENT_CREATOR",
-            MEMBER: "LEARNER",
-          };
-          router.push(getRoleDashboardPath(roleMap[joinedRole] ?? joinedRole));
-        }, 2000);
-      } else {
-        setErrorMsg(data.message || "Failed to join institution.");
-        setPhase("error");
-      }
-    } catch {
-      setErrorMsg("Something went wrong. Please try again.");
-      setPhase("error");
-    }
-  }, [token, getToken, router, user, dispatch]);
-
-  /* If authenticated and verified → auto-accept */
+  /* Redirect on authenticated */
   useEffect(() => {
-    if (phase === "preview" && isAuthenticated && inviteInfo && user?.is_verified !== false) {
-      acceptInvite();
+    if (phase === "preview" && isAuthenticated && inviteInfo) {
+      setPhase("done")
+      const joinedRole = user?.institution_role ?? user?.bwenge_role ?? "LEARNER"
+      const roleMap: Record<string, string> = {
+        ADMIN: "INSTITUTION_ADMIN", INSTRUCTOR: "INSTRUCTOR",
+        CONTENT_CREATOR: "CONTENT_CREATOR", MEMBER: "LEARNER",
+      }
+      setTimeout(() => router.push(getRoleDashboardPath(roleMap[joinedRole] ?? joinedRole)), 2000)
     }
-  }, [phase, isAuthenticated, inviteInfo, user?.is_verified, acceptInvite]);
+  }, [phase, isAuthenticated, inviteInfo, user, router])
 
-  /* After register with requires_verification → redirect to verify-email */
+  /* Verify email redirect */
   useEffect(() => {
     if (requiresVerification && verificationEmail && phase === "preview") {
-      const redirectTarget = encodeURIComponent(`/join?token=${token}`);
-      router.push(`/verify-email?email=${encodeURIComponent(verificationEmail)}&redirect=${redirectTarget}`);
+      const redirectTarget = encodeURIComponent(`/join?token=${token}`)
+      router.push(`/verify-email?email=${encodeURIComponent(verificationEmail)}&redirect=${redirectTarget}`)
     }
-  }, [requiresVerification, verificationEmail, phase, token, router]);
+  }, [requiresVerification, verificationEmail, phase, token, router])
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(clearError());
-    try {
-      await dispatch(loginBwenge(loginForm)).unwrap();
-      // acceptInvite triggers via the useEffect above once isAuthenticated flips
-    } catch { /* authError shown via selector */ }
-  };
+    e.preventDefault(); dispatch(clearError())
+    try { await dispatch(loginAndJoin({ ...loginForm, token })).unwrap() } catch { }
+  }
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(clearError());
-    try {
-      await dispatch(registerBwenge({ ...regForm, confirm_password: regForm.password })).unwrap();
-      // If requires_verification → the useEffect above handles redirect to verify-email
-      // If no verification needed → isAuthenticated flips → acceptInvite fires
-    } catch { /* authError shown via selector */ }
-  };
+    e.preventDefault(); dispatch(clearError())
+    try { await dispatch(registerAndJoin({ ...regForm, confirm_password: regForm.password, token })).unwrap() } catch { }
+  }
 
-  /* ── Phase: loading ─────────────────────────────────────────────────── */
+  const role = ROLE_META[inviteInfo?.role ?? "MEMBER"] ?? ROLE_META.MEMBER
+  const RoleIcon = role.Icon
+
+  /* ── Loading ── */
   if (phase === "loading") {
     return (
-      <Layout inviteInfo={inviteInfo}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-2xl border border-white/70 p-8 flex flex-col items-center gap-4 w-full max-w-sm"
-        >
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-gray-600 font-medium">Verifying invite link…</p>
-        </motion.div>
-      </Layout>
-    );
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <Logo />
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center space-y-2">
+              <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+              <p className="text-[11px] text-muted-foreground">Verifying invite link…</p>
+            </div>
+          </div>
+        </div>
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary" />
+      </div>
+    )
   }
 
-  /* ── Phase: error ───────────────────────────────────────────────────── */
+  /* ── Error ── */
   if (phase === "error") {
     return (
-      <Layout inviteInfo={inviteInfo}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-2xl border border-white/70 p-8 flex flex-col items-center gap-4 w-full max-w-sm text-center"
-        >
-          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
-            <XCircle className="w-8 h-8 text-red-500" />
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <Logo />
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Link Invalid</h2>
-            <p className="text-gray-500 text-sm mt-1">{errorMsg}</p>
+          <div className="flex-1 flex items-center justify-center px-8 py-3">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-[300px] space-y-4 text-center"
+            >
+              <div className="flex justify-center">
+                <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <XCircle className="w-6 h-6 text-destructive" />
+                </div>
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Invalid Link</p>
+                <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Link invalid.</h1>
+                <p className="text-[11px] text-muted-foreground">{errorMsg}</p>
+              </div>
+              <Link href="/"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                <Home className="w-4 h-4" /> Go Home
+              </Link>
+            </motion.div>
           </div>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-all"
-          >
-            <Home className="w-4 h-4" /> Go Home
-          </Link>
-        </motion.div>
-      </Layout>
-    );
-  }
-
-  /* ── Phase: joining ─────────────────────────────────────────────────── */
-  if (phase === "joining") {
-    return (
-      <Layout inviteInfo={inviteInfo}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-2xl border border-white/70 p-8 flex flex-col items-center gap-4 w-full max-w-sm text-center"
-        >
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Joining…</h2>
-            <p className="text-gray-500 text-sm mt-1">Setting up your membership</p>
-          </div>
-        </motion.div>
-      </Layout>
-    );
-  }
-
-  /* ── Phase: done ────────────────────────────────────────────────────── */
-  if (phase === "done") {
-    const role = ROLE_META[inviteInfo?.role ?? "MEMBER"] ?? ROLE_META.MEMBER;
-    const RoleIcon = role.Icon;
-    return (
-      <Layout inviteInfo={inviteInfo}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-2xl border border-white/70 p-8 flex flex-col items-center gap-4 w-full max-w-sm text-center"
-        >
-          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
-            <CheckCircle2 className="w-9 h-9 text-green-500" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Welcome aboard!</h2>
-            <p className="text-gray-500 text-sm mt-1">
-              You joined <strong>{inviteInfo?.institution.name}</strong> as{" "}
-              <span className={role.color + " font-semibold"}>{role.label}</span>
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              © {new Date().getFullYear()} BwengePlus · Institution-grade learning
             </p>
           </div>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${role.bg} border`}>
-            <RoleIcon className={`w-4 h-4 ${role.color}`} />
-            <span className={`text-sm font-semibold ${role.color}`}>{role.label}</span>
-          </div>
-          <p className="text-xs text-gray-400">Redirecting to dashboard…</p>
-        </motion.div>
-      </Layout>
-    );
+        </div>
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col items-center justify-center px-12">
+          <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Link</h2>
+          <h2 className="text-[38px] font-bold text-white/60 leading-[1.0] tracking-tight">expired</h2>
+          <h2 className="text-[38px] font-bold text-white/30 leading-[1.0] tracking-tight">or invalid.</h2>
+        </div>
+      </div>
+    )
   }
 
-  /* ── Phase: preview — unauthenticated user needs to login/register ─── */
-  const inputCls = "w-full pl-11 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 font-medium outline-none";
-  const iconWrap = "absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors pointer-events-none";
-  const iconCls  = "w-3.5 h-3.5 text-gray-400 group-focus-within:text-primary transition-colors";
-
-  return (
-    <Layout inviteInfo={inviteInfo}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-[380px]"
-      >
-        <div className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/70 overflow-hidden">
-
-          {/* Header */}
-          <div className="pt-5 pb-3 px-6 border-b border-gray-100/80 text-center">
-            {/* Mobile institution preview */}
-            <div className="lg:hidden flex items-center justify-center gap-3 mb-3 p-3 bg-primary/5 rounded-xl border border-primary/10">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {inviteInfo?.institution.logo_url ? (
-                  <img src={inviteInfo.institution.logo_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Building2 className="w-5 h-5 text-primary" />
-                )}
+  /* ── Done ── */
+  if (phase === "done") {
+    return (
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <Logo />
+          </div>
+          <div className="flex-1 flex items-center justify-center px-8 py-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-[300px] space-y-4 text-center"
+            >
+              <div className="flex justify-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                </div>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-gray-900 leading-tight">{inviteInfo?.institution.name}</p>
-                <p className="text-xs text-primary font-medium">
-                  {ROLE_META[inviteInfo?.role ?? "MEMBER"]?.label ?? "Member"}
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Success</p>
+                <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Welcome aboard!</h1>
+                <p className="text-[11px] text-muted-foreground">
+                  Joined <span className="font-semibold text-foreground">{inviteInfo?.institution.name}</span> as{" "}
+                  <span className={`font-semibold ${role.color}`}>{role.label}</span>
                 </p>
               </div>
-            </div>
-
-            <div className="w-10 h-10 rounded-full bg-primary border-4 border-white shadow-md flex items-center justify-center mx-auto mb-1.5">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-lg font-bold text-gray-900">
-              Join <span className="text-primary">{inviteInfo?.institution.name}</span>
-            </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {isAuthenticated
-                ? `Joining as ${user?.first_name}…`
-                : "Sign in or create an account to join"}
+              <p className="text-[10px] text-muted-foreground">Redirecting to dashboard…</p>
+            </motion.div>
+          </div>
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              © {new Date().getFullYear()} BwengePlus · Institution-grade learning
             </p>
           </div>
+        </div>
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col items-center justify-center px-12">
+          <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Welcome</h2>
+          <h2 className="text-[38px] font-bold text-white/70 leading-[1.0] tracking-tight">to the</h2>
+          <h2 className="text-[38px] font-bold text-white/40 leading-[1.0] tracking-tight">team.</h2>
+        </div>
+      </div>
+    )
+  }
 
-          {/* Body */}
-          <div className="px-5 py-4 space-y-3">
+  /* ── Preview — login/register to join ── */
+  return (
+    <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+
+      {/* ══ LEFT — Form column ══ */}
+      <div className="w-full lg:w-[58%] h-full flex flex-col bg-background border-r border-border/40">
+
+        {/* Top nav */}
+        <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+          <Logo />
+
+          {/* Auth tabs in nav */}
+          <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+            {(["login", "register"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => { setAuthTab(tab); dispatch(clearError()) }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${
+                  authTab === tab ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab === "login" ? <LogIn className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />}
+                {tab === "login" ? "Sign In" : "Register"}
+              </button>
+            ))}
+          </div>
+
+          <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Home className="w-3 h-3" /> Home
+          </Link>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 flex items-center justify-center px-8 py-3 overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-[380px] space-y-3"
+          >
+            {/* Heading */}
+            <div className="space-y-0.5">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Invitation</p>
+              <h1 className="text-[20px] font-bold text-foreground leading-none tracking-tight">
+                Join <span className="text-primary">{inviteInfo?.institution.name}</span>
+              </h1>
+              <p className="text-[11px] text-muted-foreground">
+                {isAuthenticated ? `Joining as ${user?.first_name}…` : "Sign in or create an account to accept."}
+              </p>
+            </div>
+
+            {/* Mobile institution preview */}
+            <div className="lg:hidden flex items-center gap-3 p-3 bg-primary/5 border border-primary/15 rounded-lg">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {inviteInfo?.institution.logo_url
+                  ? <img src={inviteInfo.institution.logo_url} alt="" className="w-full h-full object-cover" />
+                  : <Building2 className="w-4 h-4 text-primary" />}
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-foreground leading-tight">{inviteInfo?.institution.name}</p>
+                <p className={`text-[10px] font-semibold ${role.color}`}>{role.label}</p>
+              </div>
+            </div>
 
             {/* Auth error */}
             <AnimatePresence>
               {authError && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-1.5"
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="border-l-[3px] border-destructive bg-destructive/5 pl-3 pr-3 py-2 rounded-r"
                 >
-                  <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-600 font-medium">{authError}</p>
+                  <p className="text-[11px] text-destructive leading-snug">{authError}</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Auth tabs */}
-            <div className="flex rounded-lg bg-gray-100 p-0.5 gap-0.5">
-              {(["login", "register"] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => { setAuthTab(tab); dispatch(clearError()); }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-semibold transition-all ${
-                    authTab === tab ? "bg-white shadow-sm text-primary" : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {tab === "login" ? <LogIn className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
-                  {tab === "login" ? "Sign In" : "Register"}
-                </button>
-              ))}
+            {/* Progress indicator */}
+            <div className="w-full h-px bg-border overflow-hidden rounded-full">
+              <motion.div className="h-full bg-primary"
+                animate={{ width: authTab === "login" ? "50%" : "100%" }}
+                transition={{ duration: 0.35, ease: "easeOut" }} />
             </div>
 
-            {/* Login form */}
             <AnimatePresence mode="wait">
+
+              {/* Login form */}
               {authTab === "login" && (
                 <motion.form
                   key="login"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 14 }}
+                  transition={{ duration: 0.18 }}
                   onSubmit={handleLogin}
-                  className="space-y-2.5"
+                  className="space-y-2"
                 >
-                  <div className="relative group">
-                    <div className={iconWrap}><Mail className={iconCls} /></div>
-                    <input
-                      type="email" required placeholder="Email address"
-                      value={loginForm.email}
-                      onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
-                      className={inputCls}
-                      disabled={authLoading}
-                    />
-                  </div>
-                  <div className="relative group">
-                    <div className={iconWrap}><Lock className={iconCls} /></div>
-                    <input
-                      type={showPw ? "text" : "password"} required placeholder="Password"
-                      value={loginForm.password}
-                      onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
-                      className="w-full pl-11 pr-10 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 font-medium outline-none"
-                      disabled={authLoading}
-                    />
-                    <button type="button" onClick={() => setShowPw(v => !v)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all"
-                    >
-                      {showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    </button>
-                  </div>
+                  <Input type="email" placeholder="Email address" required value={loginForm.email}
+                    onChange={(e) => setLoginForm((f) => ({ ...f, email: e.target.value }))} disabled={authLoading} />
+                  <Input
+                    type={showPw ? "text" : "password"} placeholder="Password" required
+                    value={loginForm.password} onChange={(e) => setLoginForm((f) => ({ ...f, password: e.target.value }))}
+                    disabled={authLoading}
+                    rightEl={
+                      <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
+                        className="text-muted-foreground hover:text-foreground transition-colors">
+                        {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    }
+                  />
                   <div className="flex justify-end">
-                    <Link href="/forgot-password" className="text-xs text-primary hover:text-primary/80">Forgot password?</Link>
+                    <Link href="/forgot-password" className="text-[10px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors">
+                      Forgot password?
+                    </Link>
                   </div>
-                  <button
-                    type="submit" disabled={authLoading}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {authLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogIn className="w-3.5 h-3.5" />}
-                    {authLoading ? "Signing in…" : "Sign In & Join"}
+                  <button type="submit" disabled={authLoading}
+                    className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                      hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                      flex items-center justify-center gap-2">
+                    {authLoading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in…</span></>
+                      : <><LogIn className="w-4 h-4" /><span>Sign In &amp; Join</span></>}
                   </button>
                 </motion.form>
               )}
@@ -509,107 +382,168 @@ function JoinPageInner() {
               {authTab === "register" && (
                 <motion.form
                   key="register"
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                  transition={{ duration: 0.18 }}
                   onSubmit={handleRegister}
-                  className="space-y-2.5"
+                  className="space-y-2"
                 >
                   <div className="grid grid-cols-2 gap-2">
-                    {(["first_name", "last_name"] as const).map((field, i) => (
-                      <div key={field} className="relative group">
-                        <div className={iconWrap}><User className={iconCls} /></div>
-                        <input
-                          type="text" required
-                          placeholder={i === 0 ? "First name" : "Last name"}
-                          value={regForm[field]}
-                          onChange={e => setRegForm(f => ({ ...f, [field]: e.target.value }))}
-                          className={inputCls}
-                          disabled={authLoading}
-                        />
-                      </div>
-                    ))}
+                    <Input type="text" placeholder="First name *" required value={regForm.first_name}
+                      onChange={(e) => setRegForm((f) => ({ ...f, first_name: e.target.value }))} disabled={authLoading} />
+                    <Input type="text" placeholder="Last name *" required value={regForm.last_name}
+                      onChange={(e) => setRegForm((f) => ({ ...f, last_name: e.target.value }))} disabled={authLoading} />
                   </div>
-                  <div className="relative group">
-                    <div className={iconWrap}><Mail className={iconCls} /></div>
-                    <input
-                      type="email" required placeholder="Email address"
-                      value={regForm.email}
-                      onChange={e => setRegForm(f => ({ ...f, email: e.target.value }))}
-                      className={inputCls}
-                      disabled={authLoading}
-                    />
-                  </div>
-                  <div className="relative group">
-                    <div className={iconWrap}><Lock className={iconCls} /></div>
-                    <input
-                      type={showRegPw ? "text" : "password"} required placeholder="Create password"
-                      value={regForm.password}
-                      onChange={e => setRegForm(f => ({ ...f, password: e.target.value }))}
-                      className="w-full pl-11 pr-10 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 font-medium outline-none"
-                      disabled={authLoading}
-                    />
-                    <button type="button" onClick={() => setShowRegPw(v => !v)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all"
-                    >
-                      {showRegPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    </button>
-                  </div>
-                  <button
-                    type="submit" disabled={authLoading}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {authLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
-                    {authLoading ? "Creating account…" : "Register & Join"}
+                  <Input type="email" placeholder="Email address *" required value={regForm.email}
+                    onChange={(e) => setRegForm((f) => ({ ...f, email: e.target.value }))} disabled={authLoading} />
+                  <Input
+                    type={showRegPw ? "text" : "password"} placeholder="Create password *" required
+                    value={regForm.password} onChange={(e) => setRegForm((f) => ({ ...f, password: e.target.value }))}
+                    disabled={authLoading}
+                    rightEl={
+                      <button type="button" tabIndex={-1} onClick={() => setShowRegPw(!showRegPw)}
+                        className="text-muted-foreground hover:text-foreground transition-colors">
+                        {showRegPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    }
+                  />
+                  <textarea
+                    required rows={2} placeholder="Why do you want to join BwengePlus? *"
+                    value={regForm.motivation}
+                    onChange={(e) => setRegForm((f) => ({ ...f, motivation: e.target.value }))}
+                    disabled={authLoading}
+                    className="w-full px-3 py-2 text-sm bg-white/80 dark:bg-white/5 border border-border rounded-lg outline-none
+                      resize-none focus:border-primary transition-colors text-foreground
+                      placeholder:text-muted-foreground/60 disabled:opacity-50"
+                  />
+                  <button type="submit" disabled={authLoading}
+                    className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                      hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                      flex items-center justify-center gap-2">
+                    {authLoading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Creating account…</span></>
+                      : <><UserPlus className="w-4 h-4" /><span>Register &amp; Join</span></>}
                   </button>
                 </motion.form>
               )}
             </AnimatePresence>
 
-            {/* Divider + invite summary */}
-            <div className="relative flex items-center gap-2">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">your invitation</span>
-              <div className="flex-1 h-px bg-gray-200" />
+            {/* Invitation summary */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.16em]">your invitation</span>
+              <div className="flex-1 h-px bg-border" />
             </div>
 
-            <div className={`flex items-center gap-3 p-3 rounded-xl border ${
-              ROLE_META[inviteInfo?.role ?? "MEMBER"]?.bg ?? "bg-gray-50"
-            } border-gray-100`}>
-              {(() => {
-                const r = ROLE_META[inviteInfo?.role ?? "MEMBER"] ?? ROLE_META.MEMBER;
-                const I = r.Icon;
-                return (
-                  <>
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${r.bg}`}>
-                      <I className={`w-5 h-5 ${r.color}`} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{inviteInfo?.institution.name}</p>
-                      <p className={`text-xs font-medium ${r.color}`}>{r.label}</p>
-                    </div>
-                  </>
-                );
-              })()}
+            <div className={`flex items-center gap-3 p-3 rounded-lg border ${role.bg} border-border`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${role.bg}`}>
+                <RoleIcon className={`w-4 h-4 ${role.color}`} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-foreground">{inviteInfo?.institution.name}</p>
+                <p className={`text-[10px] font-medium ${role.color}`}>{role.label}</p>
+              </div>
+              {inviteInfo?.expires_at && (
+                <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>{new Date(inviteInfo.expires_at).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
-
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </Layout>
-  );
+
+        <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+          <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+            © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+          </p>
+        </div>
+      </div>
+
+      {/* ══ RIGHT — Primary editorial panel ══ */}
+      <div className="hidden lg:flex w-full lg:w-[42%] h-full bg-primary flex-col">
+        <div className="flex items-center justify-between px-10 h-11 border-b border-white/10 flex-shrink-0">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Institution Invite</span>
+          <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">Rwanda · Education</span>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center px-10 py-6 gap-6">
+
+          {/* Institution info */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.42, ease: "easeOut" }}
+          >
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
+                {inviteInfo?.institution.logo_url
+                  ? <img src={inviteInfo.institution.logo_url} alt={inviteInfo.institution.name} className="w-full h-full object-cover" />
+                  : <Building2 className="w-8 h-8 text-white/70" />}
+              </div>
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-1">You're invited to join</p>
+                <h2 className="text-[28px] font-bold text-white leading-[1.05] tracking-tight">{inviteInfo?.institution.name}</h2>
+                <p className="text-[11px] text-white/60 uppercase tracking-widest mt-0.5">{inviteInfo?.institution.type?.replace(/_/g, " ")}</p>
+              </div>
+              {inviteInfo?.institution.description && (
+                <p className="text-[13px] text-white/70 leading-relaxed max-w-xs line-clamp-3">
+                  {inviteInfo.institution.description}
+                </p>
+              )}
+              {/* Role badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20">
+                <RoleIcon className="w-4 h-4 text-white" />
+                <span className="text-[13px] text-white font-semibold">You'll join as {role.label}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="w-10 h-px bg-white/20 mx-auto" />
+
+          {/* Details */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.22, duration: 0.42 }}
+            className="space-y-2"
+          >
+            {inviteInfo?.expires_at && (
+              <div className="flex items-center gap-3 py-3 border-b border-white/10">
+                <Clock className="w-4 h-4 text-white/50 flex-shrink-0" />
+                <div>
+                  <p className="text-[11px] font-bold text-white">Link expires</p>
+                  <p className="text-[11px] text-white/60">{new Date(inviteInfo.expires_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-3 py-3 border-b border-white/10">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <p className="text-[11px] text-white">Secured by BwengePlus</p>
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="px-10 py-4 border-t border-white/10 flex-shrink-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">BwengePlus</p>
+          <p className="text-[13px] font-semibold text-white">Rwanda's leading e-learning platform</p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-/* ── Exported page with Suspense (required for useSearchParams) ─────────── */
+function LoadingFallback() {
+  return (
+    <div className="h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
+    </div>
+  )
+}
+
 export default function JoinPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-primary flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    }>
+    <Suspense fallback={<LoadingFallback />}>
       <JoinPageInner />
     </Suspense>
-  );
+  )
 }

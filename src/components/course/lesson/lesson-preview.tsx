@@ -32,7 +32,7 @@ export function LessonPreview({ lesson }: LessonPreviewProps) {
     <div className="h-full overflow-y-auto space-y-6">
       {/* Lesson Header */}
       <div className="text-center pb-6 border-b">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{lesson.title}</h1>
+        <h1 className="text-2xl font-bold text-foreground dark:text-white mb-2">{lesson.title}</h1>
         <div className="flex justify-center gap-4">
           <Badge variant="outline" className="flex items-center gap-1">
             {getLessonIcon(lesson.type || "TEXT")}
@@ -55,13 +55,13 @@ export function LessonPreview({ lesson }: LessonPreviewProps) {
       {lesson.type === "VIDEO" && lesson.video_url && (
         <Card>
           <CardContent className="p-0">
-            <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+            <div className="aspect-video bg-card rounded-lg flex items-center justify-center">
               <Button size="lg" className="rounded-full w-16 h-16">
                 <PlayCircle className="w-8 h-8" />
               </Button>
             </div>
             <div className="p-4">
-              <p className="text-sm text-gray-500">Video URL: {lesson.video_url}</p>
+              <p className="text-sm text-muted-foreground">Video URL: {lesson.video_url}</p>
             </div>
           </CardContent>
         </Card>
@@ -80,7 +80,7 @@ export function LessonPreview({ lesson }: LessonPreviewProps) {
             {lesson.content ? (
               <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
             ) : (
-              <p className="text-gray-500 italic">No content added yet.</p>
+              <p className="text-muted-foreground italic">No content added yet.</p>
             )}
           </div>
         </CardContent>
@@ -100,10 +100,10 @@ export function LessonPreview({ lesson }: LessonPreviewProps) {
               {lesson.resources?.map((resource, index) => (
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <FileDown className="w-5 h-5 text-gray-500" />
+                    <FileDown className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{resource.title || `Resource ${index + 1}`}</p>
-                      <p className="text-sm text-gray-500">{resource.type || "link"}</p>
+                      <p className="text-sm text-muted-foreground">{resource.type || "link"}</p>
                     </div>
                   </div>
                   <Button size="sm" variant="outline" asChild>

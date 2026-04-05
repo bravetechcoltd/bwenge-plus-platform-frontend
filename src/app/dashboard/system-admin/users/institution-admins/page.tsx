@@ -235,8 +235,8 @@ export default function InstitutionAdminsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Institution Admins</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage institution administrators across the platform</p>
+          <h1 className="text-2xl font-bold text-foreground">Institution Admins</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage institution administrators across the platform</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchAdmins} disabled={loading}>
@@ -257,11 +257,11 @@ export default function InstitutionAdminsPage() {
             { label: "Institutions",  value: stats.institutions_managed,    color: BLUE },
             { label: "Avg Members",   value: stats.avg_members_per_admin,   color: AMB  },
           ].map((m, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div key={i} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="h-[3px]" style={{ backgroundColor: m.color }} />
               <div className="p-4">
-                <p className="text-xs font-semibold text-gray-500">{m.label}</p>
-                <p className="text-2xl font-black text-gray-900 mt-0.5">{(m.value ?? 0).toLocaleString()}</p>
+                <p className="text-xs font-semibold text-muted-foreground">{m.label}</p>
+                <p className="text-2xl font-black text-foreground mt-0.5">{(m.value ?? 0).toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -274,7 +274,7 @@ export default function InstitutionAdminsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search admins..."
                   value={search}
@@ -292,7 +292,7 @@ export default function InstitutionAdminsPage() {
                   <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-xs text-gray-400">{filteredAdmins.length} results</span>
+              <span className="text-xs text-muted-foreground">{filteredAdmins.length} results</span>
             </div>
             <Tabs value={viewMode} onValueChange={v => setViewMode(v as any)}>
               <TabsList>
@@ -308,40 +308,40 @@ export default function InstitutionAdminsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <tr className="border-b border-border bg-muted/50/50">
                     {["Admin", "Institution", "Status", "Members", "Courses", "Enrollments", "Last Login", ""].map((h, i) => (
-                      <th key={i} className={`px-5 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 ${i > 2 ? "text-right" : "text-left"}`}>{h}</th>
+                      <th key={i} className={`px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground ${i > 2 ? "text-right" : "text-left"}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="border-b border-gray-50">
+                      <tr key={i} className="border-b border-border">
                         {Array.from({ length: 8 }).map((_, j) => (
                           <td key={j} className="px-5 py-4"><Skeleton className="h-4 w-full" /></td>
                         ))}
                       </tr>
                     ))
                   ) : filteredAdmins.length === 0 ? (
-                    <tr><td colSpan={8} className="px-5 py-12 text-center text-gray-400 text-sm">
+                    <tr><td colSpan={8} className="px-5 py-12 text-center text-muted-foreground text-sm">
                       {search || statusFilter !== "all" ? "No results matching filters" : "No institution admins found"}
                     </td></tr>
                   ) : filteredAdmins.map(admin => {
                     const tc = getTypeColor(admin.institution_type);
                     return (
-                      <tr key={admin.id} className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors">
+                      <tr key={admin.id} className="border-b border-border hover:bg-muted/50/40 transition-colors">
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-9 h-9">
                               <AvatarImage src={admin.profile_picture_url} />
-                              <AvatarFallback className="text-xs bg-violet-100 text-violet-700 font-bold">
+                              <AvatarFallback className="text-xs bg-primary/15 text-primary font-bold">
                                 {getInitials(admin.first_name, admin.last_name)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-semibold text-sm text-gray-900">{admin.first_name} {admin.last_name}</p>
-                              <p className="text-xs text-gray-400">{admin.email}</p>
+                              <p className="font-semibold text-sm text-foreground">{admin.first_name} {admin.last_name}</p>
+                              <p className="text-xs text-muted-foreground">{admin.email}</p>
                             </div>
                           </div>
                         </td>
@@ -354,7 +354,7 @@ export default function InstitutionAdminsPage() {
                                 </div>
                             }
                             <div>
-                              <p className="text-sm font-semibold text-gray-800 truncate max-w-[140px]">{admin.institution_name}</p>
+                              <p className="text-sm font-semibold text-foreground truncate max-w-[140px]">{admin.institution_name}</p>
                               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: tc.bg, color: tc.text }}>
                                 {admin.institution_type?.replace("_", " ")}
                               </span>
@@ -362,14 +362,14 @@ export default function InstitutionAdminsPage() {
                           </div>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${admin.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${admin.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                             {admin.is_active ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-right text-sm font-semibold text-gray-700">{admin.stats?.total_members ?? 0}</td>
-                        <td className="px-5 py-3.5 text-right text-sm text-gray-600">{admin.stats?.total_courses ?? 0}</td>
-                        <td className="px-5 py-3.5 text-right text-sm text-gray-600">{admin.stats?.total_enrollments ?? 0}</td>
-                        <td className="px-5 py-3.5 text-right text-xs text-gray-400">{formatDate(admin.last_login)}</td>
+                        <td className="px-5 py-3.5 text-right text-sm font-semibold text-muted-foreground">{admin.stats?.total_members ?? 0}</td>
+                        <td className="px-5 py-3.5 text-right text-sm text-muted-foreground">{admin.stats?.total_courses ?? 0}</td>
+                        <td className="px-5 py-3.5 text-right text-sm text-muted-foreground">{admin.stats?.total_enrollments ?? 0}</td>
+                        <td className="px-5 py-3.5 text-right text-xs text-muted-foreground">{formatDate(admin.last_login)}</td>
                         <td className="px-5 py-3.5 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
@@ -389,12 +389,12 @@ export default function InstitutionAdminsPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => toggleStatus(admin)}>
                                   {admin.is_active
-                                    ? <XCircle className="w-4 h-4 mr-2 text-red-500" />
-                                    : <CheckCircle className="w-4 h-4 mr-2 text-green-500" />}
+                                    ? <XCircle className="w-4 h-4 mr-2 text-destructive" />
+                                    : <CheckCircle className="w-4 h-4 mr-2 text-success" />}
                                   {admin.is_active ? "Deactivate" : "Activate"}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600"
+                                <DropdownMenuItem className="text-destructive"
                                   onClick={() => { setSelectedAdmin(admin); setShowDeleteDialog(true); }}>
                                   <Trash2 className="w-4 h-4 mr-2" />Remove Admin
                                 </DropdownMenuItem>
@@ -415,21 +415,21 @@ export default function InstitutionAdminsPage() {
                 : filteredAdmins.map(admin => {
                   const tc = getTypeColor(admin.institution_type);
                   return (
-                    <div key={admin.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                    <div key={admin.id} className="bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <Avatar className="w-11 h-11">
                             <AvatarImage src={admin.profile_picture_url} />
-                            <AvatarFallback className="bg-violet-100 text-violet-700 font-bold">
+                            <AvatarFallback className="bg-primary/15 text-primary font-bold">
                               {getInitials(admin.first_name, admin.last_name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-bold text-sm text-gray-900">{admin.first_name} {admin.last_name}</p>
-                            <p className="text-xs text-gray-400 truncate max-w-[160px]">{admin.email}</p>
+                            <p className="font-bold text-sm text-foreground">{admin.first_name} {admin.last_name}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[160px]">{admin.email}</p>
                           </div>
                         </div>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${admin.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${admin.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                           {admin.is_active ? "Active" : "Inactive"}
                         </span>
                       </div>
@@ -438,7 +438,7 @@ export default function InstitutionAdminsPage() {
                         <div className="w-6 h-6 rounded flex items-center justify-center" style={{ backgroundColor: tc.bg }}>
                           <Building2 className="w-3 h-3" style={{ color: tc.text }} />
                         </div>
-                        <p className="text-sm font-semibold text-gray-700 truncate">{admin.institution_name}</p>
+                        <p className="text-sm font-semibold text-muted-foreground truncate">{admin.institution_name}</p>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0" style={{ backgroundColor: tc.bg, color: tc.text }}>
                           {admin.institution_type?.replace("_", " ")}
                         </span>
@@ -450,9 +450,9 @@ export default function InstitutionAdminsPage() {
                           { label: "Courses",     value: admin.stats?.total_courses ?? 0 },
                           { label: "Enrollments", value: admin.stats?.total_enrollments ?? 0 },
                         ].map((s, i) => (
-                          <div key={i} className="text-center bg-gray-50 rounded-lg py-2">
-                            <p className="text-base font-black text-gray-900">{s.value}</p>
-                            <p className="text-[10px] text-gray-400">{s.label}</p>
+                          <div key={i} className="text-center bg-muted/50 rounded-lg py-2">
+                            <p className="text-base font-black text-foreground">{s.value}</p>
+                            <p className="text-[10px] text-muted-foreground">{s.label}</p>
                           </div>
                         ))}
                       </div>
@@ -462,7 +462,7 @@ export default function InstitutionAdminsPage() {
                           onClick={() => { setSelectedAdmin(admin); setShowDetailModal(true); }}>
                           <Eye className="w-3 h-3 mr-1" />View
                         </Button>
-                        <Button variant="outline" size="sm" className="text-xs text-red-500 hover:text-red-700"
+                        <Button variant="outline" size="sm" className="text-xs text-destructive hover:text-destructive"
                           onClick={() => { setSelectedAdmin(admin); setShowDeleteDialog(true); }}>
                           <Trash2 className="w-3 h-3" />
                         </Button>
@@ -476,8 +476,8 @@ export default function InstitutionAdminsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
-              <p className="text-sm text-gray-500">{((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, total)} of {total}</p>
+            <div className="flex items-center justify-between px-5 py-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">{((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, total)} of {total}</p>
               <div className="flex gap-1">
                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                   <ChevronLeft className="w-4 h-4" />
@@ -507,27 +507,27 @@ export default function InstitutionAdminsPage() {
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
                   <AvatarImage src={selectedAdmin.profile_picture_url} />
-                  <AvatarFallback className="text-lg bg-violet-100 text-violet-700 font-bold">
+                  <AvatarFallback className="text-lg bg-primary/15 text-primary font-bold">
                     {getInitials(selectedAdmin.first_name, selectedAdmin.last_name)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-black text-gray-900">{selectedAdmin.first_name} {selectedAdmin.last_name}</h3>
-                  <p className="text-sm text-gray-500">{selectedAdmin.email}</p>
-                  {selectedAdmin.phone_number && <p className="text-xs text-gray-400">{selectedAdmin.phone_number}</p>}
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${selectedAdmin.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                  <h3 className="text-lg font-black text-foreground">{selectedAdmin.first_name} {selectedAdmin.last_name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedAdmin.email}</p>
+                  {selectedAdmin.phone_number && <p className="text-xs text-muted-foreground">{selectedAdmin.phone_number}</p>}
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${selectedAdmin.is_active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                     {selectedAdmin.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-gray-100 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Institution</p>
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Institution</p>
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4" style={{ color: P }} />
-                  <span className="font-bold text-gray-800">{selectedAdmin.institution_name}</span>
+                  <span className="font-bold text-foreground">{selectedAdmin.institution_name}</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{selectedAdmin.institution_type?.replace("_", " ")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedAdmin.institution_type?.replace("_", " ")}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -538,13 +538,13 @@ export default function InstitutionAdminsPage() {
                   { label: "Total Enrollments",value: selectedAdmin.stats?.total_enrollments ?? 0 },
                 ].map((s, i) => (
                   <div key={i} className="rounded-xl p-3" style={{ backgroundColor: `${P}0d` }}>
-                    <p className="text-xs text-gray-500 font-semibold mb-0.5">{s.label}</p>
+                    <p className="text-xs text-muted-foreground font-semibold mb-0.5">{s.label}</p>
                     <p className="text-xl font-black" style={{ color: P }}>{s.value}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                 <div><span className="font-semibold">Joined: </span>{formatDate(selectedAdmin.date_joined)}</div>
                 <div><span className="font-semibold">Last Login: </span>{formatDate(selectedAdmin.last_login)}</div>
               </div>
@@ -572,12 +572,12 @@ export default function InstitutionAdminsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">User ID</label>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">User ID</label>
               <Input placeholder="Enter user ID" value={assignForm.user_id}
                 onChange={e => setAssignForm(prev => ({ ...prev, user_id: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Institution</label>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Institution</label>
               <Select value={assignForm.institution_id} onValueChange={v => setAssignForm(prev => ({ ...prev, institution_id: v }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select institution" />
@@ -587,7 +587,7 @@ export default function InstitutionAdminsPage() {
                     <SelectItem key={inst.id} value={inst.id}>{inst.name}</SelectItem>
                   ))}
                   {institutions.length === 0 && (
-                    <div className="px-3 py-2 text-xs text-gray-400">No institutions loaded</div>
+                    <div className="px-3 py-2 text-xs text-muted-foreground">No institutions loaded</div>
                   )}
                 </SelectContent>
               </Select>
@@ -608,7 +608,7 @@ export default function InstitutionAdminsPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />Remove Admin
+              <AlertTriangle className="w-5 h-5 text-destructive" />Remove Admin
             </DialogTitle>
             <DialogDescription>
               Remove <strong>{selectedAdmin?.first_name} {selectedAdmin?.last_name}</strong> as admin of{" "}

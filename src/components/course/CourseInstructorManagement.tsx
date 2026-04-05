@@ -217,7 +217,6 @@ export default function CourseInstructorManagement({
         can_edit_course_content: true,
       });
     } catch (error) {
-      console.error("Failed to add instructor:", error);
     }
   };
 
@@ -244,7 +243,6 @@ export default function CourseInstructorManagement({
       setNewPrimaryInstructorId("");
       setKeepAsAdditional(true);
     } catch (error) {
-      console.error("Failed to replace primary instructor:", error);
     }
   };
 
@@ -266,7 +264,6 @@ export default function CourseInstructorManagement({
         can_edit_course_content: true,
       });
     } catch (error) {
-      console.error("Failed to update permissions:", error);
     }
   };
 
@@ -279,7 +276,6 @@ export default function CourseInstructorManagement({
       await dispatch(removeInstructor({ courseId, instructorId })).unwrap();
       toast.success(`Instructor removed successfully`);
     } catch (error) {
-      console.error("Failed to remove instructor:", error);
     }
   };
 
@@ -299,7 +295,6 @@ export default function CourseInstructorManagement({
       await dispatch(bulkAssignInstructors({ courseId, instructors })).unwrap();
       setBulkSelectedInstructors(new Set());
     } catch (error) {
-      console.error("Failed to bulk assign instructors:", error);
     }
   };
 
@@ -336,8 +331,8 @@ export default function CourseInstructorManagement({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Course Instructors</h2>
-          <p className="text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Course Instructors</h2>
+          <p className="text-muted-foreground">
             Manage instructors for <span className="font-semibold">{courseName}</span>
           </p>
         </div>
@@ -397,7 +392,7 @@ export default function CourseInstructorManagement({
         <TabsContent value="current" className="space-y-6">
           {isLoadingInstructors ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <>
@@ -406,7 +401,7 @@ export default function CourseInstructorManagement({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-amber-500" />
+                      <Award className="w-5 h-5 text-warning" />
                       Primary Instructor
                     </CardTitle>
                     <CardDescription>
@@ -430,14 +425,14 @@ export default function CourseInstructorManagement({
                           <h3 className="font-semibold">
                             {courseInstructors.primary.first_name} {courseInstructors.primary.last_name}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {courseInstructors.primary.email}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className="bg-amber-100 text-amber-800">
+                            <Badge className="bg-warning/15 text-warning">
                               Primary Instructor
                             </Badge>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               Assigned: {new Date(courseInstructors.primary.assigned_at).toLocaleDateString()}
                             </span>
                           </div>
@@ -466,7 +461,7 @@ export default function CourseInstructorManagement({
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        <Users className="w-5 h-5 text-blue-500" />
+                        <Users className="w-5 h-5 text-primary" />
                         Additional Instructors
                       </CardTitle>
                       <CardDescription>
@@ -481,11 +476,11 @@ export default function CourseInstructorManagement({
                 <CardContent>
                   {courseInstructors.additional.length === 0 ? (
                     <div className="text-center py-8">
-                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                         No Additional Instructors
                       </h3>
-                      <p className="text-gray-500 mb-4">
+                      <p className="text-muted-foreground mb-4">
                         Add instructors to help manage this course
                       </p>
                       <Button onClick={() => setActiveTab("add")}>
@@ -538,7 +533,7 @@ export default function CourseInstructorManagement({
               <div className="space-y-2">
                 <Label>Search Available Instructors</Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     placeholder="Search by name or email..."
                     value={searchTerm}
@@ -546,7 +541,7 @@ export default function CourseInstructorManagement({
                     className="pl-9"
                   />
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Showing {filteredAvailableInstructors.length} available instructors
                 </p>
               </div>
@@ -556,12 +551,12 @@ export default function CourseInstructorManagement({
                 <Label>Select Instructor</Label>
                 {isLoadingAvailable ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                   </div>
                 ) : filteredAvailableInstructors.length === 0 ? (
                   <div className="text-center py-8 border rounded-lg">
-                    <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No instructors available for assignment</p>
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No instructors available for assignment</p>
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -570,8 +565,8 @@ export default function CourseInstructorManagement({
                         key={instructor.user_id}
                         className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
                           newInstructorId === instructor.user_id
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:bg-gray-50"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:bg-muted/50"
                         }`}
                         onClick={() => setNewInstructorId(instructor.user_id)}
                       >
@@ -590,12 +585,12 @@ export default function CourseInstructorManagement({
                             <p className="font-medium">
                               {instructor.first_name} {instructor.last_name}
                             </p>
-                            <p className="text-sm text-gray-500">{instructor.email}</p>
+                            <p className="text-sm text-muted-foreground">{instructor.email}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="outline" className="text-xs">
                                 {instructor.institution_role}
                               </Badge>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-muted-foreground">
                                 {instructor.courses_taught} courses
                               </span>
                             </div>
@@ -603,9 +598,9 @@ export default function CourseInstructorManagement({
                         </div>
                         <div className="flex items-center gap-2">
                           {newInstructorId === instructor.user_id ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <CheckCircle className="w-5 h-5 text-success" />
                           ) : (
-                            <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                            <div className="w-5 h-5 border-2 border-border rounded-full" />
                           )}
                         </div>
                       </div>
@@ -658,12 +653,12 @@ export default function CourseInstructorManagement({
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Warning Alert */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
                 <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-amber-800">Important Notice</h4>
-                    <p className="text-sm text-amber-700 mt-1">
+                    <h4 className="font-semibold text-warning">Important Notice</h4>
+                    <p className="text-sm text-warning mt-1">
                       Replacing the primary instructor will change course ownership.
                       The new instructor will have full administrative access.
                     </p>
@@ -675,7 +670,7 @@ export default function CourseInstructorManagement({
               {courseInstructors.primary && (
                 <div className="space-y-2">
                   <Label>Current Primary Instructor</Label>
-                  <div className="p-4 border rounded-lg bg-gray-50">
+                  <div className="p-4 border rounded-lg bg-muted/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarImage
@@ -691,7 +686,7 @@ export default function CourseInstructorManagement({
                         <p className="font-semibold">
                           {courseInstructors.primary.first_name} {courseInstructors.primary.last_name}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {courseInstructors.primary.email}
                         </p>
                       </div>
@@ -819,12 +814,12 @@ export default function CourseInstructorManagement({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-red-800">Warning</h4>
-                  <p className="text-sm text-red-700 mt-1">
+                  <h4 className="font-semibold text-destructive">Warning</h4>
+                  <p className="text-sm text-destructive mt-1">
                     Replacing the primary instructor is a significant change.
                     The new instructor will gain full control over this course.
                   </p>
@@ -834,7 +829,7 @@ export default function CourseInstructorManagement({
 
             <div className="space-y-2">
               <Label>Current Primary Instructor</Label>
-              <div className="p-3 border rounded-lg bg-gray-50">
+              <div className="p-3 border rounded-lg bg-muted/50">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-8 h-8">
                     <AvatarImage
@@ -850,7 +845,7 @@ export default function CourseInstructorManagement({
                     <p className="font-medium">
                       {selectedInstructor?.first_name} {selectedInstructor?.last_name}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       {selectedInstructor?.email}
                     </p>
                   </div>
@@ -953,7 +948,7 @@ export default function CourseInstructorManagement({
               <div className="space-y-2">
                 <Label>Search Instructors</Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     placeholder="Search by name or email..."
                     value={searchTerm}
@@ -984,15 +979,15 @@ export default function CourseInstructorManagement({
               <div className="border rounded-lg overflow-y-auto flex-1 min-h-[200px]">
                 {filteredAvailableInstructors.length === 0 ? (
                   <div className="text-center py-8">
-                    <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No instructors available</p>
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No instructors available</p>
                   </div>
                 ) : (
                   <div className="divide-y">
                     {filteredAvailableInstructors.map((instructor) => (
                       <div
                         key={instructor.user_id}
-                        className="flex items-center gap-3 p-3 hover:bg-gray-50"
+                        className="flex items-center gap-3 p-3 hover:bg-muted/50"
                       >
                         <Switch
                           checked={bulkSelectedInstructors.has(instructor.user_id)}
@@ -1012,7 +1007,7 @@ export default function CourseInstructorManagement({
                           <p className="font-medium">
                             {instructor.first_name} {instructor.last_name}
                           </p>
-                          <p className="text-sm text-gray-500">{instructor.email}</p>
+                          <p className="text-sm text-muted-foreground">{instructor.email}</p>
                         </div>
                         <Badge variant="outline">
                           {instructor.institution_role}

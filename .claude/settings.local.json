@@ -2,7 +2,26 @@
   "permissions": {
     "allow": [
       "Bash(sed -n '870,890p' \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MyProject\\\\bwenge-plus-platform-frontend\\\\src\\\\lib\\\\features\\\\auth\\\\auth-slice.ts\")",
-      "Bash(sed -n '1704,1718p' \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MyProject\\\\bwenge-plus-platform-frontend\\\\src\\\\lib\\\\features\\\\auth\\\\auth-slice.ts\")"
+      "Bash(sed -n '1704,1718p' \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MyProject\\\\bwenge-plus-platform-frontend\\\\src\\\\lib\\\\features\\\\auth\\\\auth-slice.ts\")",
+      "Bash(node:*)",
+      "Bash(xargs grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next:*)",
+      "Bash(grep -n \"useTheme\\\\|Sun\\\\|Moon\\\\|mounted\" C:/Users/Dell/Desktop/MyProject/bwenge-plus-platform-frontend/src/app/courses/[id]/page.tsx)",
+      "Bash(cat)",
+      "Bash(chmod +x /tmp/audit_colors.sh)",
+      "Bash(bash /tmp/audit_colors.sh)",
+      "Bash(chmod +x /tmp/generate_report.sh)",
+      "Bash(bash /tmp/generate_report.sh)",
+      "Read(//tmp/**)",
+      "Bash(chmod +x /tmp/color_summary.sh)",
+      "Bash(bash /tmp/color_summary.sh)",
+      "Bash(powershell -Command ':*)",
+      "Bash(echo \"Done: exit $?\")",
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(npx eslint:*)",
+      "Bash(find /c/Users/Dell/Desktop/MyProject/bwenge-plus-platform-frontend/src/app/dashboard -name \"page.tsx\" -type f -exec grep -l \"course\\\\|Course\" {} \\\\;)",
+      "Bash(find /c/Users/Dell/Desktop/MyProject/bwenge-plus-platform-frontend/src/components -name \"*.tsx\" -type f -exec grep -l \"CourseCard\\\\|course.*card\\\\|courses.*map\\\\|BwengeCourseCard\\\\|DashboardCourseCard\" {} \\\\;)"
     ]
   }
 }

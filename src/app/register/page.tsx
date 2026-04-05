@@ -7,16 +7,14 @@ import { useDispatch, useSelector } from "react-redux"
 import { registerBwenge, clearError } from "@/lib/features/auth/auth-slice"
 import type { AppDispatch, RootState } from "@/lib/store"
 import {
-  Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, ArrowRight,
-  User, Phone, Globe, CheckCircle, Sparkles, BookOpen, Home,
-  Check, ChevronRight, Calendar, Users, GraduationCap, Linkedin,
-  FileText, ClipboardList, Clock,
+  Eye, EyeOff, Loader2, ArrowRight, User, CheckCircle, Home,
+  Check, ChevronRight, GraduationCap, Clock,
 } from "lucide-react"
 import Link from "next/link"
 import { GoogleOAuthProviderWrapper } from "@/components/auth/google-login"
 import { toast } from "sonner"
 
-/* ── Password strength ──────────────────────────────────────── */
+/* ── Password strength ── */
 function getStrength(pw: string) {
   let s = 0
   if (pw.length >= 8) s++
@@ -26,45 +24,92 @@ function getStrength(pw: string) {
   return s
 }
 const strengthColor = ["#ef4444", "#f59e0b", "#eab308", "#22c55e"]
-const strengthLabel = ["Weak", "Fair", "Good", "Strong"]
 
-/* ── Steps config ───────────────────────────────────────────── */
 const STEPS = [
-  { id: 1, label: "Personal Info", icon: User },
-  { id: 2, label: "Account Setup", icon: Lock },
+  { id: 1, label: "Personal", icon: User },
+  { id: 2, label: "Account", icon: Eye },
   { id: 3, label: "Background", icon: GraduationCap },
 ]
 
 const EDUCATION_LEVELS = [
-  "High School / Secondary",
-  "Diploma / Certificate",
-  "Bachelor's Degree",
-  "Master's Degree",
-  "PhD / Doctorate",
-  "Other",
+  "High School / Secondary", "Diploma / Certificate", "Bachelor's Degree",
+  "Master's Degree", "PhD / Doctorate", "Other",
 ]
-
 const GENDERS = ["Male", "Female", "Prefer not to say", "Other"]
 
-/* ── Floating particles ─────────────────────────────────────── */
-function FloatingParticles() {
-  const particles = Array.from({ length: 18 }, (_, i) => ({
-    id: i, x: Math.random() * 100, y: Math.random() * 100,
-    size: Math.random() * 3 + 1, duration: Math.random() * 10 + 14, delay: Math.random() * 6,
-  }))
+const processSteps = [
+  { num: "01", title: "Apply", desc: "Fill in your personal and academic details" },
+  { num: "02", title: "Review", desc: "Admin team reviews within 24–48 hours" },
+  { num: "03", title: "Approve", desc: "You receive an email once a decision is made" },
+  { num: "04", title: "Access", desc: "Log in and start learning immediately" },
+]
+
+/* ── Simple Input with placeholder ── */
+interface InputProps {
+  id: string; name: string; type?: string; value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string; required?: boolean; disabled?: boolean; rightEl?: React.ReactNode
+}
+function Input({ id, name, type = "text", value, onChange, placeholder, required, disabled, rightEl }: InputProps) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div key={p.id} className="absolute rounded-full bg-white/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
-          animate={{ y: [-10, -55], opacity: [0, 0.8, 0.8, 0] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
-        />
-      ))}
+    <div className="relative">
+      <input
+        id={id} name={name} type={type} value={value} onChange={onChange}
+        placeholder={placeholder} required={required} disabled={disabled}
+        className={`w-full ${rightEl ? "pr-9" : "pr-3"} pl-3 py-2 text-sm
+          bg-white/80 dark:bg-white/5 border border-border rounded-lg outline-none
+          transition-colors duration-150 focus:border-primary
+          text-foreground placeholder:text-muted-foreground/60
+          disabled:opacity-50 disabled:cursor-not-allowed`}
+      />
+      {rightEl && <div className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10">{rightEl}</div>}
     </div>
   )
 }
 
+/* ── Select with placeholder ── */
+interface SelectFieldProps {
+  id: string; name: string; value: string
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  placeholder: string; required?: boolean; disabled?: boolean; options: string[]
+}
+function SelectInput({ id, name, value, onChange, placeholder, required, disabled, options }: SelectFieldProps) {
+  return (
+    <div className="relative">
+      <select
+        id={id} name={name} value={value} onChange={onChange}
+        required={required} disabled={disabled}
+        className={`w-full pl-3 pr-3 py-2 text-sm bg-white/80 dark:bg-white/5
+          border border-border rounded-lg outline-none appearance-none
+          transition-colors focus:border-primary disabled:opacity-50
+          ${value ? "text-foreground" : "text-muted-foreground/60"}`}
+      >
+        <option value="" disabled hidden>{placeholder}</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  )
+}
+
+/* ── Date input ── */
+function DateInput({ id, name, value, onChange, placeholder, disabled }: {
+  id: string; name: string; value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string; disabled?: boolean
+}) {
+  return (
+    <input
+      id={id} name={name} type="date" value={value} onChange={onChange}
+      disabled={disabled} placeholder={placeholder}
+      className="w-full pl-3 pr-3 py-2 text-sm bg-white/80 dark:bg-white/5
+        border border-border rounded-lg outline-none transition-colors
+        focus:border-primary text-foreground disabled:opacity-50
+        placeholder:text-muted-foreground/60"
+    />
+  )
+}
+
+/* ══ Main ══ */
 export default function RegisterPage() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
@@ -87,104 +132,70 @@ export default function RegisterPage() {
 
   useEffect(() => () => { dispatch(clearError()) }, [dispatch])
 
-  // After successful submission, show success screen
-  useEffect(() => {
-    if (applicationSubmitted && applicationEmail) {
-      // already handled by rendering below
-    }
-  }, [applicationSubmitted, applicationEmail])
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
 
   const pw = form.password
   const strength = getStrength(pw)
   const pwMatch = form.confirm_password && form.password === form.confirm_password
 
-  // Step validation
-  const step1Valid = form.first_name.trim() && form.last_name.trim() && form.email.trim() && form.phone_number.trim() && form.country.trim()
-  const step2Valid = form.password.length >= 8 && pwMatch
-  const step3Valid = form.education_level && form.motivation.trim().length >= 20
+  const step1Valid = !!(form.first_name.trim() && form.last_name.trim() && form.email.trim() && form.phone_number.trim() && form.country.trim())
+  const step2Valid = form.password.length >= 8 && !!pwMatch
+  const step3Valid = !!(form.education_level && form.motivation.trim().length >= 20)
 
-  const canNext = () => {
-    if (step === 1) return !!step1Valid
-    if (step === 2) return !!step2Valid
-    return true
-  }
-
-  const handleNext = () => {
-    if (step < 3) setStep(s => s + 1)
-  }
-
-  const handleBack = () => {
-    if (step > 1) setStep(s => s - 1)
-  }
+  const canNext = () => step === 1 ? step1Valid : step === 2 ? step2Valid : true
+  const handleNext = () => { if (step < 3) setStep((s) => s + 1) }
+  const handleBack = () => { if (step > 1) setStep((s) => s - 1) }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!agreed) { toast.error("Please agree to the Terms of Service"); return }
     if (!step3Valid) { toast.error("Please fill all required fields"); return }
-
     try {
       await dispatch(registerBwenge({
-        first_name: form.first_name.trim(),
-        last_name: form.last_name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        confirm_password: form.confirm_password,
-        phone_number: form.phone_number || undefined,
-        country: form.country || undefined,
-        date_of_birth: form.date_of_birth || undefined,
-        gender: form.gender || undefined,
-        education_level: form.education_level || undefined,
-        motivation: form.motivation,
+        first_name: form.first_name.trim(), last_name: form.last_name.trim(),
+        email: form.email.trim(), password: form.password, confirm_password: form.confirm_password,
+        phone_number: form.phone_number || undefined, country: form.country || undefined,
+        date_of_birth: form.date_of_birth || undefined, gender: form.gender || undefined,
+        education_level: form.education_level || undefined, motivation: form.motivation,
         linkedin_url: form.linkedin_url || undefined,
       })).unwrap()
-
       toast.success("Application submitted! Check your email for confirmation.")
-    } catch (err: any) {
-      // error shown via Redux state
-    }
+    } catch (_) {}
   }
 
-  // ── Application submitted success screen ─────────────────────
+  /* ── Success screen ── */
   if (applicationSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary p-4">
+      <div className="h-screen flex items-center justify-center bg-primary p-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center"
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }}
+          className="bg-background rounded-xl border border-border/50 p-7 max-w-md w-full"
         >
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
-            <CheckCircle className="w-10 h-10 text-green-500" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
-          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-            Your application to join BwengePlus has been received. Our admin team will review it within <strong>24–48 hours</strong>.
+          <h2 className="text-xl font-bold text-foreground mb-1">Application Submitted</h2>
+          <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
+            Our admin team will review your application within <strong className="text-foreground">24–48 hours</strong>.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-left">
-            <div className="flex items-center gap-2 mb-2">
-              <Mail className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700 text-sm font-semibold">Confirmation sent to:</span>
-            </div>
-            <p className="text-blue-800 text-sm font-mono">{applicationEmail}</p>
+          <div className="bg-muted border border-border/50 rounded-lg p-3 mb-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground mb-0.5">Confirmation sent to</p>
+            <p className="text-sm font-mono text-foreground">{applicationEmail}</p>
           </div>
-          <div className="space-y-2 text-sm text-gray-500 mb-6">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <span>You will receive an email once a decision is made</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-              <span>If approved, you can log in and start learning</span>
-            </div>
+          <div className="space-y-2 mb-5">
+            {[
+              { icon: Clock, text: "You'll receive an email once a decision is made" },
+              { icon: CheckCircle, text: "If approved, log in and start learning" },
+            ].map(({ icon: I, text }, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <I className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                <span className="text-[11px] text-muted-foreground">{text}</span>
+              </div>
+            ))}
           </div>
-          <Link href="/login"
-            className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
-          >
-            Go to Login
-            <ArrowRight className="w-4 h-4" />
+          <Link href="/login" className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+            Go to Login <ArrowRight className="w-4 h-4" />
           </Link>
         </motion.div>
       </div>
@@ -193,443 +204,356 @@ export default function RegisterPage() {
 
   return (
     <GoogleOAuthProviderWrapper>
-      <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden bg-primary">
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
 
-        {/* ═══ LEFT — Form ═══ */}
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-5 lg:p-6 relative z-20">
-          <Link href="/"
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-xs font-medium transition-all hover:scale-105 group z-30 shadow-sm"
-          >
-            <Home className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="hidden sm:inline">Home</span>
-          </Link>
+        {/* ══ LEFT — Form column ══ */}
+        <div className="w-full lg:w-[58%] h-full flex flex-col bg-background border-r border-border/40">
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="w-full max-w-[480px]"
-          >
-            <div className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/70 overflow-hidden">
+          {/* Top nav */}
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+                <svg viewBox="0 0 40 40" className="w-3.5 h-3.5" fill="none">
+                  <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
+                  <polygon points="20,3 8,10 20,14 32,10" fill="white" />
+                  <rect x="10" y="14" width="9" height="16" rx="1.5" fill="white" />
+                  <rect x="21" y="14" width="9" height="16" rx="1.5" fill="white" />
+                </svg>
+              </div>
+              <span className="text-sm font-bold text-foreground tracking-tight">BwengePlus</span>
+            </div>
 
-              {/* Card Header */}
-              <div className="pt-5 pb-3 px-6 flex flex-col items-center border-b border-gray-100/80">
-                <div className="w-12 h-12 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center mb-2">
-                  <ClipboardList className="w-6 h-6 text-white" />
-                </div>
-                <h1 className="text-xl font-bold tracking-tight text-gray-900">
-                  Apply to <span className="text-primary">BwengePlus</span>
+            {/* Step indicators */}
+            <div className="flex items-center gap-0">
+              {STEPS.map((s, i) => {
+                const done = step > s.id; const active = step === s.id
+                return (
+                  <React.Fragment key={s.id}>
+                    <div className="flex items-center gap-1">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center transition-all duration-200 ${
+                        done ? "bg-emerald-500" : active ? "bg-primary" : "bg-border"}`}>
+                        {done
+                          ? <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          : <span className={`text-[9px] font-black ${active ? "text-white" : "text-muted-foreground"}`}>{s.id}</span>}
+                      </div>
+                      <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors hidden sm:block ${
+                        active ? "text-foreground" : done ? "text-emerald-500" : "text-muted-foreground"}`}>
+                        {s.label}
+                      </span>
+                    </div>
+                    {i < STEPS.length - 1 && (
+                      <div className={`w-5 h-px mx-1.5 transition-colors duration-300 ${step > s.id ? "bg-emerald-500" : "bg-border"}`} />
+                    )}
+                  </React.Fragment>
+                )
+              })}
+            </div>
+
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
+          </div>
+
+          {/* Form centered */}
+          <div className="flex-1 flex items-center justify-center px-8 py-3 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="w-full max-w-[420px] space-y-2.5"
+            >
+              {/* Heading */}
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+                  Apply · Step {step} of {STEPS.length}
+                </p>
+                <h1 className="text-[20px] font-bold text-foreground leading-none tracking-tight">
+                  {step === 1 ? "Personal details." : step === 2 ? "Set your password." : "Your background."}
                 </h1>
-                <p className="text-[11px] text-gray-400 mt-0.5">Learner account application — Admin approval required</p>
               </div>
 
-              {/* Step indicators */}
-              <div className="px-6 pt-3 pb-2">
-                <div className="flex items-center justify-between">
-                  {STEPS.map((s, i) => {
-                    const Icon = s.icon
-                    const active = step === s.id
-                    const done = step > s.id
-                    return (
-                      <React.Fragment key={s.id}>
-                        <div className="flex flex-col items-center gap-0.5">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors text-xs font-bold ${
-                            done ? "bg-green-500 text-white" : active ? "bg-primary text-white" : "bg-gray-100 text-gray-400"
-                          }`}>
-                            {done ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : <Icon className="w-3.5 h-3.5" />}
-                          </div>
-                          <span className={`text-[9px] font-medium ${active ? "text-primary" : done ? "text-green-500" : "text-gray-400"}`}>
-                            {s.label}
+              {/* Error */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.16 }}
+                    className="border-l-[3px] border-destructive bg-destructive/5 pl-3 pr-3 py-2 rounded-r"
+                  >
+                    <p className="text-[11px] text-destructive">{error}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Progress bar */}
+              <div className="w-full h-px bg-border overflow-hidden rounded-full">
+                <motion.div
+                  className="h-full bg-primary"
+                  animate={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                />
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <AnimatePresence mode="wait">
+
+                  {/* STEP 1 */}
+                  {step === 1 && (
+                    <motion.div key="s1"
+                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                      transition={{ duration: 0.18 }}
+                      className="space-y-2"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input id="first_name" name="first_name" value={form.first_name} onChange={handleChange} placeholder="First name *" required disabled={isLoading} />
+                        <Input id="last_name" name="last_name" value={form.last_name} onChange={handleChange} placeholder="Last name *" required disabled={isLoading} />
+                      </div>
+                      <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address *" required disabled={isLoading} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input id="phone_number" name="phone_number" type="tel" value={form.phone_number} onChange={handleChange} placeholder="Phone number *" required disabled={isLoading} />
+                        <Input id="country" name="country" value={form.country} onChange={handleChange} placeholder="Country *" required disabled={isLoading} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <DateInput id="date_of_birth" name="date_of_birth" value={form.date_of_birth} onChange={handleChange} placeholder="Date of birth" disabled={isLoading} />
+                        <SelectInput id="gender" name="gender" value={form.gender} onChange={handleChange} placeholder="Gender" disabled={isLoading} options={GENDERS} />
+                      </div>
+                      <button type="button" onClick={handleNext} disabled={!canNext()}
+                        className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                          hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                          flex items-center justify-center gap-2">
+                        Next: Account Setup <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 2 */}
+                  {step === 2 && (
+                    <motion.div key="s2"
+                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                      transition={{ duration: 0.18 }}
+                      className="space-y-2"
+                    >
+                      <Input
+                        id="password" name="password" type={showPw ? "text" : "password"}
+                        value={form.password} onChange={handleChange}
+                        placeholder="Password (min 8 characters) *"
+                        required disabled={isLoading}
+                        rightEl={
+                          <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
+                            className="text-muted-foreground hover:text-foreground transition-colors">
+                            {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        }
+                      />
+
+                      <AnimatePresence>
+                        {pw && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                            className="space-y-1"
+                          >
+                            <div className="flex gap-1">
+                              {[0, 1, 2, 3].map((i) => (
+                                <div key={i} className="h-0.5 flex-1 rounded-full transition-all duration-300"
+                                  style={{ backgroundColor: i < strength ? strengthColor[strength - 1] : "var(--border)" }} />
+                              ))}
+                            </div>
+                            <p className="text-[9px] font-black uppercase tracking-widest"
+                              style={{ color: strength > 0 ? strengthColor[strength - 1] : "var(--muted-foreground)" }}>
+                              {strength > 0 ? ["Weak", "Fair", "Good", "Strong"][strength - 1] : "Too weak"}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="relative">
+                        <input
+                          id="confirm_password" name="confirm_password"
+                          type={showConfirm ? "text" : "password"}
+                          value={form.confirm_password} onChange={handleChange}
+                          placeholder="Confirm password *"
+                          required disabled={isLoading}
+                          className={`w-full pr-9 pl-3 py-2 text-sm
+                            bg-white/80 dark:bg-white/5 rounded-lg outline-none
+                            transition-colors text-foreground disabled:opacity-50
+                            placeholder:text-muted-foreground/60
+                            border ${form.confirm_password && !pwMatch
+                              ? "border-red-300 dark:border-red-800 focus:border-red-400"
+                              : "border-border focus:border-primary"}`}
+                        />
+                        <button type="button" tabIndex={-1} onClick={() => setShowConfirm(!showConfirm)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                          {showConfirm ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+
+                      <AnimatePresence>
+                        {form.confirm_password && !pwMatch && (
+                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="text-[10px] text-red-500">Passwords do not match</motion.p>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="flex gap-2">
+                        <button type="button" onClick={handleBack}
+                          className="flex-1 border border-border text-muted-foreground py-2.5 rounded-lg text-sm font-medium hover:bg-muted/40 transition-colors">
+                          Back
+                        </button>
+                        <button type="button" onClick={handleNext} disabled={!canNext()}
+                          className="flex-1 bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                            hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                            flex items-center justify-center gap-2">
+                          Next <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 3 */}
+                  {step === 3 && (
+                    <motion.div key="s3"
+                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                      transition={{ duration: 0.18 }}
+                      className="space-y-2"
+                    >
+                      <SelectInput
+                        id="education_level" name="education_level"
+                        value={form.education_level} onChange={handleChange}
+                        placeholder="Education level *"
+                        required disabled={isLoading} options={EDUCATION_LEVELS}
+                      />
+
+                      <Input id="linkedin_url" name="linkedin_url" type="url"
+                        value={form.linkedin_url} onChange={handleChange}
+                        placeholder="LinkedIn profile URL (optional)"
+                        disabled={isLoading}
+                      />
+
+                      {/* Motivation */}
+                      <div>
+                        <textarea
+                          id="motivation" name="motivation" value={form.motivation} onChange={handleChange}
+                          required rows={3} disabled={isLoading}
+                          placeholder="Your motivation for joining BwengePlus *"
+                          className="w-full pl-3 pr-3 pt-2.5 pb-2 text-sm
+                            bg-white/80 dark:bg-white/5 border border-border rounded-lg outline-none resize-none
+                            focus:border-primary transition-colors text-foreground disabled:opacity-50
+                            placeholder:text-muted-foreground/60"
+                        />
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Min. 20 characters</span>
+                          <span className={`text-[9px] font-bold tabular-nums ${form.motivation.length >= 20 ? "text-emerald-500" : "text-muted-foreground"}`}>
+                            {form.motivation.length}
                           </span>
                         </div>
-                        {i < STEPS.length - 1 && (
-                          <div className={`flex-1 h-px mx-1 mb-3 transition-colors ${step > s.id ? "bg-green-400" : "bg-gray-200"}`} />
-                        )}
-                      </React.Fragment>
-                    )
-                  })}
-                </div>
-              </div>
+                      </div>
 
-              {/* Card Body */}
-              <div className="px-5 pb-5 space-y-3">
+                      {/* Terms */}
+                      <label className="flex items-start gap-2 cursor-pointer group/terms select-none">
+                        <button type="button" role="checkbox" aria-checked={agreed}
+                          onClick={() => !isLoading && setAgreed(!agreed)} disabled={isLoading}
+                          className={`mt-0.5 w-3.5 h-3.5 rounded-sm border-[1.5px] flex items-center justify-center flex-shrink-0 transition-all ${
+                            agreed ? "bg-primary border-primary" : "bg-background border-border group-hover/terms:border-muted-foreground"}`}>
+                          {agreed && (
+                            <svg className="w-2 h-2 text-primary-foreground" fill="none" viewBox="0 0 10 10">
+                              <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </button>
+                        <span className="text-[11px] text-muted-foreground leading-snug">
+                          I agree to the{" "}
+                          <Link href="/terms" className="text-foreground font-semibold hover:underline underline-offset-2">Terms of Service</Link>
+                          {" "}and{" "}
+                          <Link href="/privacy" className="text-foreground font-semibold hover:underline underline-offset-2">Privacy Policy</Link>
+                        </span>
+                      </label>
 
-                {/* Error */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, height: 0 }}
-                      animate={{ opacity: 1, y: 0, height: "auto" }}
-                      exit={{ opacity: 0, y: -8, height: 0 }}
-                      className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-1.5"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-red-600 font-medium">{error}</p>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={handleBack}
+                          className="flex-1 border border-border text-muted-foreground py-2.5 rounded-lg text-sm font-medium hover:bg-muted/40 transition-colors">
+                          Back
+                        </button>
+                        <button type="submit" onClick={handleSubmit} disabled={isLoading || !step3Valid || !agreed}
+                          className="flex-1 bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                            hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                            flex items-center justify-center gap-2">
+                          {isLoading
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Submitting…</span></>
+                            : <><span>Submit Application</span><ArrowRight className="w-3.5 h-3.5" /></>}
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </form>
 
-                <form onSubmit={handleSubmit}>
-                  <AnimatePresence mode="wait">
+              {/* Sign in link */}
+              <p className="text-center text-[11px] text-muted-foreground border-t border-border/40 pt-2.5">
+                Already approved?{" "}
+                <Link href="/login" className="text-foreground font-semibold hover:underline underline-offset-2">Sign in →</Link>
+              </p>
+            </motion.div>
+          </div>
 
-                    {/* ── STEP 1: Personal Info ── */}
-                    {step === 1 && (
-                      <motion.div key="step1"
-                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}
-                        className="space-y-2.5"
-                      >
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Personal Information</p>
-
-                        {/* Name */}
-                        <div className="grid grid-cols-2 gap-2">
-                          {(["first_name", "last_name"] as const).map((field, i) => (
-                            <div key={field} className="relative group">
-                              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                                  <User className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                                </div>
-                              </div>
-                              <input type="text" name={field} value={form[field]} onChange={handleChange}
-                                placeholder={i === 0 ? "First name *" : "Last name *"} required disabled={isLoading}
-                                className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Email */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                              <Mail className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                          </div>
-                          <input type="email" name="email" value={form.email} onChange={handleChange}
-                            placeholder="Email address *" required disabled={isLoading}
-                            className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                          />
-                        </div>
-
-                        {/* Phone + Country */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="relative group">
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                                <Phone className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                              </div>
-                            </div>
-                            <input type="tel" name="phone_number" value={form.phone_number} onChange={handleChange}
-                              placeholder="Phone number *" required disabled={isLoading}
-                              className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                            />
-                          </div>
-                          <div className="relative group">
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                                <Globe className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                              </div>
-                            </div>
-                            <input type="text" name="country" value={form.country} onChange={handleChange}
-                              placeholder="Country *" required disabled={isLoading}
-                              className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Date of Birth + Gender */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="relative group">
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                                <Calendar className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                              </div>
-                            </div>
-                            <input type="date" name="date_of_birth" value={form.date_of_birth} onChange={handleChange}
-                              disabled={isLoading}
-                              className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 outline-none"
-                            />
-                          </div>
-                          <div className="relative group">
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                              <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                                <Users className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                              </div>
-                            </div>
-                            <select name="gender" value={form.gender} onChange={handleChange}
-                              disabled={isLoading}
-                              className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 outline-none"
-                            >
-                              <option value="">Gender (optional)</option>
-                              {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
-                            </select>
-                          </div>
-                        </div>
-
-                        <button type="button" onClick={handleNext} disabled={!canNext()}
-                          className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
-                        >
-                          <span>Next: Account Setup</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </motion.div>
-                    )}
-
-                    {/* ── STEP 2: Account Setup ── */}
-                    {step === 2 && (
-                      <motion.div key="step2"
-                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}
-                        className="space-y-2.5"
-                      >
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Create Password</p>
-
-                        {/* Password */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                              <Lock className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                          </div>
-                          <input type={showPw ? "text" : "password"} name="password" value={form.password} onChange={handleChange}
-                            placeholder="Password (min 8 chars) *" required disabled={isLoading}
-                            className="w-full pl-11 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                          />
-                          <button type="button" onClick={() => setShowPw(!showPw)}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all"
-                          >
-                            {showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                          </button>
-                        </div>
-
-                        {/* Strength bar */}
-                        {pw && (
-                          <div className="space-y-1 -mt-1.5">
-                            <div className="flex gap-1">
-                              {[0, 1, 2, 3].map((i) => (
-                                <div key={i} className="h-1 flex-1 rounded-full transition-all duration-300"
-                                  style={{ backgroundColor: i < strength ? strengthColor[strength - 1] : "#e5e7eb" }}
-                                />
-                              ))}
-                            </div>
-                            <p className="text-[10px] font-medium" style={{ color: strength > 0 ? strengthColor[strength - 1] : "#6b7280" }}>
-                              {strength > 0 ? strengthLabel[strength - 1] : "Too weak"}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Confirm password */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
-                              form.confirm_password ? (pwMatch ? "bg-green-50" : "bg-red-50") : "bg-gray-100 group-focus-within:bg-primary/10"
-                            }`}>
-                              {form.confirm_password ? (
-                                pwMatch ? <CheckCircle className="w-3 h-3 text-green-500" /> : <AlertCircle className="w-3 h-3 text-red-400" />
-                              ) : (
-                                <Lock className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                              )}
-                            </div>
-                          </div>
-                          <input type={showConfirm ? "text" : "password"} name="confirm_password" value={form.confirm_password} onChange={handleChange}
-                            placeholder="Confirm password *" required disabled={isLoading}
-                            className={`w-full pl-11 pr-9 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none ${
-                              form.confirm_password && !pwMatch ? "border-red-300" : "border-gray-200"
-                            }`}
-                          />
-                          <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all"
-                          >
-                            {showConfirm ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                          </button>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button type="button" onClick={handleBack}
-                            className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all"
-                          >
-                            Back
-                          </button>
-                          <button type="button" onClick={handleNext} disabled={!canNext()}
-                            className="flex-1 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                          >
-                            <span>Next</span>
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* ── STEP 3: Background & Motivation ── */}
-                    {step === 3 && (
-                      <motion.div key="step3"
-                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}
-                        className="space-y-2.5"
-                      >
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Academic Background & Motivation</p>
-
-                        {/* Education Level */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                              <GraduationCap className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                          </div>
-                          <select name="education_level" value={form.education_level} onChange={handleChange}
-                            required disabled={isLoading}
-                            className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 outline-none"
-                          >
-                            <option value="">Select education level *</option>
-                            {EDUCATION_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                          </select>
-                        </div>
-
-                        {/* LinkedIn */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                              <Linkedin className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                          </div>
-                          <input type="url" name="linkedin_url" value={form.linkedin_url} onChange={handleChange}
-                            placeholder="LinkedIn profile URL (optional)" disabled={isLoading}
-                            className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                          />
-                        </div>
-
-                        {/* Motivation */}
-                        <div className="relative group">
-                          <div className="absolute left-3 top-3 pointer-events-none">
-                            <div className="w-6 h-6 rounded-md bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                              <FileText className="w-3 h-3 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                          </div>
-                          <textarea name="motivation" value={form.motivation} onChange={handleChange}
-                            placeholder="Why do you want to join BwengePlus? (min 20 characters) *"
-                            required rows={3} disabled={isLoading}
-                            className="w-full pl-11 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none resize-none"
-                          />
-                          <div className="flex justify-end mt-0.5">
-                            <span className={`text-[10px] ${form.motivation.length >= 20 ? "text-green-500" : "text-gray-400"}`}>
-                              {form.motivation.length}/20 min
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Terms */}
-                        <label className="flex items-start gap-2 cursor-pointer group">
-                          <div onClick={() => !isLoading && setAgreed(!agreed)}
-                            className={`mt-0.5 w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${
-                              agreed ? "bg-primary border-primary" : "bg-white border-gray-300 group-hover:border-primary/50"
-                            }`}
-                          >
-                            {agreed && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
-                          </div>
-                          <span className="text-[11px] text-gray-500 leading-relaxed select-none">
-                            I agree to the{" "}
-                            <Link href="/terms" className="text-primary hover:underline font-medium">Terms of Service</Link>
-                            {" "}and{" "}
-                            <Link href="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>
-                          </span>
-                        </label>
-
-                        <div className="flex gap-2">
-                          <button type="button" onClick={handleBack}
-                            className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all"
-                          >
-                            Back
-                          </button>
-                          <motion.button
-                            type="submit"
-                            onClick={handleSubmit}
-                            disabled={isLoading || !step3Valid || !agreed}
-                            whileHover={{ scale: isLoading || !step3Valid || !agreed ? 1 : 1.01 }}
-                            whileTap={{ scale: isLoading ? 1 : 0.99 }}
-                            className="flex-1 bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group shadow-sm"
-                          >
-                            <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none" />
-                            {isLoading ? (
-                              <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Submitting…</span></>
-                            ) : (
-                              <><span>Submit Application</span><ArrowRight className="w-3.5 h-3.5" /></>
-                            )}
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </form>
-
-                {/* Sign in link */}
-                <p className="text-center text-xs text-gray-500 pt-1">
-                  Already have an approved account?{" "}
-                  <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          {/* Footer */}
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              Admin approval required · BwengePlus
+            </p>
+          </div>
         </div>
 
-        {/* ═══ RIGHT — Branding ═══ */}
-        <div className="hidden lg:flex w-full lg:w-[45%] relative overflow-hidden flex-col items-center justify-center bg-primary">
-          <FloatingParticles />
-          <div className="absolute inset-0 bg-primary" />
-          <div className="absolute right-[-15%] top-[5%] w-[65%] h-[75%] rounded-full bg-white/5" />
-          <div className="absolute left-[-10%] bottom-[-10%] w-[55%] h-[55%] rounded-full bg-white/5" />
+        {/* ══ RIGHT — Primary color editorial panel ══ */}
+        <div className="hidden lg:flex w-full lg:w-[42%] h-full bg-primary flex-col">
 
-          <div className="relative z-10 flex flex-col items-center px-10 py-8 gap-5 w-full max-w-md">
+          {/* Top label */}
+          <div className="flex items-center justify-between px-10 h-11 border-b border-white/10 flex-shrink-0">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">How it works</span>
+            <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">Application process</span>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col justify-center px-10 py-5">
+
+            {/* Heading */}
             <motion.div
-              initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-center"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.42, ease: "easeOut" }}
+              className="mb-6"
             >
-              <div className="flex items-center justify-center gap-1.5 mb-2">
-                <Sparkles className="w-3 h-3 text-yellow-300" />
-                <span className="text-white/80 text-xs font-medium uppercase tracking-wider">Exclusive Platform</span>
-                <Sparkles className="w-3 h-3 text-yellow-300" />
-              </div>
-              <h2 className="text-3xl font-bold text-white tracking-tight">
-                Join BwengePlus
-                <span className="block text-blue-200 mt-0.5">By Invitation.</span>
-              </h2>
-              <p className="text-white/70 text-sm mt-2 leading-relaxed max-w-xs mx-auto">
-                Our admin team reviews each application to maintain the quality of our learning community.
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-2">Join BwengePlus</p>
+              <h2 className="text-[30px] font-bold text-white leading-[1.05] tracking-tight">By invitation.</h2>
+              <p className="text-white/70 text-[13px] mt-1.5 leading-relaxed">
+                Each application is reviewed to maintain the quality of our learning community.
               </p>
             </motion.div>
 
+            {/* Numbered process steps */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.5 }}
-              className="w-full bg-white/10 rounded-xl p-5 space-y-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.22, duration: 0.42 }}
+              className="space-y-0"
             >
-              {[
-                { icon: ClipboardList, text: "Fill in your personal & academic details" },
-                { icon: Clock, text: "Admin reviews your application (24–48 hrs)" },
-                { icon: Mail, text: "Get notified by email when approved" },
-                { icon: BookOpen, text: "Log in and start learning immediately" },
-              ].map(({ icon: Icon, text }, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-white" />
+              {processSteps.map((s) => (
+                <div key={s.num} className="flex items-start gap-4 py-3 border-b border-white/10 group">
+                  <span className="text-[28px] font-black leading-none text-white/20 flex-shrink-0 w-9 text-right group-hover:text-white/40 transition-colors duration-200 font-mono tabular-nums">
+                    {s.num}
+                  </span>
+                  <div className="pt-0.5 space-y-0.5">
+                    <p className="text-[13px] font-bold text-white group-hover:text-white transition-colors duration-200">{s.title}</p>
+                    <p className="text-[11px] text-white/60 leading-snug">{s.desc}</p>
                   </div>
-                  <span className="text-white/90 text-[13px]">{text}</span>
                 </div>
               ))}
             </motion.div>
+          </div>
 
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="flex items-center justify-center gap-5 text-white/80 text-xs"
-            >
-              {[["10K+", "Learners"], ["100+", "Courses"], ["35+", "Institutions"]].map(([num, label]) => (
-                <div key={label} className="text-center">
-                  <div className="font-bold text-white text-base">{num}</div>
-                  <div>{label}</div>
-                </div>
-              ))}
-            </motion.div>
+          {/* Bottom strip */}
+          <div className="px-10 py-4 border-t border-white/10 flex-shrink-0">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">Review time</p>
+            <p className="text-[13px] font-semibold text-white">24–48 hours from submission</p>
           </div>
         </div>
 

@@ -181,7 +181,7 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
 
                 <div className="space-y-4 pt-4 border-t">
                   <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900 dark:text-white">Lesson Options</h4>
+                    <h4 className="font-medium text-foreground dark:text-white">Lesson Options</h4>
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
@@ -189,7 +189,7 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
                           <Eye className="w-4 h-4" />
                           Preview Lesson
                         </Label>
-                        <p className="text-sm text-gray-500">Allow students to preview this lesson</p>
+                        <p className="text-sm text-muted-foreground">Allow students to preview this lesson</p>
                       </div>
                       <Switch
                         checked={lesson.is_preview || false}
@@ -206,7 +206,7 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
                           <Zap className="w-4 h-4" />
                           Published
                         </Label>
-                        <p className="text-sm text-gray-500">Make this lesson available to students</p>
+                        <p className="text-sm text-muted-foreground">Make this lesson available to students</p>
                       </div>
                       <Switch
                         checked={lesson.is_published !== false}
@@ -306,7 +306,7 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
       </Tabs>
 
       <div className="flex justify-between items-center pt-4 border-t">
-        <Button variant="outline" onClick={onDelete} className="text-red-600 hover:text-red-700 bg-transparent">
+        <Button variant="outline" onClick={onDelete} className="text-destructive hover:text-destructive bg-transparent">
           <Trash2 className="w-4 h-4 mr-2" />
           Delete Lesson
         </Button>

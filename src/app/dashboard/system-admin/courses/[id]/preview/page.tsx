@@ -67,7 +67,6 @@ export default function CoursePreviewPage({
           }
         }
       } catch (error) {
-        console.error("Failed to fetch course:", error)
       } finally {
         setLoading(false)
       }
@@ -119,8 +118,8 @@ export default function CoursePreviewPage({
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-8" />
+          <div className="h-8 bg-secondary dark:bg-secondary rounded w-1/3 mb-4" />
+          <div className="h-4 bg-secondary dark:bg-secondary rounded w-2/3 mb-8" />
         </div>
       </div>
     )
@@ -195,7 +194,7 @@ export default function CoursePreviewPage({
                         >
                           <div className="flex items-center gap-3">
                             {completedLessons.has(lesson.id) ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <CheckCircle className="w-4 h-4 text-success" />
                             ) : lesson.video_url ? (
                               <Video className="w-4 h-4" />
                             ) : (
@@ -223,7 +222,7 @@ export default function CoursePreviewPage({
                 <div className="bg-black aspect-video relative">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-white text-center">
-                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                      <div className="w-16 h-16 bg-card/20 rounded-full flex items-center justify-center mb-4 mx-auto">
                         {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
                       </div>
                       <p className="text-lg font-medium">{currentLesson.title}</p>
@@ -243,7 +242,7 @@ export default function CoursePreviewPage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-white hover:bg-white/20"
+                          className="text-white hover:bg-card/20"
                           onClick={handlePreviousLesson}
                           disabled={currentLessonIndex === 0}
                         >
@@ -252,7 +251,7 @@ export default function CoursePreviewPage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-white hover:bg-white/20"
+                          className="text-white hover:bg-card/20"
                           onClick={() => setIsPlaying(!isPlaying)}
                         >
                           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -260,7 +259,7 @@ export default function CoursePreviewPage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-white hover:bg-white/20"
+                          className="text-white hover:bg-card/20"
                           onClick={handleNextLesson}
                           disabled={currentLessonIndex === allLessons.length - 1}
                         >
@@ -268,13 +267,13 @@ export default function CoursePreviewPage({
                         </Button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                           <Volume2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                           <Settings className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                           <Maximize className="w-4 h-4" />
                         </Button>
                       </div>
@@ -444,7 +443,7 @@ export default function CoursePreviewPage({
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                       <Button
                         size="lg"
-                        className="bg-white/90 text-black hover:bg-white"
+                        className="bg-card/90 text-black hover:bg-card"
                         onClick={() => {
                           if (allLessons.length > 0) {
                             setCurrentLesson(allLessons[0].lesson)

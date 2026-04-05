@@ -125,7 +125,7 @@ export default function UserFilterBar({
       {/* Search Bar */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search users by name, email, or username..."
             value={filters.search || ''}
@@ -173,7 +173,7 @@ export default function UserFilterBar({
               <span>{filter.value}</span>
               <button
                 onClick={() => removeFilter(filter.key)}
-                className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                className="ml-1 hover:bg-secondary rounded-full p-0.5"
               >
                 <X className="w-3 h-3" />
               </button>

@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/hooks";
+import { useRealtimeEvents } from "@/hooks/use-realtime";
 import {
   Card,
   CardContent,
@@ -125,6 +126,13 @@ export default function EnrollmentAnalyticsPage() {
     }
   }, [institutionId, dateRange]);
 
+  // Real-time enrollment analytics updates
+  useRealtimeEvents({
+    "enrollment-approved": () => fetchAnalytics(),
+    "enrollment-rejected": () => fetchAnalytics(),
+    "enrollment-count-updated": () => fetchAnalytics(),
+  });
+
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
@@ -167,7 +175,6 @@ export default function EnrollmentAnalyticsPage() {
         toast.error("Failed to load analytics");
       }
     } catch (error) {
-      console.error("Error fetching analytics:", error);
       toast.error("Failed to load enrollment analytics");
     } finally {
       setLoading(false);
@@ -191,7 +198,6 @@ export default function EnrollmentAnalyticsPage() {
         setCourses(data.data?.courses || []);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
     }
   };
 
@@ -226,7 +232,6 @@ export default function EnrollmentAnalyticsPage() {
         toast.error("Failed to export analytics");
       }
     } catch (error) {
-      console.error("Error exporting analytics:", error);
       toast.error("Failed to export analytics");
     }
   };
@@ -252,11 +257,11 @@ export default function EnrollmentAnalyticsPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               No Analytics Data
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               There is no enrollment data available for your institution yet.
             </p>
             <Button onClick={handleRefresh}>
@@ -274,10 +279,10 @@ export default function EnrollmentAnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Enrollment Analytics
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Track and analyze enrollment trends across your institution
           </p>
         </div>
@@ -328,14 +333,14 @@ export default function EnrollmentAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Enrollments</p>
+                <p className="text-sm text-muted-foreground">Total Enrollments</p>
                 <p className="text-3xl font-bold">{formatNumber(stats.total_enrollments)}</p>
-                <p className="text-xs text-green-600 mt-1">
+                <p className="text-xs text-success mt-1">
                   ↑ {formatPercent(stats.enrollment_growth?.monthly || 0)} monthly
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -345,14 +350,14 @@ export default function EnrollmentAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Enrollments</p>
+                <p className="text-sm text-muted-foreground">Active Enrollments</p>
                 <p className="text-3xl font-bold">{formatNumber(stats.active_enrollments)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formatPercent(stats.active_enrollments / stats.total_enrollments)} of total
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Activity className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                <Activity className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -362,14 +367,14 @@ export default function EnrollmentAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Completed</p>
+                <p className="text-sm text-muted-foreground">Completed</p>
                 <p className="text-3xl font-bold">{formatNumber(stats.completed_enrollments)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formatPercent(stats.completed_enrollments / stats.total_enrollments)} completion
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -379,14 +384,14 @@ export default function EnrollmentAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Pending Requests</p>
+                <p className="text-sm text-muted-foreground">Pending Requests</p>
                 <p className="text-3xl font-bold">{formatNumber(stats.pending_enrollments)}</p>
-                <p className="text-xs text-yellow-600 mt-1">
+                <p className="text-xs text-warning mt-1">
                   Requires action
                 </p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                <Clock className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -506,7 +511,7 @@ export default function EnrollmentAnalyticsPage() {
             <div className="text-2xl font-bold">
               {formatPercent(stats.conversion_rate || 0)}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Requests → Active Enrollments
             </p>
           </CardContent>
@@ -520,7 +525,7 @@ export default function EnrollmentAnalyticsPage() {
             <div className="text-2xl font-bold">
               {Math.round(stats.average_completion_time || 0)} days
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               From enrollment to completion
             </p>
           </CardContent>
@@ -534,7 +539,7 @@ export default function EnrollmentAnalyticsPage() {
             <div className="text-2xl font-bold">
               {formatNumber(stats.students_with_multiple_enrollments || 0)}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {formatPercent((stats.students_with_multiple_enrollments || 0) / (stats.total_students || 1))} of students
             </p>
           </CardContent>
@@ -609,7 +614,7 @@ function TableRow({ children }: { children: React.ReactNode }) {
 }
 
 function TableHead({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <th className={`px-4 py-2 text-left font-medium text-gray-500 ${className}`}>{children}</th>;
+  return <th className={`px-4 py-2 text-left font-medium text-muted-foreground ${className}`}>{children}</th>;
 }
 
 function TableCell({ children, className }: { children: React.ReactNode; className?: string }) {

@@ -137,26 +137,26 @@ export function AssessmentBuilderStep({ modules, setModules, onNext, onPrevious 
       return (
         <Card className="h-full flex items-center justify-center">
           <CardContent className="text-center">
-            <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Ready to Add Assessments?</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground dark:text-white mb-2">Ready to Add Assessments?</h3>
+            <p className="text-muted-foreground dark:text-muted-foreground mb-6">
               Create quizzes and assignments to test student knowledge and track progress
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-md mx-auto">
-              <Card className="p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                <Trophy className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <Card className="p-4 text-center hover:bg-muted/50 dark:hover:bg-card cursor-pointer">
+                <Trophy className="w-8 h-8 text-primary mx-auto mb-2" />
                 <h4 className="font-medium text-sm">Quiz</h4>
-                <p className="text-xs text-gray-500">Multiple choice questions</p>
+                <p className="text-xs text-muted-foreground">Multiple choice questions</p>
               </Card>
-              <Card className="p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                <Target className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <Card className="p-4 text-center hover:bg-muted/50 dark:hover:bg-card cursor-pointer">
+                <Target className="w-8 h-8 text-success mx-auto mb-2" />
                 <h4 className="font-medium text-sm">Assignment</h4>
-                <p className="text-xs text-gray-500">Project-based tasks</p>
+                <p className="text-xs text-muted-foreground">Project-based tasks</p>
               </Card>
-              <Card className="p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                <Clock className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+              <Card className="p-4 text-center hover:bg-muted/50 dark:hover:bg-card cursor-pointer">
+                <Clock className="w-8 h-8 text-warning mx-auto mb-2" />
                 <h4 className="font-medium text-sm">Timed Test</h4>
-                <p className="text-xs text-gray-500">Time-limited assessments</p>
+                <p className="text-xs text-muted-foreground">Time-limited assessments</p>
               </Card>
             </div>
           </CardContent>
@@ -209,8 +209,8 @@ export function AssessmentBuilderStep({ modules, setModules, onNext, onPrevious 
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Create Assessments</h2>
-        <p className="text-gray-600 dark:text-gray-300">Build quizzes and assignments to test student understanding</p>
+        <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">Create Assessments</h2>
+        <p className="text-muted-foreground dark:text-muted-foreground">Build quizzes and assignments to test student understanding</p>
         <div className="flex justify-center gap-4 mt-4">
           <Badge variant="outline" className="flex items-center gap-1">
             <Trophy className="w-4 h-4" />
@@ -235,12 +235,12 @@ export function AssessmentBuilderStep({ modules, setModules, onNext, onPrevious 
               <div className="space-y-4">
                 {modules.map((module) => (
                   <div key={module.id} className="space-y-2">
-                    <div className="font-medium text-sm text-gray-700 dark:text-gray-300 truncate" title={module.title}>
+                    <div className="font-medium text-sm text-muted-foreground dark:text-muted-foreground truncate" title={module.title}>
                       {module.title}
                     </div>
                     {module.lessons?.map((lesson) => (
                       <div key={lesson.id} className="ml-2 space-y-1">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 truncate" title={lesson.title}>
+                        <div className="text-sm text-muted-foreground dark:text-muted-foreground truncate" title={lesson.title}>
                           {lesson.title}
                         </div>
                         {lesson.assessments?.map((assessment) => (
@@ -292,21 +292,21 @@ export function AssessmentBuilderStep({ modules, setModules, onNext, onPrevious 
 
         <div className="text-center flex-1 mx-4">
           {!canProceed && validationMessage && (
-            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 max-w-2xl mx-auto">
+            <div className="bg-destructive/10 dark:bg-destructive/20/20 border border-destructive/30 dark:border-destructive/30 rounded-lg px-4 py-3 max-w-2xl mx-auto">
               <div className="flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="text-left">
-                  <p className="text-red-800 dark:text-red-200 text-sm font-medium mb-1">
+                  <p className="text-destructive dark:text-destructive text-sm font-medium mb-1">
                     Cannot proceed - please fix validation errors:
                   </p>
-                  <p className="text-red-700 dark:text-red-300 text-xs whitespace-pre-line">{validationMessage}</p>
+                  <p className="text-destructive dark:text-destructive text-xs whitespace-pre-line">{validationMessage}</p>
                 </div>
               </div>
             </div>
           )}
           {allAssessments.length > 0 && canProceed && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
-              <p className="text-green-800 dark:text-green-200 text-sm">
+            <div className="bg-success/10 dark:bg-success/20/20 border border-success/30 dark:border-success/30 rounded-lg px-4 py-2">
+              <p className="text-success dark:text-success text-sm">
                 Excellent! You've created {allAssessments.length} assessment{allAssessments.length !== 1 ? "s" : ""}{" "}
                 with {allAssessments.reduce((acc, a) => acc + (a.questions?.length || 0), 0)} total questions.
               </p>

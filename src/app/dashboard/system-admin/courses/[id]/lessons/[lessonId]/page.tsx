@@ -70,7 +70,6 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
           setCurrentModule(foundModule)
         }
       } catch (error) {
-        console.error("Failed to fetch course:", error)
       } finally {
         setLoading(false)
       }
@@ -97,7 +96,6 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
         setTimeout(() => setShowCelebration(false), 3000)
       }
     } catch (error) {
-      console.error("Failed to mark as complete:", error)
     }
   }
 
@@ -150,9 +148,9 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-        <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded" />
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+        <div className="h-8 bg-secondary dark:bg-secondary rounded w-1/3" />
+        <div className="aspect-video bg-secondary dark:bg-secondary rounded" />
+        <div className="h-4 bg-secondary dark:bg-secondary rounded w-2/3" />
       </div>
     )
   }
@@ -184,16 +182,16 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
             <motion.div
               initial={{ y: 50 }}
               animate={{ y: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center max-w-md mx-4"
+              className="bg-card dark:bg-card rounded-lg p-8 text-center max-w-md mx-4"
             >
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: 2 }}
-                className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
+                className="w-16 h-16 bg-success/100 rounded-full flex items-center justify-center mx-auto mb-4"
               >
                 <Trophy className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-2xl font-bold text-green-600 mb-2">Lesson Complete!</h2>
+              <h2 className="text-2xl font-bold text-success mb-2">Lesson Complete!</h2>
               <p className="text-muted-foreground mb-4">Great job! You've completed "{lesson.title}"</p>
             </motion.div>
           </motion.div>
@@ -223,7 +221,7 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
               {formatDuration(lesson.duration_minutes || 0)}
             </Badge>
             {isCompleted ? (
-              <Badge className="bg-green-500 hover:bg-green-600">
+              <Badge className="bg-success/100 hover:bg-success">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Completed
               </Badge>
@@ -241,11 +239,11 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
             {lesson.video_url && (
               <Card>
                 <CardContent className="p-0">
-                  <div className="aspect-video bg-gray-900 rounded-lg relative overflow-hidden">
+                  <div className="aspect-video bg-card rounded-lg relative overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Button
                         size="lg"
-                        className="rounded-full w-16 h-16 bg-white/90 text-gray-900 hover:bg-white"
+                        className="rounded-full w-16 h-16 bg-card/90 text-foreground hover:bg-card"
                         onClick={() => setIsPlaying(!isPlaying)}
                       >
                         {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
@@ -257,7 +255,7 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-white hover:bg-white/20"
+                          className="text-white hover:bg-card/20"
                           onClick={() => setIsPlaying(!isPlaying)}
                         >
                           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -270,17 +268,17 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-white hover:bg-white/20"
+                          className="text-white hover:bg-card/20"
                           onClick={() => setIsMuted(!isMuted)}
                         >
                           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                         </Button>
 
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                           <Settings className="w-4 h-4" />
                         </Button>
 
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                           <Maximize className="w-4 h-4" />
                         </Button>
                       </div>
@@ -317,7 +315,7 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
                   <Card className="mt-6">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        <Trophy className="w-5 h-5 text-warning" />
                         Assessments
                       </CardTitle>
                       <CardDescription>Test your understanding of this lesson</CardDescription>
@@ -498,7 +496,7 @@ export default function LessonPlayerPage({ params }: { params: { id: string; les
                           moduleLesson.id === lesson.id
                             ? "bg-primary-foreground text-primary"
                             : index === 0
-                              ? "bg-green-500 text-white"
+                              ? "bg-success/100 text-white"
                               : "bg-muted text-muted-foreground"
                         }`}
                       >

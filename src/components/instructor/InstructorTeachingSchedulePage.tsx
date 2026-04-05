@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRealtimeEvent } from "@/hooks/use-realtime";
 import { useAppSelector } from "@/lib/hooks";
 import {
   Card,
@@ -163,6 +164,9 @@ export default function InstructorTeachingSchedulePage() {
     }
   }, [user]);
 
+  // Real-time: refresh when new schedule events are created
+  useRealtimeEvent("schedule-event-created", () => fetchTeachingSchedule());
+
   const fetchTeachingSchedule = async () => {
     setLoading(true);
     try {
@@ -222,7 +226,6 @@ export default function InstructorTeachingSchedulePage() {
         setStats(stats);
       }
     } catch (error) {
-      console.error("Error fetching teaching schedule:", error);
       toast.error("Failed to load teaching schedule");
     } finally {
       setLoading(false);
@@ -246,7 +249,6 @@ export default function InstructorTeachingSchedulePage() {
         setCourses(data.data?.courses || []);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
     }
   };
 
@@ -321,7 +323,6 @@ export default function InstructorTeachingSchedulePage() {
         toast.error(error.message || "Failed to create event");
       }
     } catch (error) {
-      console.error("Error creating event:", error);
       toast.error("Failed to create event");
     } finally {
       setCreatingEvent(false);
@@ -400,7 +401,6 @@ export default function InstructorTeachingSchedulePage() {
         toast.error(error.message || "Failed to update event");
       }
     } catch (error) {
-      console.error("Error updating event:", error);
       toast.error("Failed to update event");
     } finally {
       setEditingEvent(false);
@@ -430,7 +430,6 @@ export default function InstructorTeachingSchedulePage() {
         toast.error("Failed to delete event");
       }
     } catch (error) {
-      console.error("Error deleting event:", error);
       toast.error("Failed to delete event");
     } finally {
       setDeletingEvent(false);
@@ -459,7 +458,6 @@ export default function InstructorTeachingSchedulePage() {
         toast.error(error.message || "Failed to send reminder");
       }
     } catch (error) {
-      console.error("Error sending reminder:", error);
       toast.error("Failed to send reminder");
     } finally {
       setSendingReminder(false);
@@ -530,13 +528,13 @@ export default function InstructorTeachingSchedulePage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "SCHEDULED":
-        return <Badge className="bg-blue-100 text-blue-800">Scheduled</Badge>;
+        return <Badge className="bg-primary/15 text-primary">Scheduled</Badge>;
       case "IN_PROGRESS":
-        return <Badge className="bg-green-100 text-green-800">In Progress</Badge>;
+        return <Badge className="bg-success/15 text-success">In Progress</Badge>;
       case "COMPLETED":
-        return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
+        return <Badge className="bg-muted text-foreground">Completed</Badge>;
       case "CANCELLED":
-        return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
+        return <Badge className="bg-destructive/15 text-destructive">Cancelled</Badge>;
       default:
         return null;
     }
@@ -563,10 +561,10 @@ export default function InstructorTeachingSchedulePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Teaching Schedule
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Manage your classes, office hours, and deadlines
           </p>
         </div>
@@ -579,7 +577,7 @@ export default function InstructorTeachingSchedulePage() {
             <Bell className="w-4 h-4 mr-2" />
             Reminders
             {upcomingReminders.length > 0 && (
-              <Badge className="ml-2 bg-red-500 text-white">
+              <Badge className="ml-2 bg-destructive/100 text-white">
                 {upcomingReminders.length}
               </Badge>
             )}
@@ -607,25 +605,11 @@ export default function InstructorTeachingSchedulePage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Today's Schedule</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.events_today}</p>
+                  <p className="text-sm text-muted-foreground">Today's Schedule</p>
+                  <p className="text-3xl font-bold text-primary">{stats.events_today}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Upcoming Events</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.upcoming_events}</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <CalendarIcon className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -635,11 +619,11 @@ export default function InstructorTeachingSchedulePage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Live Sessions Today</p>
-                  <p className="text-3xl font-bold text-purple-600">{stats.live_sessions_today}</p>
+                  <p className="text-sm text-muted-foreground">Upcoming Events</p>
+                  <p className="text-3xl font-bold text-success">{stats.upcoming_events}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Video className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -649,11 +633,25 @@ export default function InstructorTeachingSchedulePage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Upcoming Deadlines</p>
-                  <p className="text-3xl font-bold text-orange-600">{stats.upcoming_deadlines}</p>
+                  <p className="text-sm text-muted-foreground">Live Sessions Today</p>
+                  <p className="text-3xl font-bold text-primary">{stats.live_sessions_today}</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Video className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Upcoming Deadlines</p>
+                  <p className="text-3xl font-bold text-warning">{stats.upcoming_deadlines}</p>
+                </div>
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -684,7 +682,7 @@ export default function InstructorTeachingSchedulePage() {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search events..."
               value={searchTerm}
@@ -757,11 +755,11 @@ export default function InstructorTeachingSchedulePage() {
           {filteredEvents.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                   No Events Found
                 </h3>
-                <p className="text-gray-500 mb-4">
+                <p className="text-muted-foreground mb-4">
                   {searchTerm
                     ? "No events match your search criteria"
                     : "No events scheduled for the selected course"}
@@ -783,15 +781,15 @@ export default function InstructorTeachingSchedulePage() {
                 >
                   <div className="flex flex-col md:flex-row">
                     {/* Date/Time Column */}
-                    <div className="md:w-48 p-4 bg-gray-50 border-b md:border-b-0 md:border-r flex items-center">
+                    <div className="md:w-48 p-4 bg-muted/50 border-b md:border-b-0 md:border-r flex items-center">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-700">
+                        <div className="text-2xl font-bold text-muted-foreground">
                           {format(event.start, "d")}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {format(event.start, "MMM")}
                         </div>
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                           {format(event.start, "h:mm a")} - {format(event.end, "h:mm a")}
                         </div>
                       </div>
@@ -811,13 +809,13 @@ export default function InstructorTeachingSchedulePage() {
                             </Badge>
                             {getStatusBadge(event.status)}
                           </div>
-                          <h3 className="font-semibold text-gray-900 mb-1">
+                          <h3 className="font-semibold text-foreground mb-1">
                             {event.title}
                           </h3>
-                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                             {event.description}
                           </p>
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <BookOpen className="w-4 h-4" />
                               {event.course.title}
@@ -866,7 +864,7 @@ export default function InstructorTeachingSchedulePage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{selectedEvent.title}</h3>
-                  <p className="text-sm text-gray-500">{selectedEvent.course.title}</p>
+                  <p className="text-sm text-muted-foreground">{selectedEvent.course.title}</p>
                 </div>
                 {getStatusBadge(selectedEvent.status)}
               </div>
@@ -874,12 +872,12 @@ export default function InstructorTeachingSchedulePage() {
               {/* Event Details */}
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="font-medium">
                       {format(selectedEvent.start, "EEEE, MMMM d, yyyy")}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       {format(selectedEvent.start, "h:mm a")} - {format(selectedEvent.end, "h:mm a")}
                     </p>
                   </div>
@@ -887,27 +885,27 @@ export default function InstructorTeachingSchedulePage() {
 
                 {selectedEvent.module && (
                   <div className="flex items-start gap-3">
-                    <GraduationCap className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <GraduationCap className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="font-medium">Module</p>
-                      <p className="text-sm text-gray-500">{selectedEvent.module}</p>
+                      <p className="text-sm text-muted-foreground">{selectedEvent.module}</p>
                     </div>
                   </div>
                 )}
 
                 {selectedEvent.description && (
                   <div className="flex items-start gap-3">
-                    <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="font-medium">Description</p>
-                      <p className="text-sm text-gray-500">{selectedEvent.description}</p>
+                      <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
                     </div>
                   </div>
                 )}
 
                 {selectedEvent.location && (
                   <div className="flex items-start gap-3">
-                    <Link2 className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <Link2 className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="font-medium">Location</p>
                       {selectedEvent.meeting_url ? (
@@ -915,12 +913,12 @@ export default function InstructorTeachingSchedulePage() {
                           href={selectedEvent.meeting_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
+                          className="text-sm text-primary hover:underline"
                         >
                           {selectedEvent.location}
                         </a>
                       ) : (
-                        <p className="text-sm text-gray-500">{selectedEvent.location}</p>
+                        <p className="text-sm text-muted-foreground">{selectedEvent.location}</p>
                       )}
                     </div>
                   </div>
@@ -928,10 +926,10 @@ export default function InstructorTeachingSchedulePage() {
 
                 {selectedEvent.attendees_count !== undefined && (
                   <div className="flex items-start gap-3">
-                    <Users className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <Users className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="font-medium">Expected Attendees</p>
-                      <p className="text-sm text-gray-500">{selectedEvent.attendees_count} students</p>
+                      <p className="text-sm text-muted-foreground">{selectedEvent.attendees_count} students</p>
                     </div>
                   </div>
                 )}
@@ -1318,7 +1316,7 @@ export default function InstructorTeachingSchedulePage() {
               upcomingReminders.slice(0, 10).map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
                   onClick={() => {
                     setSelectedEvent(event);
                     setShowRemindersDialog(false);
@@ -1333,18 +1331,18 @@ export default function InstructorTeachingSchedulePage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-sm">{event.title}</p>
-                    <p className="text-xs text-gray-500">{event.course.title}</p>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground">{event.course.title}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       {format(event.start, "MMM d, h:mm a")}
                     </div>
                   </div>
-                  <BellRing className="w-4 h-4 text-orange-500" />
+                  <BellRing className="w-4 h-4 text-warning" />
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Bell className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <div className="text-center py-8 text-muted-foreground">
+                <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
                 <p>No upcoming reminders</p>
                 <p className="text-xs mt-1">Events in the next 3 days will appear here</p>
               </div>

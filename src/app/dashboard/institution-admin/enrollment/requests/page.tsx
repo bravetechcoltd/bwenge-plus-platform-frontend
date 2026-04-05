@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useAppSelector } from "@/lib/hooks"
+import { useRealtimeEvents } from "@/hooks/use-realtime"
 import {
     Card,
     CardContent,
@@ -128,6 +129,13 @@ export default function InstitutionAdminEnrollmentsPage() {
         fetchAllData()
     }, [])
 
+    // Real-time enrollment updates
+    useRealtimeEvents({
+        "enrollment-approved": () => fetchAllData(),
+        "enrollment-rejected": () => fetchAllData(),
+        "enrollment-count-updated": () => fetchAllData(),
+    })
+
     const fetchAllData = async () => {
         setLoading(true)
         try {
@@ -184,7 +192,6 @@ export default function InstitutionAdminEnrollmentsPage() {
                 setStats(prev => ({ ...prev, totalEnrollments: enrollmentsData.data?.length || 0 }))
             }
         } catch (error) {
-            console.error("Error fetching data:", error)
             toast.error("Failed to load enrollment data")
         } finally {
             setLoading(false)
@@ -227,7 +234,6 @@ export default function InstitutionAdminEnrollmentsPage() {
                 toast.error(data.message || "Failed to send access code")
             }
         } catch (error) {
-            console.error("Error sending access code:", error)
             toast.error("Failed to send access code")
         } finally {
             setSendingCode(false)
@@ -256,7 +262,6 @@ export default function InstitutionAdminEnrollmentsPage() {
                 toast.error(data.message || "Failed to approve enrollment")
             }
         } catch (error) {
-            console.error("Error approving enrollment:", error)
             toast.error("Failed to approve enrollment")
         }
     }
@@ -283,7 +288,6 @@ export default function InstitutionAdminEnrollmentsPage() {
                 toast.error(data.message || "Failed to reject enrollment")
             }
         } catch (error) {
-            console.error("Error rejecting enrollment:", error)
             toast.error("Failed to reject enrollment")
         }
     }
@@ -320,13 +324,13 @@ export default function InstitutionAdminEnrollmentsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "ACTIVE":
-                return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>
+                return <Badge className="bg-success/15 text-success border-success/30">Active</Badge>
             case "PENDING":
-                return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>
+                return <Badge className="bg-warning/15 text-warning border-warning/30">Pending</Badge>
             case "COMPLETED":
-                return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Completed</Badge>
+                return <Badge className="bg-primary/15 text-primary border-primary/30">Completed</Badge>
             case "REJECTED":
-                return <Badge className="bg-red-100 text-red-800 border-red-200">Rejected</Badge>
+                return <Badge className="bg-destructive/15 text-destructive border-destructive/30">Rejected</Badge>
             default:
                 return <Badge variant="outline">{status}</Badge>
         }
@@ -337,8 +341,8 @@ export default function InstitutionAdminEnrollmentsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Enrollment Management</h1>
-                    <p className="text-gray-600">
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">Enrollment Management</h1>
+                    <p className="text-muted-foreground">
                         Manage access code requests and enrollment approvals for your institution
                     </p>
                 </div>
@@ -360,11 +364,11 @@ export default function InstitutionAdminEnrollmentsPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500">Access Code Requests</p>
+                                <p className="text-sm text-muted-foreground">Access Code Requests</p>
                                 <p className="text-2xl font-bold">{stats.pendingRequests}</p>
                             </div>
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                <Key className="w-6 h-6 text-purple-600" />
+                            <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                                <Key className="w-6 h-6 text-primary" />
                             </div>
                         </div>
                     </CardContent>
@@ -374,11 +378,11 @@ export default function InstitutionAdminEnrollmentsPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500">Pending Approvals</p>
+                                <p className="text-sm text-muted-foreground">Pending Approvals</p>
                                 <p className="text-2xl font-bold">{stats.pendingApprovals}</p>
                             </div>
-                            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-yellow-600" />
+                            <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-warning" />
                             </div>
                         </div>
                     </CardContent>
@@ -388,11 +392,11 @@ export default function InstitutionAdminEnrollmentsPage() {
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500">Total Enrollments</p>
+                                <p className="text-sm text-muted-foreground">Total Enrollments</p>
                                 <p className="text-2xl font-bold">{stats.totalEnrollments}</p>
                             </div>
-                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <User className="w-6 h-6 text-blue-600" />
+                            <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                                <User className="w-6 h-6 text-primary" />
                             </div>
                         </div>
                     </CardContent>
@@ -402,7 +406,7 @@ export default function InstitutionAdminEnrollmentsPage() {
             {/* Search Bar */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                         placeholder="Search by name, email, or course..."
                         value={searchTerm}
@@ -421,13 +425,13 @@ export default function InstitutionAdminEnrollmentsPage() {
                     <TabsTrigger value="access-code-requests" className="relative">
                         Access Code Requests
                         {stats.pendingRequests > 0 && (
-                            <Badge className="ml-2 bg-purple-600 text-white">{stats.pendingRequests}</Badge>
+                            <Badge className="ml-2 bg-primary text-white">{stats.pendingRequests}</Badge>
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="pending-approvals" className="relative">
                         Pending Approvals
                         {stats.pendingApprovals > 0 && (
-                            <Badge className="ml-2 bg-yellow-600 text-white">{stats.pendingApprovals}</Badge>
+                            <Badge className="ml-2 bg-warning text-white">{stats.pendingApprovals}</Badge>
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="all-enrollments">
@@ -447,15 +451,15 @@ export default function InstitutionAdminEnrollmentsPage() {
                         <CardContent>
                             {loading ? (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 </div>
                             ) : filteredRequests.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <Key className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                    <Key className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                                         No Access Code Requests
                                     </h3>
-                                    <p className="text-gray-500">
+                                    <p className="text-muted-foreground">
                                         When learners request access codes for SPOC courses, they will appear here.
                                     </p>
                                 </div>
@@ -487,13 +491,13 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                                 <p className="font-medium">
                                                                     {request.user.first_name} {request.user.last_name}
                                                                 </p>
-                                                                <p className="text-sm text-gray-500">{request.user.email}</p>
+                                                                <p className="text-sm text-muted-foreground">{request.user.email}</p>
                                                             </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            <BookOpen className="w-4 h-4 text-gray-400" />
+                                                            <BookOpen className="w-4 h-4 text-muted-foreground" />
                                                             <span className="font-medium">
                                                                 {request.course.title.length > 20
                                                                     ? request.course.title.slice(0, 20) + "..."
@@ -506,7 +510,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                     </TableCell>
                                                     <TableCell>
                                                         {request.request_message ? (
-                                                            <span className="text-sm text-gray-600 line-clamp-1">
+                                                            <span className="text-sm text-muted-foreground line-clamp-1">
 
                                                                 <span className="font-medium">
                                                                     {request.request_message.length > 20
@@ -515,17 +519,17 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                                 </span>
                                                             </span>
                                                         ) : (
-                                                            <span className="text-sm text-gray-400">No message</span>
+                                                            <span className="text-sm text-muted-foreground">No message</span>
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
                                                         {request.access_code_sent ? (
-                                                            <Badge className="bg-green-100 text-green-800 border-green-200">
+                                                            <Badge className="bg-success/15 text-success border-success/30">
                                                                 <CheckCircle className="w-3 h-3 mr-1" />
                                                                 Code Sent
                                                             </Badge>
                                                         ) : (
-                                                            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                                            <Badge className="bg-warning/15 text-warning border-warning/30">
                                                                 <Clock className="w-3 h-3 mr-1" />
                                                                 Pending
                                                             </Badge>
@@ -535,7 +539,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                         {!request.access_code_sent && (
                                                             <Button
                                                                 size="sm"
-                                                                className="bg-purple-600 hover:bg-purple-700"
+                                                                className="bg-primary hover:bg-primary"
                                                                 onClick={() => handleSendAccessCode(request)}
                                                             >
                                                                 <Send className="w-4 h-4 mr-2" />
@@ -565,15 +569,15 @@ export default function InstitutionAdminEnrollmentsPage() {
                         <CardContent>
                             {loading ? (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-8 h-8 animate-spin text-yellow-600" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-warning" />
                                 </div>
                             ) : filteredApprovals.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                    <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                                         No Pending Approvals
                                     </h3>
-                                    <p className="text-gray-500">
+                                    <p className="text-muted-foreground">
                                         All enrollment requests have been processed.
                                     </p>
                                 </div>
@@ -604,13 +608,13 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                                 <p className="font-medium">
                                                                     {approval.user.first_name} {approval.user.last_name}
                                                                 </p>
-                                                                <p className="text-sm text-gray-500">{approval.user.email}</p>
+                                                                <p className="text-sm text-muted-foreground">{approval.user.email}</p>
                                                             </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            <BookOpen className="w-4 h-4 text-gray-400" />
+                                                            <BookOpen className="w-4 h-4 text-muted-foreground" />
 
                                                             <span className="font-medium">
                                                                 {approval.course.title.length > 30
@@ -631,7 +635,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
-                                                                className="text-green-600 border-green-200 hover:bg-green-50"
+                                                                className="text-success border-success/30 hover:bg-success/10"
                                                                 onClick={() => handleApproveEnrollment(approval.id)}
                                                             >
                                                                 <CheckCircle className="w-4 h-4 mr-1" />
@@ -640,7 +644,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
-                                                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                                                className="text-destructive border-destructive/30 hover:bg-destructive/10"
                                                                 onClick={() => handleRejectEnrollment(approval.id)}
                                                             >
                                                                 <XCircle className="w-4 h-4 mr-1" />
@@ -670,15 +674,15 @@ export default function InstitutionAdminEnrollmentsPage() {
                         <CardContent>
                             {loading ? (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 </div>
                             ) : filteredEnrollments.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <User className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                    <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                                         No Enrollments Found
                                     </h3>
-                                    <p className="text-gray-500">
+                                    <p className="text-muted-foreground">
                                         No enrollments match your search criteria.
                                     </p>
                                 </div>
@@ -710,7 +714,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                                 <p className="font-medium">
                                                                     {enrollment.user?.first_name} {enrollment.user?.last_name}
                                                                 </p>
-                                                                <p className="text-sm text-gray-500">{enrollment.user?.email}</p>
+                                                                <p className="text-sm text-muted-foreground">{enrollment.user?.email}</p>
                                                             </div>
                                                         </div>
                                                     </TableCell>
@@ -726,9 +730,9 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                            <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                                                 <div
-                                                                    className="h-full bg-blue-600"
+                                                                    className="h-full bg-primary"
                                                                     style={{ width: `${enrollment.progress_percentage}%` }}
                                                                 />
                                                             </div>
@@ -754,7 +758,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                                                                     View Progress
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuSeparator />
-                                                                <DropdownMenuItem className="text-red-600">
+                                                                <DropdownMenuItem className="text-destructive">
                                                                     Cancel Enrollment
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
@@ -783,26 +787,26 @@ export default function InstitutionAdminEnrollmentsPage() {
 
                     {selectedRequest && (
                         <div className="space-y-4 py-4">
-                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                <p className="text-sm text-purple-800 mb-2">
+                            <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                                <p className="text-sm text-primary mb-2">
                                     <span className="font-semibold">Learner:</span> {selectedRequest.user.first_name} {selectedRequest.user.last_name}
                                 </p>
-                                <p className="text-sm text-purple-800">
+                                <p className="text-sm text-primary">
                                     <span className="font-semibold">Email:</span> {selectedRequest.user.email}
                                 </p>
-                                <p className="text-sm text-purple-800 mt-2">
+                                <p className="text-sm text-primary mt-2">
                                     <span className="font-semibold">Course:</span> {selectedRequest.course.title}
                                 </p>
                                 {selectedRequest.request_message && (
-                                    <div className="mt-2 pt-2 border-t border-purple-200">
-                                        <p className="text-xs font-semibold text-purple-800">Message from learner:</p>
-                                        <p className="text-sm text-purple-700 italic">"{selectedRequest.request_message}"</p>
+                                    <div className="mt-2 pt-2 border-t border-primary/30">
+                                        <p className="text-xs font-semibold text-primary">Message from learner:</p>
+                                        <p className="text-sm text-primary italic">"{selectedRequest.request_message}"</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                                <p className="text-xs text-yellow-700 flex items-start">
+                            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3">
+                                <p className="text-xs text-warning flex items-start">
                                     <Key className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
                                     <span>A unique access code will be generated and sent to the learner's email. The code will be valid for this specific course only.</span>
                                 </p>
@@ -823,7 +827,7 @@ export default function InstitutionAdminEnrollmentsPage() {
                             type="button"
                             onClick={confirmSendAccessCode}
                             disabled={sendingCode}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            className="bg-primary hover:bg-primary"
                         >
                             {sendingCode ? (
                                 <>

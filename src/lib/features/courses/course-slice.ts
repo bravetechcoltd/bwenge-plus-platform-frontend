@@ -1100,20 +1100,19 @@ const coursesSlice = createSlice({
   state.error = action.payload as string;
 })
 
-// Assign course to institution
+// Assign course to institution (copy-based: original stays in public list)
 .addCase(assignCourseToInstitution.pending, (state) => {
   state.isUpdating = true;
   state.error = null;
 })
 .addCase(assignCourseToInstitution.fulfilled, (state, action) => {
   state.isUpdating = false;
-  // Remove the assigned course from the public courses list
-  state.publicCoursesForAssignment = state.publicCoursesForAssignment.filter(
-    c => c.id !== action.payload.id
-  );
-  // Add to regular courses list if needed
-  if (!state.courses.find(c => c.id === action.payload.id)) {
-    state.courses.unshift(action.payload);
+  // The original course is NOT removed from publicCoursesForAssignment because
+  // the backend now COPIES the course — the original remains a public course
+  // intact with its MOOC/SPOC type. Only the new institution copy is added.
+  const copiedCourse = action.payload;
+  if (copiedCourse && !state.courses.find(c => c.id === copiedCourse.id)) {
+    state.courses.unshift(copiedCourse);
   }
 })
 .addCase(assignCourseToInstitution.rejected, (state, action) => {

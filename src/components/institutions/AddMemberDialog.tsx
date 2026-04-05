@@ -56,8 +56,10 @@ interface UserCheckResult {
 interface InstitutionLimits {
   max_instructors: number;
   max_members: number;
+  total_capacity?: number;
   current_instructors: number;
   current_members: number;
+  total_current?: number;
   instructors_remaining: number;
   members_remaining: number;
   can_add_instructor: boolean;
@@ -179,7 +181,6 @@ export default function AddMemberDialog({
         });
       }
     } catch (error: any) {
-      console.error("Error checking email:", error);
       
       // If the error is 404, user doesn't exist
       if (error.response?.status === 404) {
@@ -321,7 +322,6 @@ export default function AddMemberDialog({
       onOpenChange(false);
       resetForm();
     } catch (error: any) {
-      console.error("Error adding member:", error);
       
       // Handle limit error response from backend
       if (error?.data?.limit_reached) {
@@ -363,33 +363,33 @@ export default function AddMemberDialog({
         <div className="space-y-6 py-4">
           {/* Limits Display Section */}
           {institutionLimits && !isLoadingLimits && (
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-primary/30 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-indigo-600" />
-                <h4 className="text-sm font-semibold text-indigo-800">Institution Capacity</h4>
+                <Users className="w-4 h-4 text-primary" />
+                <h4 className="text-sm font-semibold text-primary">Institution Capacity</h4>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-indigo-700 flex items-center gap-1">
+                  <span className="text-primary flex items-center gap-1">
                     <UserCog className="w-3 h-3" />
                     Instructors:
                   </span>
-                  <span className="font-medium text-indigo-900">
+                  <span className="font-medium text-primary">
                     {institutionLimits.current_instructors} / {institutionLimits.max_instructors === 0 ? "∞" : institutionLimits.max_instructors}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-indigo-700 flex items-center gap-1">
+                  <span className="text-primary flex items-center gap-1">
                     <Users className="w-3 h-3" />
                     Members:
                   </span>
-                  <span className="font-medium text-indigo-900">
+                  <span className="font-medium text-primary">
                     {institutionLimits.current_members} / {institutionLimits.max_members === 0 ? "∞" : institutionLimits.max_members}
                   </span>
                 </div>
               </div>
               {!institutionLimits.can_add_member && (
-                <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                <div className="mt-2 text-xs text-destructive bg-destructive/10 p-2 rounded">
                   Member limit reached. Cannot add new members.
                 </div>
               )}
@@ -419,9 +419,9 @@ export default function AddMemberDialog({
                 emailCheckResult.isMember ? (
                   <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
                 ) : emailCheckResult.exists ? (
-                  <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+                  <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
                 ) : (
-                  <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-600" />
+                  <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                 )
               )}
             </div>
@@ -439,16 +439,16 @@ export default function AddMemberDialog({
                 emailCheckResult.isMember
                   ? "border-destructive/50 bg-destructive/10"
                   : emailCheckResult.exists
-                  ? "border-green-500/50 bg-green-50"
-                  : "border-blue-500/50 bg-blue-50"
+                  ? "border-success/50 bg-success/10"
+                  : "border-primary/50 bg-primary/10"
               }
             >
               {emailCheckResult.isMember ? (
                 <XCircle className="h-4 w-4" />
               ) : emailCheckResult.exists ? (
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <AlertCircle className="h-4 w-4 text-primary" />
               )}
               <AlertDescription className="ml-2">
                 {emailCheckResult.isMember
@@ -525,8 +525,8 @@ export default function AddMemberDialog({
 
           {/* Existing User Info */}
           {emailCheckResult && emailCheckResult.exists && !emailCheckResult.isMember && (
-            <div className="space-y-3 rounded-lg border bg-green-50 p-5">
-              <h3 className="font-semibold text-base flex items-center gap-2 text-green-800">
+            <div className="space-y-3 rounded-lg border bg-success/10 p-5">
+              <h3 className="font-semibold text-base flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4" />
                 Existing User
               </h3>
@@ -560,7 +560,7 @@ export default function AddMemberDialog({
                   <SelectTrigger className="h-11 p-5 py-5">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white p-5">
+                  <SelectContent className="bg-card p-5">
                     <SelectItem 
                       value={InstitutionMemberRole.MEMBER}
                       disabled={!!(institutionLimits && !institutionLimits.can_add_member)}
@@ -569,7 +569,7 @@ export default function AddMemberDialog({
                         <span className="font-medium">Member</span>
                         <span className="text-xs text-muted-foreground">Basic access</span>
                         {institutionLimits && !institutionLimits.can_add_member && (
-                          <span className="text-xs text-red-500">(Limit reached)</span>
+                          <span className="text-xs text-destructive">(Limit reached)</span>
                         )}
                       </div>
                     </SelectItem>
@@ -581,7 +581,7 @@ export default function AddMemberDialog({
                         <span className="font-medium">Instructor</span>
                         <span className="text-xs text-muted-foreground">Can teach courses</span>
                         {institutionLimits && !institutionLimits.can_add_instructor && (
-                          <span className="text-xs text-red-500">(Limit reached - {institutionLimits.max_instructors} max)</span>
+                          <span className="text-xs text-destructive">(Limit reached - {institutionLimits.max_instructors} max)</span>
                         )}
                       </div>
                     </SelectItem>
@@ -602,12 +602,12 @@ export default function AddMemberDialog({
                 
                 {/* Limit warning for role selection */}
                 {role === InstitutionMemberRole.INSTRUCTOR && institutionLimits && !institutionLimits.can_add_instructor && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-destructive mt-1">
                     Instructor limit reached ({institutionLimits.max_instructors} max). Please remove an instructor or increase the limit.
                   </p>
                 )}
                 {role !== InstitutionMemberRole.INSTRUCTOR && institutionLimits && !institutionLimits.can_add_member && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-destructive mt-1">
                     Member limit reached ({institutionLimits.max_members} max). Please remove a member or increase the limit.
                   </p>
                 )}

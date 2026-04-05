@@ -34,9 +34,9 @@ export function StatCard({
   };
 
   const trendIcons = {
-    up: <TrendingUp className="h-4 w-4 text-green-500" />,
-    down: <TrendingDown className="h-4 w-4 text-red-500" />,
-    neutral: <Minus className="h-4 w-4 text-gray-500" />,
+    up: <TrendingUp className="h-4 w-4 text-success" />,
+    down: <TrendingDown className="h-4 w-4 text-destructive" />,
+    neutral: <Minus className="h-4 w-4 text-muted-foreground" />,
   };
 
   return (
@@ -50,10 +50,10 @@ export function StatCard({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
-            <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{label}</p>
+            <h3 className="text-3xl font-bold text-foreground">{value}</h3>
             {subtext && (
-              <p className="text-sm text-gray-600 mt-1">{subtext}</p>
+              <p className="text-sm text-muted-foreground mt-1">{subtext}</p>
             )}
             
             {trend && (
@@ -61,9 +61,9 @@ export function StatCard({
                 {trendIcons[trend]}
                 <span className={cn(
                   "text-xs font-medium",
-                  trend === 'up' ? 'text-green-600' :
-                  trend === 'down' ? 'text-red-600' :
-                  'text-gray-600'
+                  trend === 'up' ? 'text-success' :
+                  trend === 'down' ? 'text-destructive' :
+                  'text-muted-foreground'
                 )}>
                   {trend === 'up' ? 'Increasing' : 
                    trend === 'down' ? 'Decreasing' : 'Stable'}

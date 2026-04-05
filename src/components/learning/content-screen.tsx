@@ -107,16 +107,16 @@ function canPreview(cat: FileCategory): boolean {
 
 function CategoryIcon({ cat, className = "w-5 h-5" }: { cat: FileCategory; className?: string }) {
   switch (cat) {
-    case "image": return <ImageIcon className={`${className} text-green-500`} />
-    case "pdf": return <FileText className={`${className} text-red-500`} />
-    case "video": return <Film className={`${className} text-purple-500`} />
-    case "audio": return <Film className={`${className} text-pink-500`} />
-    case "word": return <FileText className={`${className} text-blue-600`} />
-    case "excel": return <FileSpreadsheet className={`${className} text-emerald-600`} />
-    case "powerpoint": return <Presentation className={`${className} text-orange-500`} />
-    case "code": return <FileCode className={`${className} text-violet-500`} />
-    case "archive": return <Archive className={`${className} text-amber-500`} />
-    default: return <File className={`${className} text-gray-400`} />
+    case "image": return <ImageIcon className={`${className} text-success`} />
+    case "pdf": return <FileText className={`${className} text-destructive`} />
+    case "video": return <Film className={`${className} text-primary`} />
+    case "audio": return <Film className={`${className} text-primary`} />
+    case "word": return <FileText className={`${className} text-primary`} />
+    case "excel": return <FileSpreadsheet className={`${className} text-success`} />
+    case "powerpoint": return <Presentation className={`${className} text-warning`} />
+    case "code": return <FileCode className={`${className} text-primary`} />
+    case "archive": return <Archive className={`${className} text-warning`} />
+    default: return <File className={`${className} text-muted-foreground`} />
   }
 }
 
@@ -131,16 +131,16 @@ function categoryLabel(cat: FileCategory): string {
 
 function categoryColor(cat: FileCategory): string {
   const MAP: Record<FileCategory, string> = {
-    image: "bg-green-50 text-green-700 border-green-200",
-    pdf: "bg-red-50 text-red-700 border-red-200",
-    video: "bg-purple-50 text-purple-700 border-purple-200",
+    image: "bg-success/10 text-success border-success/30",
+    pdf: "bg-destructive/10 text-destructive border-destructive/30",
+    video: "bg-primary/10 text-primary border-primary/30",
     audio: "bg-pink-50 text-pink-700 border-pink-200",
-    word: "bg-blue-50 text-blue-700 border-blue-200",
-    excel: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    powerpoint: "bg-orange-50 text-orange-700 border-orange-200",
-    code: "bg-violet-50 text-violet-700 border-violet-200",
-    archive: "bg-amber-50 text-amber-700 border-amber-200",
-    unknown: "bg-gray-50 text-gray-600 border-gray-200",
+    word: "bg-primary/10 text-primary border-primary/30",
+    excel: "bg-success/10 text-emerald-700 border-emerald-200",
+    powerpoint: "bg-warning/10 text-warning border-warning/30",
+    code: "bg-primary/10 text-primary border-violet-200",
+    archive: "bg-warning/10 text-warning border-warning/30",
+    unknown: "bg-muted/50 text-muted-foreground border-border",
   }
   return MAP[cat]
 }
@@ -224,10 +224,10 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
       case "audio":
         return (
           <div className="flex-1 flex flex-col items-center justify-center gap-8 bg-primary/5 p-12">
-            <div className="w-32 h-32 rounded-full bg-white shadow-xl flex items-center justify-center ring-4 ring-primary/10">
+            <div className="w-32 h-32 rounded-full bg-card shadow-xl flex items-center justify-center ring-4 ring-primary/10">
               <Film className="w-16 h-16 text-primary/50" />
             </div>
-            <p className="text-base font-semibold text-gray-700 text-center max-w-xs leading-snug">{name}</p>
+            <p className="text-base font-semibold text-muted-foreground text-center max-w-xs leading-snug">{name}</p>
             <audio src={material.url} controls className="w-full max-w-md" />
           </div>
         )
@@ -252,7 +252,7 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
       default:
         return (
           <div className="flex-1 flex flex-col items-center justify-center gap-6 bg-muted/30 p-12 text-center">
-            <div className="w-24 h-24 rounded-2xl bg-white border-2 border-dashed border-border flex items-center justify-center shadow-sm">
+            <div className="w-24 h-24 rounded-2xl bg-card border-2 border-dashed border-border flex items-center justify-center shadow-sm">
               <CategoryIcon cat={cat} className="w-12 h-12" />
             </div>
             <div className="space-y-1.5">
@@ -280,19 +280,19 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.97, opacity: 0, y: 16 }}
           transition={{ type: "spring", damping: 30, stiffness: 340 }}
-          className="bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          className="bg-card rounded-xl shadow-2xl flex flex-col overflow-hidden"
           style={{ width: "96vw", height: "96vh" }}
           onClick={e => e.stopPropagation()}
         >
           <div className="flex-shrink-0 flex items-center justify-between gap-3 px-4 py-3 bg-primary">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 bg-card/20 rounded-lg flex items-center justify-center">
                 <CategoryIcon cat={cat} className="w-4 h-4 !text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-white leading-tight truncate">{name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/20 text-white border border-white/25">
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-card/20 text-white border border-white/25">
                     {categoryLabel(cat)}
                   </span>
                   {size && <span className="text-[10px] text-white/60 tabular-nums">{size}</span>}
@@ -302,20 +302,20 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
             <div className="flex items-center gap-1 flex-shrink-0">
               {cat === "image" && (
                 <>
-                  <button onClick={() => setZoom(z => Math.max(0.25, +(z - 0.25).toFixed(2)))} title="Zoom out" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/15 transition-colors">
+                  <button onClick={() => setZoom(z => Math.max(0.25, +(z - 0.25).toFixed(2)))} title="Zoom out" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-card/15 transition-colors">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                   <span className="text-xs text-white/60 tabular-nums w-9 text-center select-none font-mono">{Math.round(zoom * 100)}%</span>
-                  <button onClick={() => setZoom(z => Math.min(4, +(z + 0.25).toFixed(2)))} title="Zoom in" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/15 transition-colors">
+                  <button onClick={() => setZoom(z => Math.min(4, +(z + 0.25).toFixed(2)))} title="Zoom in" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-card/15 transition-colors">
                     <ZoomIn className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setRotation(r => (r + 90) % 360)} title="Rotate 90°" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/15 transition-colors">
+                  <button onClick={() => setRotation(r => (r + 90) % 360)} title="Rotate 90°" className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-card/15 transition-colors">
                     <RotateCw className="w-4 h-4" />
                   </button>
-                  <div className="w-px h-4 bg-white/25 mx-1" />
+                  <div className="w-px h-4 bg-card/25 mx-1" />
                 </>
               )}
-              <button onClick={onClose} title="Close (Esc)" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-colors text-xs font-medium border border-white/20">
+              <button onClick={onClose} title="Close (Esc)" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-card/15 transition-colors text-xs font-medium border border-white/20">
                 <X className="w-4 h-4" />Close
               </button>
             </div>
@@ -327,7 +327,7 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
               <span className="text-[11px] text-muted-foreground truncate max-w-[500px]">{material.original_name || name}</span>
               {size && <span className="text-[11px] text-muted-foreground/50 flex-shrink-0">· {size}</span>}
             </div>
-            <button onClick={onClose} className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold text-muted-foreground border border-border bg-white rounded-lg hover:bg-muted/50 transition-colors">Close</button>
+            <button onClick={onClose} className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold text-muted-foreground border border-border bg-card rounded-lg hover:bg-muted/50 transition-colors">Close</button>
           </div>
         </motion.div>
       </motion.div>
@@ -341,9 +341,9 @@ function MaterialPreviewModal({ material, onClose }: PreviewModalProps) {
 
 function FileTile({ cat }: { cat: FileCategory }) {
   const BG: Record<FileCategory, string> = {
-    image: "bg-green-50", pdf: "bg-red-50", video: "bg-purple-50", audio: "bg-pink-50",
-    word: "bg-blue-50", excel: "bg-emerald-50", powerpoint: "bg-orange-50",
-    code: "bg-violet-50", archive: "bg-amber-50", unknown: "bg-muted/50",
+    image: "bg-success/10", pdf: "bg-destructive/10", video: "bg-primary/10", audio: "bg-pink-50",
+    word: "bg-primary/10", excel: "bg-success/10", powerpoint: "bg-warning/10",
+    code: "bg-primary/10", archive: "bg-warning/10", unknown: "bg-muted/50",
   }
   return (
     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${BG[cat]}`}>
@@ -366,10 +366,10 @@ function LessonResourcesSection({ materials, resources }: LessonResourcesSection
   return (
     <>
       {previewing && <MaterialPreviewModal material={previewing} onClose={() => setPreviewing(null)} />}
-      <div className="mt-5 rounded-xl overflow-hidden border border-border shadow-sm bg-white">
+      <div className="mt-5 rounded-xl overflow-hidden border border-border shadow-sm bg-card">
         <div className="flex items-center justify-between gap-4 px-5 py-3 bg-primary">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 bg-card/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <BookOpen className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="min-w-0">
@@ -383,7 +383,7 @@ function LessonResourcesSection({ materials, resources }: LessonResourcesSection
           </div>
           <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0">
             {Array.from(new Set(materials.map(m => getFileCategory(m.type, m.url)))).slice(0, 4).map(cat => (
-              <span key={cat} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/20">{categoryLabel(cat)}</span>
+              <span key={cat} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-card/20 text-white border border-white/20">{categoryLabel(cat)}</span>
             ))}
           </div>
         </div>
@@ -493,28 +493,28 @@ function RichContent({ html, className = "" }: { html: string; className?: strin
       <div
         className={`
           rich-text-content prose prose-sm max-w-none
-          prose-p:my-2 prose-p:leading-relaxed prose-p:text-gray-700 prose-p:break-words
-          prose-headings:font-bold prose-headings:text-gray-900 prose-headings:mt-4 prose-headings:mb-2
+          prose-p:my-2 prose-p:leading-relaxed prose-p:text-muted-foreground prose-p:break-words
+          prose-headings:font-bold prose-headings:text-foreground prose-headings:mt-4 prose-headings:mb-2
           prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-h3:font-semibold
           prose-h4:text-sm prose-h4:font-semibold prose-h5:text-sm prose-h5:font-medium
           prose-ul:my-2 prose-ul:pl-5 prose-ul:list-disc
           prose-ol:my-2 prose-ol:pl-5 prose-ol:list-decimal
-          prose-li:my-1 prose-li:leading-relaxed prose-li:marker:text-gray-500
-          prose-strong:font-semibold prose-strong:text-gray-900
-          prose-em:text-gray-700 prose-em:italic
-          prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4
-          prose-blockquote:py-1 prose-blockquote:my-2 prose-blockquote:italic prose-blockquote:text-gray-600
-          prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-          prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-3 prose-pre:rounded-lg
+          prose-li:my-1 prose-li:leading-relaxed prose-li:marker:text-muted-foreground
+          prose-strong:font-semibold prose-strong:text-foreground
+          prose-em:text-muted-foreground prose-em:italic
+          prose-blockquote:border-l-4 prose-blockquote:border-border prose-blockquote:pl-4
+          prose-blockquote:py-1 prose-blockquote:my-2 prose-blockquote:italic prose-blockquote:text-muted-foreground
+          prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+          prose-pre:bg-card prose-pre:text-muted-foreground prose-pre:p-3 prose-pre:rounded-lg
           prose-pre:my-3 prose-pre:overflow-x-auto prose-pre:whitespace-pre-wrap
           prose-a:text-[#0158B7] prose-a:underline prose-a:break-words
           [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5
-          [&_li]:my-1 [&_p]:my-2 [&_p]:leading-relaxed [&_p]:text-gray-700
-          [&_strong]:font-semibold [&_strong]:text-gray-900
-          [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:text-gray-900
-          [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2.5 [&_h2]:text-gray-900
-          [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:text-gray-900
-          [&_h4]:text-sm [&_h4]:font-semibold [&_h4]:mb-1.5 [&_h4]:text-gray-900
+          [&_li]:my-1 [&_p]:my-2 [&_p]:leading-relaxed [&_p]:text-muted-foreground
+          [&_strong]:font-semibold [&_strong]:text-foreground
+          [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:text-foreground
+          [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2.5 [&_h2]:text-foreground
+          [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:text-foreground
+          [&_h4]:text-sm [&_h4]:font-semibold [&_h4]:mb-1.5 [&_h4]:text-foreground
           overflow-hidden break-words whitespace-normal w-full max-w-full
           ${className}
         `}
@@ -524,7 +524,7 @@ function RichContent({ html, className = "" }: { html: string; className?: strin
     )
   }
   return (
-    <p className={`text-sm text-gray-700 leading-relaxed break-words whitespace-pre-wrap w-full max-w-full ${className}`}
+    <p className={`text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-wrap w-full max-w-full ${className}`}
       style={{ wordWrap: "break-word", overflowWrap: "break-word", wordBreak: "break-word" }}>
       {html}
     </p>
@@ -545,7 +545,6 @@ function parseContentBlocks(content: string): ContentBlock[] {
         if (contentData.blocks && Array.isArray(contentData.blocks)) return contentData.blocks as ContentBlock[]
         if (Array.isArray(contentData)) return contentData as ContentBlock[]
       } catch {
-        console.log("Content is not JSON, treating as HTML")
       }
     }
     if (isHTML || content) {
@@ -553,7 +552,6 @@ function parseContentBlocks(content: string): ContentBlock[] {
     }
     return [{ type: "text", data: { text: "No content available" }, id: "fallback-text", order: 1 }]
   } catch (error) {
-    console.error("Failed to parse content blocks:", error)
     return [{ type: "text", data: { text: content }, id: "error-fallback-text", order: 1 }]
   }
 }
@@ -565,7 +563,7 @@ function ContentBlockRenderer({ block }: { block: ContentBlock }) {
       const containsHTML = textContent.includes("<") && textContent.includes(">")
       return (
         <div className="ql-editor rich-text-content" style={{ padding: 0, backgroundColor: "transparent", border: "none", minHeight: "auto" }}>
-          {containsHTML ? <RichContent html={textContent} /> : <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">{textContent}</p>}
+          {containsHTML ? <RichContent html={textContent} /> : <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{textContent}</p>}
         </div>
       )
     }
@@ -629,10 +627,10 @@ function CourseOverviewScreen({ course, onStart }: { course: Course; onStart: ()
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">
           {course.level && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/90 text-gray-800 capitalize">{course.level.toLowerCase()}</span>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-card/90 text-foreground capitalize">{course.level.toLowerCase()}</span>
           )}
           {course.course_type && (
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${course.course_type === "MOOC" ? "bg-green-500/90 text-white" : "bg-purple-500/90 text-white"}`}>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${course.course_type === "MOOC" ? "bg-success/100/90 text-white" : "bg-primary/100/90 text-white"}`}>
               {course.course_type === "MOOC" ? "Public" : "Private"}
             </span>
           )}
@@ -650,22 +648,22 @@ function CourseOverviewScreen({ course, onStart }: { course: Course; onStart: ()
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {[
           { icon: <BookOpen className="w-4 h-4 text-[#0158B7]" />, label: "Modules", value: totalModules },
-          { icon: <BookMarked className="w-4 h-4 text-green-600" />, label: "Lessons", value: totalLessons },
-          { icon: <Clock className="w-4 h-4 text-orange-500" />, label: "Duration", value: totalDuration > 0 ? `${totalDuration} min` : "Self-paced" },
-          { icon: <Users className="w-4 h-4 text-indigo-500" />, label: "Language", value: course.language || "English" },
+          { icon: <BookMarked className="w-4 h-4 text-success" />, label: "Lessons", value: totalLessons },
+          { icon: <Clock className="w-4 h-4 text-warning" />, label: "Duration", value: totalDuration > 0 ? `${totalDuration} min` : "Self-paced" },
+          { icon: <Users className="w-4 h-4 text-primary" />, label: "Language", value: course.language || "English" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
-            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">{stat.icon}</div>
+          <div key={i} className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">{stat.icon}</div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-400 font-medium">{stat.label}</p>
-              <p className="text-sm font-bold text-gray-900 truncate">{stat.value}</p>
+              <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+              <p className="text-sm font-bold text-foreground truncate">{stat.value}</p>
             </div>
           </div>
         ))}
       </div>
 
       {instructorName && (
-        <div className="flex items-center gap-3 mb-6 p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+        <div className="flex items-center gap-3 mb-6 p-4 bg-card border border-border rounded-xl shadow-sm">
           {course.instructor?.profile_picture_url ? (
             <img src={course.instructor.profile_picture_url} alt={instructorName} className="w-10 h-10 rounded-full object-cover ring-2 ring-[#0158B7]/20" />
           ) : (
@@ -674,8 +672,8 @@ function CourseOverviewScreen({ course, onStart }: { course: Course; onStart: ()
             </div>
           )}
           <div>
-            <p className="text-xs text-gray-400">Instructor</p>
-            <p className="text-sm font-semibold text-gray-900">{instructorName}</p>
+            <p className="text-xs text-muted-foreground">Instructor</p>
+            <p className="text-sm font-semibold text-foreground">{instructorName}</p>
           </div>
         </div>
       )}
@@ -687,28 +685,28 @@ function CourseOverviewScreen({ course, onStart }: { course: Course; onStart: ()
       )}
       {course.description && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-[#0158B7]" />About This Course</h2>
-          <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm"><RichContent html={course.description} /></div>
+          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-[#0158B7]" />About This Course</h2>
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm"><RichContent html={course.description} /></div>
         </section>
       )}
       {course.what_you_will_learn && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-600" />What You'll Learn</h2>
-          <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm"><RichContent html={course.what_you_will_learn} /></div>
+          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-success" />What You'll Learn</h2>
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm"><RichContent html={course.what_you_will_learn} /></div>
         </section>
       )}
       {course.requirements && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-orange-500" />Requirements</h2>
-          <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm"><RichContent html={course.requirements} /></div>
+          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-warning" />Requirements</h2>
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm"><RichContent html={course.requirements} /></div>
         </section>
       )}
       {(course.tags || []).length > 0 && (
         <section className="mb-8">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-gray-500" />Topics</h2>
+          <h2 className="text-base font-bold text-foreground mb-3 flex items-center gap-2"><Tag className="w-4 h-4 text-muted-foreground" />Topics</h2>
           <div className="flex flex-wrap gap-2">
             {course.tags!.map((tag, i) => (
-              <span key={i} className="text-xs font-medium px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full">{tag}</span>
+              <span key={i} className="text-xs font-medium px-3 py-1.5 bg-muted text-muted-foreground rounded-full">{tag}</span>
             ))}
           </div>
         </section>
@@ -825,7 +823,7 @@ function WatchGatedVideo({ videoUrl, thumbnailUrl, lessonTitle, lessonId, isComp
         </div>
         {!isCompleted && !hasWatchedEnough && (
           <>
-            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-warning bg-warning/10 border border-warning/30 rounded-lg px-3 py-2">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               Watch the entire video before marking this lesson complete.
             </div>
@@ -857,22 +855,22 @@ function WatchGatedVideo({ videoUrl, thumbnailUrl, lessonTitle, lessonId, isComp
       </div>
       {duration > 0 && (
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-gray-400">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{fmt(currentTime)}</span>
-            <span className={`font-medium ${watchedPercent >= WATCH_THRESHOLD * 100 ? "text-green-600" : "text-gray-400"}`}>
+            <span className={`font-medium ${watchedPercent >= WATCH_THRESHOLD * 100 ? "text-success" : "text-muted-foreground"}`}>
               {Math.round(watchedPercent)}% watched
               {watchedPercent < WATCH_THRESHOLD * 100 && !isCompleted && (
-                <span className="text-gray-400 font-normal"> — watch {Math.round(WATCH_THRESHOLD * 100)}% to complete</span>
+                <span className="text-muted-foreground font-normal"> — watch {Math.round(WATCH_THRESHOLD * 100)}% to complete</span>
               )}
             </span>
             <span>{fmt(duration)}</span>
           </div>
-          <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all duration-300 ${watchedPercent >= WATCH_THRESHOLD * 100 ? "bg-green-500" : "bg-[#0158B7]"}`}
+          <div className="relative w-full h-2 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-300 ${watchedPercent >= WATCH_THRESHOLD * 100 ? "bg-success/100" : "bg-[#0158B7]"}`}
               style={{ width: `${watchedPercent}%` }} />
           </div>
           {!isCompleted && !hasWatchedEnough && (
-            <p className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5">
+            <p className="flex items-center gap-1.5 text-xs text-warning bg-warning/10 border border-warning/20 rounded-lg px-3 py-1.5">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
               You cannot skip — watch at least {Math.round(WATCH_THRESHOLD * 100)}% to mark complete.
             </p>
@@ -1218,7 +1216,6 @@ export default function ContentScreen({
         if (isCompleting) setIsCompleting(false)
       }
     } catch (error) {
-      console.error("Error checking lesson completion:", error)
       setCheckingProgress(false)
       setIsCompleting(false)
     }
@@ -1252,7 +1249,6 @@ export default function ContentScreen({
       try {
         await onComplete(undefined, true)
       } catch (error) {
-        console.error("❌ [ContentScreen] Error completing lesson:", error)
         setIsCompleting(false)
       }
     }
@@ -1298,30 +1294,30 @@ export default function ContentScreen({
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-xl font-bold text-gray-900 leading-snug">{lesson.title}</CardTitle>
+                <CardTitle className="text-xl font-bold text-foreground leading-snug">{lesson.title}</CardTitle>
                 <div className="flex items-center flex-wrap gap-3 text-sm text-muted-foreground mt-2">
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
                     {lesson.duration_minutes && lesson.duration_minutes > 0 ? `${lesson.duration_minutes} min` : "Self-paced"}
                   </span>
-                  {hasVideo && <span className="flex items-center gap-1.5 text-purple-600"><Video className="w-4 h-4" />Video included</span>}
+                  {hasVideo && <span className="flex items-center gap-1.5 text-primary"><Video className="w-4 h-4" />Video included</span>}
                   {hasMaterials && (
                     <span className="flex items-center gap-1.5 text-primary">
                       <File className="w-4 h-4" />
                       {lesson.lesson_materials!.length} material{lesson.lesson_materials!.length !== 1 ? "s" : ""}
                     </span>
                   )}
-                  {checkingProgress && <span className="text-xs text-blue-500 animate-pulse">Checking progress…</span>}
-                  {isCompleting && <span className="text-xs text-blue-500 animate-pulse">Marking complete…</span>}
+                  {checkingProgress && <span className="text-xs text-primary animate-pulse">Checking progress…</span>}
+                  {isCompleting && <span className="text-xs text-primary animate-pulse">Marking complete…</span>}
                   {isLessonCompleted && (
-                    <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                    <span className="flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full border border-success/20">
                       <CheckCircle className="w-3 h-3" />Completed
                     </span>
                   )}
                 </div>
               </div>
               {lesson.thumbnail_url && (
-                <img src={lesson.thumbnail_url} alt={lesson.title} className="w-20 h-14 object-cover rounded-lg border border-gray-100 flex-shrink-0 shadow-sm" />
+                <img src={lesson.thumbnail_url} alt={lesson.title} className="w-20 h-14 object-cover rounded-lg border border-border flex-shrink-0 shadow-sm" />
               )}
             </div>
           </CardHeader>
@@ -1330,8 +1326,8 @@ export default function ContentScreen({
             {/* Video */}
             {hasVideo && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <Video className="w-4 h-4 text-purple-500" />Video Lesson
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                  <Video className="w-4 h-4 text-primary" />Video Lesson
                 </h3>
                 <WatchGatedVideo
                   videoUrl={lesson.video_url!}
@@ -1364,14 +1360,14 @@ export default function ContentScreen({
                     </Button>
                   )}
                   {hasVideo && !videoWatchedEnough && !isCompleted && !isLessonCompleted && (
-                    <p className="text-xs text-amber-600 flex items-center gap-1.5 mt-2">
+                    <p className="text-xs text-warning flex items-center gap-1.5 mt-2">
                       <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />Watch the video above to unlock completion.
                     </p>
                   )}
                   {isLessonCompleted && (
-                    <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <span className="text-green-700 dark:text-green-300 font-medium text-sm">This lesson has been completed</span>
+                    <div className="flex items-center gap-2 p-3 bg-success/10 dark:bg-success/20/20 rounded-lg border border-success/20">
+                      <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+                      <span className="text-success dark:text-success font-medium text-sm">This lesson has been completed</span>
                     </div>
                   )}
                 </div>
@@ -1393,14 +1389,14 @@ export default function ContentScreen({
                   </Button>
                 )}
                 {hasVideo && !videoWatchedEnough && !isCompleted && !isLessonCompleted && (
-                  <p className="text-xs text-amber-600 flex items-center gap-1.5 mt-2">
+                  <p className="text-xs text-warning flex items-center gap-1.5 mt-2">
                     <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />Watch the video above to unlock completion.
                   </p>
                 )}
                 {isLessonCompleted && (
-                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-green-700 font-medium text-sm">This lesson has been completed</span>
+                  <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/20">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                    <span className="text-success font-medium text-sm">This lesson has been completed</span>
                   </div>
                 )}
               </div>

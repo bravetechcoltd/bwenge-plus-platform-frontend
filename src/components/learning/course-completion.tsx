@@ -122,7 +122,6 @@ export default function CourseCompletion({
         setExistingCertificate(null)
       }
     } catch (error) {
-      console.error("❌ [checkExistingCertificate] Error:", error)
     } finally {
       setCheckingCertificate(false)
     }
@@ -220,7 +219,6 @@ export default function CourseCompletion({
         throw new Error(result.message || "Failed to generate certificate")
       }
     } catch (error: any) {
-      console.error("❌ [handleGenerateCertificate] Error:", error)
       toast({ title: "Error", description: error.message || "Failed to generate certificate. Please try again.", variant: "destructive" })
     } finally {
       setLoadingCertificate(false)
@@ -247,7 +245,6 @@ export default function CourseCompletion({
         if (result.success && result.data?.pdf_url) window.open(result.data.pdf_url, "_blank")
       }
     } catch (error) {
-      console.error("❌ [handleDownloadCertificate] Error:", error)
       toast({ title: "Error", description: "Failed to download certificate. Please try again.", variant: "destructive" })
     }
   }
@@ -259,9 +256,9 @@ export default function CourseCompletion({
           <CardHeader className="text-center pb-8">
             <div className="flex justify-center mb-4">
               {isCourseCompleted ? (
-                <Trophy className="w-16 h-16 text-yellow-500" />
+                <Trophy className="w-16 h-16 text-warning" />
               ) : (
-                <AlertCircle className="w-16 h-16 text-amber-500" />
+                <AlertCircle className="w-16 h-16 text-warning" />
               )}
             </div>
             <CardTitle className="text-3xl mb-2">
@@ -275,7 +272,7 @@ export default function CourseCompletion({
             <p className="text-2xl font-bold text-primary mt-2">{courseTitle}</p>
             {isCourseCompleted && (
               <div className="mt-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-success/15 text-success dark:bg-success/20 dark:text-success">
                   <CheckCircle className="w-4 h-4 mr-1" />
                   All Assessments Passed
                 </span>
@@ -283,7 +280,7 @@ export default function CourseCompletion({
             )}
             {!isCourseCompleted && (
               <div className="mt-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning/15 text-warning dark:bg-warning/20 dark:text-warning">
                   <AlertCircle className="w-4 h-4 mr-1" />
                   Assessments Pending or Failed
                 </span>
@@ -345,7 +342,7 @@ export default function CourseCompletion({
             {/* Stats grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <BookOpen className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                <BookOpen className="w-6 h-6 mx-auto mb-2 text-primary" />
                 <div className="text-2xl font-bold">
                   {progressData?.completedLessons || stats.completedLessons}
                 </div>
@@ -356,14 +353,14 @@ export default function CourseCompletion({
               </div>
 
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                <CheckCircle className="w-6 h-6 mx-auto mb-2 text-success" />
                 <div className="text-2xl font-bold">{stats.completedAssessments}</div>
                 <div className="text-sm text-muted-foreground">Assessments Passed</div>
                 <div className="text-xs text-muted-foreground mt-1">of {stats.totalAssessments}</div>
               </div>
 
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <Star className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                <Star className="w-6 h-6 mx-auto mb-2 text-warning" />
                 <div className="text-2xl font-bold">{stats.totalScore}</div>
                 <div className="text-sm text-muted-foreground">Average Score</div>
                 {progressData?.finalScore && (
@@ -449,7 +446,7 @@ export default function CourseCompletion({
                 // This is the correct state when enrollmentStatus="COMPLETED" but
                 // individual assessments are still pending or failed.
                 <div className="space-y-4">
-                  <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400">
+                  <div className="flex items-center justify-center gap-2 text-warning dark:text-warning">
                     <Lock className="w-5 h-5" />
                     <p className="font-medium">Certificate Locked</p>
                   </div>
@@ -457,11 +454,11 @@ export default function CourseCompletion({
                     You must pass all lessons and assessments to earn your certificate.
                     Please complete any pending or failed assessments and try again.
                   </p>
-                  <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg inline-block max-w-sm mx-auto">
-                    <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                  <div className="p-4 bg-warning/10 dark:bg-warning/20/20 rounded-lg inline-block max-w-sm mx-auto">
+                    <p className="text-sm text-warning dark:text-warning font-medium">
                       Steps still pending or failed:
                     </p>
-                    <ul className="text-xs text-amber-700 dark:text-amber-300 mt-2 space-y-1 text-left">
+                    <ul className="text-xs text-warning dark:text-warning mt-2 space-y-1 text-left">
                       {allSteps
                         .filter((s: any) => {
                           if (!progressData?.completedSteps) return true
@@ -548,12 +545,12 @@ export default function CourseCompletion({
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Certificate of Completion</h2>
-                  <p className="text-gray-300 text-sm mt-1">{courseTitle}</p>
+                  <p className="text-muted-foreground text-sm mt-1">{courseTitle}</p>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => setShowCertificate(false)}
-                  className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  className="flex items-center gap-2 bg-card/10 border-white/20 text-white hover:bg-card/20"
                 >
                   <X className="w-4 h-4" />
                   Close

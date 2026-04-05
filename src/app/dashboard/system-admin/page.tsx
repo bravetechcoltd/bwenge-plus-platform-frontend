@@ -1,578 +1,489 @@
-// app/dashboard/system-admin/page.tsx - Updated with Light Theme
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import React, { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import {
   Building2,
-  Users,
   BookOpen,
+  Users,
+  GraduationCap,
+  ClipboardCheck,
+  RefreshCw,
   TrendingUp,
-  DollarSign,
-  Activity,
-  Shield,
-  Download,
-  Eye,
-  BarChart3,
+  ArrowRight,
   UserPlus,
   FileText,
-  CreditCard,
-  Settings,
+  ShieldCheck,
   AlertCircle,
-  CheckCircle,
   Clock,
-  ArrowUpRight,
-  ArrowDownRight,
-  PlusCircle,
-  Search,
-  Filter,
-  ExternalLink,
-  MoreVertical
+  Circle,
 } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import api from "@/lib/api"
+import { useRealtimeEvents } from "@/hooks/use-realtime"
+import { toast } from "sonner"
 
-// Mock data for System Admin Dashboard
-const mockData = {
-  platformStats: {
-    totalInstitutions: 48,
-    activeInstitutions: 42,
-    pendingInstitutions: 6,
-    totalUsers: 52300,
-    activeUsers: 48720,
-    totalCourses: 1250,
-    activeCourses: 1180,
-    moocCourses: 125,
-    spocCourses: 180,
-    totalRevenue: 1250000,
-    revenueGrowth: 15.5,
-  },
-  recentActivity: [
-    {
-      id: 1,
-      action: "Created Institution",
-      description: "University of Rwanda",
-      user: "System Admin",
-      timestamp: "10 minutes ago",
-      status: "completed",
-      icon: Building2
-    },
-    {
-      id: 2,
-      action: "Assigned Admin",
-      description: "John Doe assigned as Institution Admin for UR",
-      user: "System Admin",
-      timestamp: "25 minutes ago",
-      status: "completed",
-      icon: UserPlus
-    },
-    {
-      id: 3,
-      action: "Course Override",
-      description: "Updated course settings for 'Advanced ML'",
-      user: "System Admin",
-      timestamp: "1 hour ago",
-      status: "completed",
-      icon: Settings
-    },
-    {
-      id: 4,
-      action: "Payment Integration",
-      description: "Updated Stripe API keys",
-      user: "System Admin",
-      timestamp: "2 hours ago",
-      status: "completed",
-      icon: CreditCard
-    },
-    {
-      id: 5,
-      action: "User Role Changed",
-      description: "Promoted Sarah Chen to Institution Admin",
-      user: "System Admin",
-      timestamp: "3 hours ago",
-      status: "completed",
-      icon: Users
-    },
-  ],
-  institutionRequests: [
-    {
-      id: 1,
-      name: "Kigali Institute of Technology",
-      type: "UNIVERSITY",
-      submittedBy: "Dr. James Wilson",
-      submittedAt: "2024-01-15",
-      status: "pending"
-    },
-    {
-      id: 2,
-      name: "Rwanda Digital Agency",
-      type: "GOVERNMENT",
-      submittedBy: "Marie Uwase",
-      submittedAt: "2024-01-14",
-      status: "pending"
-    },
-    {
-      id: 3,
-      name: "Tech Solutions Ltd",
-      type: "PRIVATE_COMPANY",
-      submittedBy: "Alex Kamali",
-      submittedAt: "2024-01-13",
-      status: "pending"
-    },
-  ],
-  systemHealth: {
-    uptime: 99.98,
-    responseTime: "125ms",
-    activeSessions: 4250,
-    errorRate: 0.12,
-    lastBackup: "2024-01-15 02:00",
-    backupStatus: "success"
-  },
-  topInstitutions: [
-    {
-      id: 1,
-      name: "University of Rwanda",
-      users: 12500,
-      courses: 240,
-      active: true,
-      revenue: 125000
-    },
-    {
-      id: 2,
-      name: "Rwanda Polytechnic",
-      users: 8900,
-      courses: 180,
-      active: true,
-      revenue: 98000
-    },
-    {
-      id: 3,
-      name: "AIMS Rwanda",
-      users: 6500,
-      courses: 120,
-      active: true,
-      revenue: 75000
-    },
-    {
-      id: 4,
-      name: "Carnegie Mellon Africa",
-      users: 3200,
-      courses: 95,
-      active: true,
-      revenue: 45000
-    },
-  ],
-  quickActions: [
-    {
-      title: "Create Institution",
-      description: "Add new institution to platform",
-      icon: Building2,
-      href: "/dashboard/system-admin/institutions/create",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      title: "Manage Users",
-      description: "View and manage all users",
-      icon: Users,
-      href: "/dashboard/system-admin/users",
-      color: "from-green-500 to-emerald-500"
-    },
-    {
-      title: "System Settings",
-      description: "Configure platform settings",
-      icon: Settings,
-      href: "/dashboard/system-admin/settings/platform",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      title: "Generate Reports",
-      description: "Create system-wide reports",
-      icon: FileText,
-      href: "/dashboard/system-admin/reports",
-      color: "from-orange-500 to-amber-500"
-    },
-  ]
+// ────────────────────────────── Types ──────────────────────────────
+
+interface KPI {
+  total_institutions: number
+  total_active_courses: number
+  total_learners: number
+  total_instructors: number
+  pending_approvals: number
 }
 
-export default function SystemAdminDashboard() {
-  const [loading, setLoading] = useState(true)
+interface InstitutionOverview {
+  total: number
+  active: number
+  inactive: number
+  zero_courses: number
+  with_active_learners: number
+}
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setLoading(false), 500)
+interface InstitutionRow {
+  id: string
+  name: string
+  logo_url: string | null
+  type: string
+  is_active: boolean
+  member_count: number
+  learner_count: number
+  instructor_count: number
+  published_courses: number
+  recently_active: boolean
+}
+
+interface CourseSummary {
+  total: number
+  type_distribution: { mooc: number; spoc: number; mooc_percentage: number; spoc_percentage: number }
+  origin_distribution: { institution_linked: number; non_institution: number }
+  status_breakdown: { published: number; draft: number; archived: number }
+  non_institution_courses: { total: number; mooc: number; spoc: number }
+}
+
+interface ActivityItem {
+  id: string
+  action: string
+  description: string
+  user_name: string
+  target_type: string | null
+  target_id: string | null
+  timestamp: string
+}
+
+interface DashboardData {
+  kpi: KPI
+  institution_overview: InstitutionOverview
+  institution_list: InstitutionRow[]
+  course_summary: CourseSummary
+  activity_feed: ActivityItem[]
+  last_updated: string
+}
+
+// ────────────────────────────── Helpers ─────────────────────────────
+
+function relativeTime(dateStr: string): string {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diffSec = Math.floor((now - then) / 1000)
+  if (diffSec < 60) return "just now"
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  const diffDay = Math.floor(diffHr / 24)
+  if (diffDay < 30) return `${diffDay}d ago`
+  return new Date(dateStr).toLocaleDateString()
+}
+
+function activityIcon(action: string) {
+  if (action.includes("ENROLLMENT") || action.includes("ENROLL")) return <UserPlus className="h-3.5 w-3.5" />
+  if (action.includes("COURSE")) return <BookOpen className="h-3.5 w-3.5" />
+  if (action.includes("USER") || action.includes("LOGIN")) return <Users className="h-3.5 w-3.5" />
+  if (action.includes("INSTITUTION") || action.includes("MEMBER")) return <Building2 className="h-3.5 w-3.5" />
+  return <FileText className="h-3.5 w-3.5" />
+}
+
+function activityColor(action: string): string {
+  if (action.includes("CREATE") || action.includes("PUBLISH")) return "text-success"
+  if (action.includes("DELETE") || action.includes("DEACTIVATE") || action.includes("REMOVE")) return "text-destructive"
+  if (action.includes("UPDATE") || action.includes("COMPLETE")) return "text-primary"
+  return "text-muted-foreground"
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  published: "bg-success/15 border-l-success text-success",
+  draft: "bg-warning/15 border-l-warning text-warning",
+  archived: "bg-muted border-l-muted-foreground text-muted-foreground",
+}
+
+// ────────────────────────────── Component ───────────────────────────
+
+export default function SystemAdminDashboard() {
+  const router = useRouter()
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await api.get("/system-admin/dashboard-summary")
+      if (res.data.success) {
+        setData(res.data.data)
+      } else {
+        setError(res.data.message || "Failed to load dashboard")
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load dashboard")
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  if (loading) {
+  useEffect(() => {
+    fetchDashboard()
+  }, [fetchDashboard])
+
+  // ── Real-time: Socket-based dashboard updates ─────────────────────────────
+  useRealtimeEvents({
+    "dashboard-kpi-updated": () => fetchDashboard(),
+    "health-alert": (data: any) => {
+      toast.error(`System Alert: ${data.message || "Health issue detected"}`)
+      fetchDashboard()
+    },
+    "health-check-result": () => fetchDashboard(),
+    "new-audit-event": () => fetchDashboard(),
+    "security-alert": (data: any) => {
+      toast.error(`Security Alert: ${data.description || "Suspicious activity detected"}`)
+    },
+    "enrollment-count-updated": () => fetchDashboard(),
+    "course-published": () => fetchDashboard(),
+    "new-notification": (data: any) => {
+      if (data?.notification_type === "NEW_INSTITUTION_REGISTRATION" ||
+          data?.notification_type === "ENROLLMENT_SPIKE" ||
+          data?.notification_type === "SYSTEM_HEALTH_ALERT" ||
+          data?.notification_type === "NEW_INSTRUCTOR_APPLICATION") {
+        fetchDashboard()
+      }
+    },
+  })
+
+  if (loading) return <DashboardSkeleton />
+
+  if (error || !data) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4F46E5]"></div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-lg font-medium">{error || "Something went wrong"}</p>
+        <Button onClick={fetchDashboard} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" /> Retry
+        </Button>
       </div>
     )
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
+  const { kpi, institution_overview, institution_list, course_summary, activity_feed } = data
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num)
-  }
+  const kpiTiles = [
+    { label: "Institutions", value: kpi.total_institutions, icon: Building2, color: "text-primary" },
+    { label: "Active Courses", value: kpi.total_active_courses, icon: BookOpen, color: "text-success" },
+    { label: "Learners", value: kpi.total_learners, icon: GraduationCap, color: "text-primary" },
+    { label: "Instructors", value: kpi.total_instructors, icon: Users, color: "text-success" },
+    { label: "Pending Approvals", value: kpi.pending_approvals, icon: ClipboardCheck, color: kpi.pending_approvals > 0 ? "text-warning" : "text-muted-foreground" },
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header + Freshness */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">System Administration Dashboard</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage the entire BwengePlus platform</p>
+          <h1 className="text-2xl font-bold tracking-tight">System Admin Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Platform overview and management</p>
         </div>
-        <div className="flex gap-2">
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            Export Data
-          </button>
-          <button className="px-4 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4338CA] flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Building2 className="w-5 h-5 text-blue-600" />
-            </div>
-            <span className="text-xs text-gray-500 font-medium">Institutions</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{formatNumber(mockData.platformStats.totalInstitutions)}</div>
-          <div className="flex items-center gap-2 text-xs mt-2">
-            <span className="text-green-600 font-medium">+{mockData.platformStats.activeInstitutions} active</span>
-            <span className="text-gray-300">•</span>
-            <span className="text-amber-600">{mockData.platformStats.pendingInstitutions} pending</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <Users className="w-5 h-5 text-green-600" />
-            </div>
-            <span className="text-xs text-gray-500 font-medium">Users</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{formatNumber(mockData.platformStats.totalUsers)}</div>
-          <div className="flex items-center gap-2 text-xs mt-2">
-            <span className="text-green-600 font-medium">{formatNumber(mockData.platformStats.activeUsers)} active</span>
-            <span className="text-gray-300">•</span>
-            <span className="text-blue-600">{((mockData.platformStats.activeUsers / mockData.platformStats.totalUsers) * 100).toFixed(1)}% active rate</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <BookOpen className="w-5 h-5 text-purple-600" />
-            </div>
-            <span className="text-xs text-gray-500 font-medium">Courses</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{formatNumber(mockData.platformStats.totalCourses)}</div>
-          <div className="flex items-center gap-2 text-xs mt-2">
-            <span className="text-green-600 font-medium">{mockData.platformStats.activeCourses} active</span>
-            <span className="text-gray-300">•</span>
-            <span className="text-blue-600">{mockData.platformStats.moocCourses} MOOC</span>
-            <span className="text-gray-300">•</span>
-            <span className="text-purple-600">{mockData.platformStats.spocCourses} SPOC</span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-amber-50 rounded-lg">
-              <DollarSign className="w-5 h-5 text-amber-600" />
-            </div>
-            <span className="text-xs text-gray-500 font-medium">Revenue</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{formatCurrency(mockData.platformStats.totalRevenue)}</div>
-          <div className="flex items-center gap-2 text-xs mt-2">
-            <span className="text-green-600 font-medium flex items-center">
-              <ArrowUpRight className="w-3 h-3 mr-1" />
-              {mockData.platformStats.revenueGrowth}% growth
-            </span>
-            <span className="text-gray-300">•</span>
-            <span className="text-blue-600">MTD</span>
-          </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Updated {relativeTime(data.last_updated)}
+          </span>
+          <Button onClick={fetchDashboard} variant="ghost" size="icon" className="h-8 w-8">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Quick Actions & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-5 border-b border-gray-200">
-            <h3 className="font-bold text-gray-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#4F46E5]" />
-              Quick Actions
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">Frequently used administration tasks</p>
-          </div>
-          <div className="p-5 grid grid-cols-2 gap-4">
-            {mockData.quickActions.map((action) => (
-              <Link
-                key={action.title}
-                href={action.href}
-                className="group bg-white border border-gray-200 rounded-xl p-4 hover:border-[#4F46E5]/30 hover:shadow-md transition-all duration-200"
-              >
-                <div className="flex flex-col items-center text-center">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${action.color} mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                    <action.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="font-semibold text-gray-900 group-hover:text-[#4F46E5]">{action.title}</div>
-                  <div className="text-xs text-gray-600 mt-1">{action.description}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-5 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#4F46E5]" />
-                Recent Activity
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">Latest system administration actions</p>
+      {/* TIER 1 - KPI Strip */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {kpiTiles.map((tile) => (
+          <div
+            key={tile.label}
+            className="bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 hover:shadow-sm transition-shadow"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{tile.label}</span>
+              <tile.icon className={`h-4 w-4 ${tile.color}`} />
             </div>
-            <Link href="/dashboard/system-admin/activity" className="text-sm text-[#4F46E5] hover:text-[#4338CA] font-medium">
-              View all
-            </Link>
+            <span className="text-2xl font-bold leading-none">{tile.value.toLocaleString()}</span>
           </div>
-          <div className="p-5 space-y-4">
-            {mockData.recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                <div className={`p-2 rounded-lg ${activity.status === 'completed' ? 'bg-green-50' : 'bg-amber-50'}`}>
-                  <activity.icon className={`w-4 h-4 ${activity.status === 'completed' ? 'text-green-600' : 'text-amber-600'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">{activity.action}</div>
-                  <div className="text-sm text-gray-600 truncate">{activity.description}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {activity.user} • {activity.timestamp}
-                  </div>
-                </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  activity.status === 'completed' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-amber-100 text-amber-800'
-                }`}>
-                  {activity.status}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Pending Requests & System Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pending Institution Requests */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-5 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-                Pending Institution Requests
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">New institution applications requiring review</p>
-            </div>
-            <span className="px-3 py-1 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
-              {mockData.institutionRequests.length} pending
-            </span>
-          </div>
-          <div className="p-5 space-y-3">
-            {mockData.institutionRequests.map((request) => (
-              <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{request.name}</div>
-                  <div className="text-sm text-gray-600">
-                    {request.type.replace('_', ' ')} • Submitted by {request.submittedBy}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{request.submittedAt}</div>
+      {/* TIER 2 - Split Content Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left: Institution Summary (60%) */}
+        <Card className="lg:col-span-3 border border-border shadow-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              Institution Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Overview mini-grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Active", value: institution_overview.active, sub: `of ${institution_overview.total}` },
+                { label: "Inactive", value: institution_overview.inactive, sub: "" },
+                { label: "No Courses", value: institution_overview.zero_courses, sub: "" },
+                { label: "Active Learners", value: institution_overview.with_active_learners, sub: "last 30d" },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-muted/40 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  {stat.sub && <p className="text-[10px] text-muted-foreground">{stat.sub}</p>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="px-3 py-1.5 bg-[#4F46E5] text-white text-xs rounded-lg hover:bg-[#4338CA] transition-colors">
-                    Review
-                  </button>
-                  <button className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-100">
-                    <MoreVertical className="w-4 h-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <div className="pt-2">
-              <Link 
-                href="/dashboard/system-admin/institutions/pending" 
-                className="text-sm text-[#4F46E5] hover:text-[#4338CA] font-medium flex items-center gap-1"
-              >
-                View all pending requests
-                <ExternalLink className="w-3 h-3" />
-              </Link>
+              ))}
             </div>
-          </div>
-        </div>
 
-        {/* System Health */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-5 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-green-600" />
-                System Health
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">Platform performance and status</p>
-            </div>
-            <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-              mockData.systemHealth.uptime > 99.9 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-amber-100 text-amber-800'
-            }`}>
-              {mockData.systemHealth.uptime}% Uptime
-            </span>
-          </div>
-          <div className="p-5">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="space-y-1">
-                <div className="text-xs text-gray-500 font-medium">Response Time</div>
-                <div className="font-semibold text-gray-900">{mockData.systemHealth.responseTime}</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xs text-gray-500 font-medium">Active Sessions</div>
-                <div className="font-semibold text-gray-900">{formatNumber(mockData.systemHealth.activeSessions)}</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xs text-gray-500 font-medium">Error Rate</div>
-                <div className="font-semibold text-gray-900">{mockData.systemHealth.errorRate}%</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-xs text-gray-500 font-medium">Last Backup</div>
-                <div className="font-semibold text-gray-900 text-sm">{mockData.systemHealth.lastBackup}</div>
-              </div>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-gray-900">Backup Status</div>
-                <div className={`flex items-center gap-1 text-sm font-medium ${
-                  mockData.systemHealth.backupStatus === 'success' 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
-                }`}>
-                  {mockData.systemHealth.backupStatus === 'success' ? (
-                    <CheckCircle className="w-4 h-4" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4" />
-                  )}
-                  {mockData.systemHealth.backupStatus.toUpperCase()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <Separator />
 
-      {/* Top Institutions */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="p-5 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-gray-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#4F46E5]" />
-              Top Performing Institutions
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">Leading institutions by engagement and revenue</p>
-          </div>
-          <Link href="/dashboard/system-admin/institutions" className="text-sm text-[#4F46E5] hover:text-[#4338CA] font-medium">
-            View all institutions
-          </Link>
-        </div>
-        <div className="p-5">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 font-medium text-gray-700">Institution</th>
-                  <th className="text-left py-3 font-medium text-gray-700">Users</th>
-                  <th className="text-left py-3 font-medium text-gray-700">Courses</th>
-                  <th className="text-left py-3 font-medium text-gray-700">Revenue</th>
-                  <th className="text-left py-3 font-medium text-gray-700">Status</th>
-                  <th className="text-left py-3 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockData.topInstitutions.map((institution) => (
-                  <tr key={institution.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3">
-                      <div className="font-medium text-gray-900">{institution.name}</div>
-                    </td>
-                    <td className="py-3">{formatNumber(institution.users)}</td>
-                    <td className="py-3">{institution.courses}</td>
-                    <td className="py-3 font-medium text-gray-900">{formatCurrency(institution.revenue)}</td>
-                    <td className="py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        institution.active 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {institution.active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex gap-1">
-                        <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" title="View">
-                          <Eye className="w-4 h-4 text-gray-600" />
-                        </button>
-                        <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" title="Settings">
-                          <Settings className="w-4 h-4 text-gray-600" />
-                        </button>
-                        <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" title="Analytics">
-                          <BarChart3 className="w-4 h-4 text-gray-600" />
-                        </button>
+            {/* Per-institution list */}
+            <ScrollArea className="h-[340px] pr-2">
+              <div className="space-y-0">
+                {institution_list.length === 0 ? (
+                  <EmptyState
+                    message="No institutions yet"
+                    cta="Create Institution"
+                    onClick={() => router.push("/dashboard/system-admin/institutions/create")}
+                  />
+                ) : (
+                  institution_list.map((inst, i) => (
+                    <div
+                      key={inst.id}
+                      className={`flex items-center justify-between py-2.5 px-3 rounded-md cursor-pointer hover:bg-muted/50 transition-colors ${i % 2 === 0 ? "" : "bg-muted/20"}`}
+                      onClick={() => router.push(`/dashboard/system-admin/institutions/${inst.id}`)}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {inst.logo_url ? (
+                            <img src={inst.logo_url} alt="" className="h-full w-full object-cover rounded-full" />
+                          ) : (
+                            <Building2 className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{inst.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {inst.member_count} members ({inst.learner_count} learners &middot; {inst.instructor_count} instructors)
+                          </p>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
+                      <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                        <span className="text-xs text-muted-foreground">{inst.published_courses} courses</span>
+                        <Circle
+                          className={`h-2.5 w-2.5 fill-current ${inst.recently_active ? "text-success" : "text-muted-foreground/40"}`}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Right: Course Status Summary (40%) */}
+        <Card className="lg:col-span-2 border border-border shadow-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-success" />
+              Course Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Type distribution bar */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Type Distribution</p>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 h-3 rounded-full overflow-hidden bg-muted flex">
+                  <div
+                    className="bg-primary h-full transition-all"
+                    style={{ width: `${course_summary.type_distribution.mooc_percentage}%` }}
+                  />
+                  <div
+                    className="bg-success h-full transition-all"
+                    style={{ width: `${course_summary.type_distribution.spoc_percentage}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-primary inline-block" />
+                  MOOC {course_summary.type_distribution.mooc} ({course_summary.type_distribution.mooc_percentage}%)
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-success inline-block" />
+                  SPOC {course_summary.type_distribution.spoc} ({course_summary.type_distribution.spoc_percentage}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Origin split */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Course Origin</p>
+              <div className="flex gap-3">
+                <div className="flex-1 bg-muted/40 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold">{course_summary.origin_distribution.institution_linked}</p>
+                  <p className="text-xs text-muted-foreground">Institution</p>
+                </div>
+                <div className="flex-1 bg-muted/40 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold">{course_summary.origin_distribution.non_institution}</p>
+                  <p className="text-xs text-muted-foreground">Standalone</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Status breakdown */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Status Breakdown</p>
+              <div className="space-y-2">
+                {(["published", "draft", "archived"] as const).map((status) => (
+                  <div
+                    key={status}
+                    className={`flex items-center justify-between py-1.5 px-3 rounded-md border-l-[3px] ${STATUS_COLORS[status]}`}
+                  >
+                    <span className="text-sm capitalize">{status}</span>
+                    <Badge variant="secondary" className="font-bold text-xs">
+                      {course_summary.status_breakdown[status]}
+                    </Badge>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Non-institution courses highlight */}
+            <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                Non-Institution Courses
+              </p>
+              <p className="text-xs text-muted-foreground mb-2">Platform-wide open courses not linked to any institution</p>
+              <div className="flex gap-3">
+                <div className="flex-1 text-center">
+                  <p className="text-lg font-bold">{course_summary.non_institution_courses.mooc}</p>
+                  <p className="text-xs text-muted-foreground">MOOC</p>
+                </div>
+                <div className="flex-1 text-center">
+                  <p className="text-lg font-bold">{course_summary.non_institution_courses.spoc}</p>
+                  <p className="text-xs text-muted-foreground">SPOC</p>
+                </div>
+                <div className="flex-1 text-center">
+                  <p className="text-lg font-bold">{course_summary.non_institution_courses.total}</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Emergency Actions */}
-      <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h4 className="font-bold text-red-900 flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Emergency Actions
-            </h4>
-            <p className="text-sm text-red-700 mt-1">
-              These actions affect the entire platform. Use with caution and only when necessary.
-            </p>
+      {/* TIER 3 - Activity Feed */}
+      <Card className="border border-border shadow-none">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Recent Activity
+            </CardTitle>
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7">
+              View all activity <ArrowRight className="h-3 w-3 ml-1" />
+            </Button>
           </div>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white border border-red-300 text-red-700 text-sm rounded-lg hover:bg-red-50 transition-colors">
-              System Maintenance Mode
-            </button>
-            <button className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
-              Emergency Backup
-            </button>
-          </div>
+        </CardHeader>
+        <CardContent>
+          {activity_feed.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No recent activity</p>
+          ) : (
+            <div className="space-y-0">
+              {activity_feed.map((item, i) => (
+                <div
+                  key={item.id}
+                  className={`flex items-center gap-3 py-2 px-2 rounded-md ${i % 2 === 0 ? "" : "bg-muted/20"}`}
+                >
+                  <div className={`flex items-center justify-center h-7 w-7 rounded-full bg-muted flex-shrink-0 ${activityColor(item.action)}`}>
+                    {activityIcon(item.action)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">
+                      <span className="font-medium">{item.user_name}</span>{" "}
+                      <span className="text-muted-foreground">{item.description}</span>
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
+                    {relativeTime(item.timestamp)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ────────────────────────────── Sub-components ─────────────────────
+
+function EmptyState({ message, cta, onClick }: { message: string; cta: string; onClick: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 gap-3">
+      <ShieldCheck className="h-10 w-10 text-muted-foreground/50" />
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <Button onClick={onClick} variant="outline" size="sm">{cta}</Button>
+    </div>
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-7 w-52" />
+          <Skeleton className="h-4 w-64 mt-1.5" />
         </div>
+        <Skeleton className="h-8 w-8 rounded-md" />
       </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-[76px] rounded-xl" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Skeleton className="lg:col-span-3 h-[480px] rounded-xl" />
+        <Skeleton className="lg:col-span-2 h-[480px] rounded-xl" />
+      </div>
+      <Skeleton className="h-[280px] rounded-xl" />
     </div>
   )
 }

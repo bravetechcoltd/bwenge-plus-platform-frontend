@@ -124,15 +124,15 @@ export default function InstitutionManagementPage() {
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case "UNIVERSITY":
-        return "bg-blue-100 text-blue-700";
+        return "bg-primary/15 text-primary";
       case "GOVERNMENT":
-        return "bg-green-100 text-green-700";
+        return "bg-success/15 text-success";
       case "PRIVATE_COMPANY":
-        return "bg-purple-100 text-purple-700";
+        return "bg-primary/15 text-primary";
       case "NGO":
-        return "bg-amber-100 text-amber-700";
+        return "bg-warning/15 text-warning";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -158,7 +158,7 @@ export default function InstitutionManagementPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-md border border-gray-100 p-4 mb-4"
+          className="bg-card rounded-xl shadow-md border border-border p-4 mb-4"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
@@ -166,10 +166,10 @@ export default function InstitutionManagementPage() {
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-foreground">
                   Institution Management
                 </h1>
-                <p className="text-xs text-gray-500">{totalItems} total institutions</p>
+                <p className="text-xs text-muted-foreground">{totalItems} total institutions</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -177,8 +177,8 @@ export default function InstitutionManagementPage() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center px-3 py-2 rounded-lg transition-all text-sm ${
                   showFilters
-                    ? "bg-blue-100 text-blue-700 border border-blue-300"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-primary/15 text-primary border border-primary/40"
+                    : "bg-muted text-muted-foreground hover:bg-secondary"
                 }`}
               >
                 <SlidersHorizontal className="w-4 h-4 mr-1" />
@@ -187,7 +187,7 @@ export default function InstitutionManagementPage() {
               <button
                 onClick={loadInstitutions}
                 disabled={isLoading}
-                className="flex items-center px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+                className="flex items-center px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors disabled:opacity-50 text-sm"
               >
                 <RefreshCw
                   className={`w-4 h-4 mr-1 ${isLoading ? "animate-spin" : ""}`}
@@ -196,7 +196,7 @@ export default function InstitutionManagementPage() {
               </button>
               <Link
                 href="/dashboard/system-admin/institutions/create"
-                className="flex items-center px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Institution
@@ -211,7 +211,7 @@ export default function InstitutionManagementPage() {
               className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                 activeTab === "active"
                   ? "bg-primary text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-muted text-muted-foreground hover:bg-secondary"
               }`}
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -222,7 +222,7 @@ export default function InstitutionManagementPage() {
               className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                 activeTab === "all"
                   ? "bg-primary text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-muted text-muted-foreground hover:bg-secondary"
               }`}
             >
               <Building2 className="w-4 h-4 mr-2" />
@@ -232,13 +232,13 @@ export default function InstitutionManagementPage() {
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, description, or type..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-9 pr-4 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary"
             />
           </div>
 
@@ -254,7 +254,7 @@ export default function InstitutionManagementPage() {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-primary text-sm"
                 >
                   <option value="all">All Types</option>
                   <option value="UNIVERSITY">University</option>
@@ -272,13 +272,13 @@ export default function InstitutionManagementPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center"
+            className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 mb-4 flex items-center"
           >
-            <AlertCircle className="w-4 h-4 text-red-600 mr-2" />
-            <span className="text-sm text-red-800">{error}</span>
+            <AlertCircle className="w-4 h-4 text-destructive mr-2" />
+            <span className="text-sm text-destructive">{error}</span>
             <button
               onClick={() => dispatch(clearError())}
-              className="ml-auto text-red-600 hover:text-red-800"
+              className="ml-auto text-destructive hover:text-destructive"
             >
               <X className="w-4 h-4" />
             </button>
@@ -288,19 +288,19 @@ export default function InstitutionManagementPage() {
         {/* Institutions Table */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
         ) : currentPageInstitutions.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-xl shadow-md border border-gray-100 p-12 text-center"
+            className="bg-card rounded-xl shadow-md border border-border p-12 text-center"
           >
-            <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-muted-foreground mb-2">
               No Institutions {searchQuery ? "Found" : ""}
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchQuery
                 ? "Try adjusting your search"
                 : "Get started by creating your first institution"}
@@ -308,7 +308,7 @@ export default function InstitutionManagementPage() {
             {!searchQuery && (
               <Link
                 href="/dashboard/system-admin/institutions/create"
-                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create First Institution
@@ -319,7 +319,7 @@ export default function InstitutionManagementPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
+            className="bg-card rounded-xl shadow-md border border-border overflow-hidden"
           >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -351,7 +351,7 @@ export default function InstitutionManagementPage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.03 }}
-                      className="hover:bg-blue-50 transition-colors group"
+                      className="hover:bg-primary/10 transition-colors group"
                     >
                       <td className="px-3 py-3 whitespace-nowrap">
                         <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm">
@@ -367,17 +367,17 @@ export default function InstitutionManagementPage() {
                             <img
                               src={institution.logo_url}
                               alt={institution.name}
-                              className="w-10 h-10 rounded-lg object-cover border border-gray-200"
+                              className="w-10 h-10 rounded-lg object-cover border border-border"
                             />
                           ) : (
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <Building2 className="w-5 h-5 text-gray-400" />
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                              <Building2 className="w-5 h-5 text-muted-foreground" />
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-gray-900">{institution.name}</p>
+                            <p className="font-medium text-foreground">{institution.name}</p>
                             {institution.description && (
-                              <p className="text-xs text-gray-500 line-clamp-1">
+                              <p className="text-xs text-muted-foreground line-clamp-1">
                                 {institution.description}
                               </p>
                             )}
@@ -396,17 +396,17 @@ export default function InstitutionManagementPage() {
                       </td>
 
                       <td className="px-3 py-3">
-                        <div className="flex items-center space-x-3 text-xs text-gray-600">
+                        <div className="flex items-center space-x-3 text-xs text-muted-foreground">
                           <div className="flex items-center">
-                            <Users className="w-3 h-3 mr-1 text-gray-400" />
+                            <Users className="w-3 h-3 mr-1 text-muted-foreground" />
                             {institution.memberCount || 0}
                           </div>
                           <div className="flex items-center">
-                            <BookOpen className="w-3 h-3 mr-1 text-gray-400" />
+                            <BookOpen className="w-3 h-3 mr-1 text-muted-foreground" />
                             {institution.courseCount || 0}
                           </div>
                           <div className="flex items-center">
-                            <FolderTree className="w-3 h-3 mr-1 text-gray-400" />
+                            <FolderTree className="w-3 h-3 mr-1 text-muted-foreground" />
                             {institution.categoryCount || 0}
                           </div>
                         </div>
@@ -414,12 +414,12 @@ export default function InstitutionManagementPage() {
 
                       <td className="px-3 py-3 whitespace-nowrap">
                         {institution.is_active ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/15 text-success">
                             <CheckCircle2 className="w-3 h-3" />
                             Active
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive/15 text-destructive">
                             <XCircle className="w-3 h-3" />
                             Inactive
                           </span>
@@ -427,8 +427,8 @@ export default function InstitutionManagementPage() {
                       </td>
 
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <div className="flex items-center text-xs text-gray-600">
-                          <Calendar className="w-3 h-3 mr-1 text-gray-400" />
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3 mr-1 text-muted-foreground" />
                           {new Date(institution.created_at).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -445,7 +445,7 @@ export default function InstitutionManagementPage() {
                                 `/dashboard/system-admin/institutions/${institution.id}`
                               )
                             }
-                            className="p-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors group-hover:scale-110"
+                            className="p-1.5 bg-muted text-muted-foreground rounded hover:bg-secondary transition-colors group-hover:scale-110"
                             title="View Details"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -456,14 +456,14 @@ export default function InstitutionManagementPage() {
                                 `/dashboard/system-admin/institutions/create?id=${institution.id}`
                               )
                             }
-                            className="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors group-hover:scale-110"
+                            className="p-1.5 bg-primary/15 text-primary rounded hover:bg-blue-200 transition-colors group-hover:scale-110"
                             title="Edit Institution"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleReplaceAdmin(institution)}
-                            className="p-1.5 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors group-hover:scale-110"
+                            className="p-1.5 bg-primary/15 text-primary rounded hover:bg-primary/20 transition-colors group-hover:scale-110"
                             title="Replace Admin"
                           >
                             <UserCog className="w-3.5 h-3.5" />
@@ -472,8 +472,8 @@ export default function InstitutionManagementPage() {
                             onClick={() => handleToggleStatus(institution)}
                             className={`p-1.5 rounded transition-colors group-hover:scale-110 ${
                               institution.is_active
-                                ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                : "bg-green-100 text-green-700 hover:bg-green-200"
+                                ? "bg-destructive/15 text-destructive hover:bg-destructive/20"
+                                : "bg-success/15 text-success hover:bg-green-200"
                             }`}
                             title={institution.is_active ? "Deactivate" : "Activate"}
                           >
@@ -493,9 +493,9 @@ export default function InstitutionManagementPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-t border-gray-200">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-muted-foreground">
                     Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
                     <span className="font-semibold">
                       {Math.min(endIndex, totalItems)}
@@ -507,7 +507,7 @@ export default function InstitutionManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-1.5 border border-gray-300 rounded hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 border border-border rounded hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -532,7 +532,7 @@ export default function InstitutionManagementPage() {
                             className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                               currentPage === pageNum
                                 ? "bg-primary text-white shadow-sm"
-                                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                                : "bg-card text-muted-foreground hover:bg-muted border border-border"
                             }`}
                           >
                             {pageNum}
@@ -544,7 +544,7 @@ export default function InstitutionManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="p-1.5 border border-gray-300 rounded hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 border border-border rounded hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -555,7 +555,7 @@ export default function InstitutionManagementPage() {
                         setItemsPerPage(Number(e.target.value));
                         setCurrentPage(1);
                       }}
-                      className="px-2 py-1 text-xs border border-gray-300 rounded bg-white hover:border-gray-400 focus:ring-1 focus:ring-blue-500"
+                      className="px-2 py-1 text-xs border border-border rounded bg-card hover:border-border focus:ring-1 focus:ring-blue-500"
                     >
                       <option value={10}>10</option>
                       <option value={20}>20</option>

@@ -444,7 +444,6 @@ export function Certificate({
         description: "Opening print dialog. Save as PDF to download.",
       })
     } catch (error) {
-      console.error("Failed to download certificate:", error)
       toast({
         title: "Error",
         description: "Failed to download certificate. Please try again.",
@@ -486,7 +485,7 @@ export function Certificate({
 
   return (
     <div className="space-y-6">
-      <div ref={certificateRef} className="certificate-container bg-white">
+      <div ref={certificateRef} className="certificate-container bg-card">
         <div
           className="certificate p-[60px] shadow-2xl relative"
           style={{

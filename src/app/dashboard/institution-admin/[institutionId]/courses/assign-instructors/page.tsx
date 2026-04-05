@@ -102,7 +102,6 @@ export default function AssignInstructorsPage() {
                 };
               }
             } catch (error) {
-              console.error(`Failed to fetch instructors for course ${course.id}:`, error);
             }
             
             return {
@@ -117,7 +116,6 @@ export default function AssignInstructorsPage() {
         toast.error(data.message || "Failed to fetch courses");
       }
     } catch (error) {
-      console.error("Failed to fetch courses:", error);
       toast.error("Failed to fetch institution courses");
     } finally {
       setLoading(false);
@@ -141,13 +139,13 @@ export default function AssignInstructorsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "bg-success/15 text-success";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-warning/15 text-warning";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -156,7 +154,7 @@ export default function AssignInstructorsPage() {
   };
 
   const getCourseTypeColor = (type: string) => {
-    return type === "MOOC" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800";
+    return type === "MOOC" ? "bg-primary/15 text-primary" : "bg-primary/15 text-primary";
   };
 
   if (!user || user.bwenge_role !== "INSTITUTION_ADMIN") {
@@ -164,9 +162,9 @@ export default function AssignInstructorsPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-            <p className="text-gray-500 mb-6">
+            <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-6">
               You need to be an institution administrator to view this page.
             </p>
           </CardContent>
@@ -190,8 +188,8 @@ export default function AssignInstructorsPage() {
             Back to Courses
           </Button>
           
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Assign Instructors</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Assign Instructors</h1>
+          <p className="text-muted-foreground">
             Manage instructors for your institution's courses
           </p>
         </div>
@@ -214,7 +212,7 @@ export default function AssignInstructorsPage() {
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search courses by title or description..."
                 value={searchTerm}
@@ -224,11 +222,11 @@ export default function AssignInstructorsPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-white"
+                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-card"
               >
                 <option value="all">All Status</option>
                 <option value="PUBLISHED">Published</option>
@@ -238,11 +236,11 @@ export default function AssignInstructorsPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-white"
+                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-card"
               >
                 <option value="all">All Types</option>
                 <option value="MOOC">MOOC</option>
@@ -258,7 +256,7 @@ export default function AssignInstructorsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Courses</p>
+                <p className="text-sm text-muted-foreground">Total Courses</p>
                 <p className="text-2xl font-bold">{courses.length}</p>
               </div>
               <BookOpen className="w-8 h-8 text-[#0158B7]" />
@@ -270,12 +268,12 @@ export default function AssignInstructorsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Courses</p>
+                <p className="text-sm text-muted-foreground">Active Courses</p>
                 <p className="text-2xl font-bold">
                   {courses.filter(c => c.status === "PUBLISHED").length}
                 </p>
               </div>
-              <Globe className="w-8 h-8 text-green-500" />
+              <Globe className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -284,12 +282,12 @@ export default function AssignInstructorsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Instructors</p>
+                <p className="text-sm text-muted-foreground">Total Instructors</p>
                 <p className="text-2xl font-bold">
                   {courses.reduce((sum, course) => sum + (course.total_instructors || 0), 0)}
                 </p>
               </div>
-              <Users2 className="w-8 h-8 text-purple-500" />
+              <Users2 className="w-8 h-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -298,12 +296,12 @@ export default function AssignInstructorsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">SPOC Courses</p>
+                <p className="text-sm text-muted-foreground">SPOC Courses</p>
                 <p className="text-2xl font-bold">
                   {courses.filter(c => c.course_type === "SPOC").length}
                 </p>
               </div>
-              <Lock className="w-8 h-8 text-orange-500" />
+              <Lock className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -331,7 +329,7 @@ export default function AssignInstructorsPage() {
               
               <CardContent className="space-y-4">
                 {/* Course Image */}
-                <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative h-32 w-full rounded-lg overflow-hidden bg-muted">
                   {course.thumbnail_url ? (
                     <img
                       src={course.thumbnail_url}
@@ -340,7 +338,7 @@ export default function AssignInstructorsPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <BookOpen className="w-12 h-12 text-gray-300" />
+                      <BookOpen className="w-12 h-12 text-muted-foreground" />
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
@@ -355,17 +353,17 @@ export default function AssignInstructorsPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-600">{course.enrollment_count} students</span>
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{course.enrollment_count} students</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Users2 className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-600">{course.total_instructors || 0} instructors</span>
+                      <Users2 className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{course.total_instructors || 0} instructors</span>
                     </div>
                   </div>
 
                   {/* Instructor Info */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
                       {course.instructor?.profile_picture_url ? (
                         <img
@@ -374,24 +372,24 @@ export default function AssignInstructorsPage() {
                           className="w-8 h-8 rounded-full"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                          <GraduationCap className="w-4 h-4 text-gray-500" />
+                        <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                          <GraduationCap className="w-4 h-4 text-muted-foreground" />
                         </div>
                       )}
                       <div>
                         <p className="text-sm font-medium truncate max-w-[120px]">
                           {course.instructor?.first_name} {course.instructor?.last_name}
                         </p>
-                        <p className="text-xs text-gray-500">Primary Instructor</p>
+                        <p className="text-xs text-muted-foreground">Primary Instructor</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                    <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
                       Primary
                     </Badge>
                   </div>
 
                   {/* Created Date */}
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
                     <span>Created: {format(new Date(course.created_at), "MMM d, yyyy")}</span>
                   </div>
@@ -424,11 +422,11 @@ export default function AssignInstructorsPage() {
         </div>
       ) : (
         <div className="text-center py-8">
-          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">
             No Courses Found
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             {searchTerm || statusFilter !== "all" || typeFilter !== "all" 
               ? "Try different search criteria" 
               : "No courses available for instructor assignment"}

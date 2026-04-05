@@ -98,21 +98,20 @@ export default function DashboardLayout({
   // Session monitoring info
   useEffect(() => {
     if (isMonitoring) {
-      console.log('✅ Cross-system session monitoring is active')
     }
   }, [isMonitoring])
 
   // Show loading state while redirecting
   if (isLoading || isRedirecting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-card">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-[#4F46E5] mx-auto mb-4" />
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {isRedirecting ? 'Redirecting to your dashboard...' : 'Loading...'}
           </p>
           {user && isRedirecting && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Taking you to {user.bwenge_role.replace('_', ' ')} Dashboard
             </p>
           )}

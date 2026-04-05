@@ -79,7 +79,6 @@ export default function AddCoursePage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error)
       } finally {
         setLoadingData(false)
       }
@@ -139,7 +138,6 @@ export default function AddCoursePage() {
         toast.error(result.message || "Failed to create course")
       }
     } catch (error) {
-      console.error("Error:", error)
       toast.error("Failed to create course")
     } finally {
       setIsLoading(false)

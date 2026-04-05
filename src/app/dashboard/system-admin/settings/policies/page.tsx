@@ -144,9 +144,9 @@ export default function GlobalPoliciesPage() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      DRAFT: "bg-gray-100 text-gray-600",
-      PUBLISHED: "bg-green-100 text-green-700",
-      ARCHIVED: "bg-amber-100 text-amber-700",
+      DRAFT: "bg-muted text-muted-foreground",
+      PUBLISHED: "bg-success/15 text-success",
+      ARCHIVED: "bg-warning/15 text-warning",
     };
     return styles[status as keyof typeof styles] || styles.DRAFT;
   };
@@ -156,23 +156,23 @@ export default function GlobalPoliciesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted/50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-purple-600 rounded-xl">
+            <div className="p-2.5 bg-primary rounded-xl">
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Global Policies</h1>
-              <p className="text-sm text-gray-600">Manage legal documents and platform policies</p>
+              <h1 className="text-2xl font-bold text-foreground">Global Policies</h1>
+              <p className="text-sm text-muted-foreground">Manage legal documents and platform policies</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={loadData}
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="p-2 border border-border rounded-lg hover:bg-muted/50"
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
             </button>
@@ -191,7 +191,7 @@ export default function GlobalPoliciesPage() {
                 });
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary"
             >
               <Plus className="w-4 h-4" />
               New Policy
@@ -201,62 +201,62 @@ export default function GlobalPoliciesPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total Policies</p>
-              <FileText className="w-4 h-4 text-gray-400" />
+              <p className="text-sm text-muted-foreground">Total Policies</p>
+              <FileText className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{globalPolicies.length}</p>
+            <p className="text-2xl font-bold text-foreground">{globalPolicies.length}</p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Published</p>
-              <Check className="w-4 h-4 text-green-500" />
+              <p className="text-sm text-muted-foreground">Published</p>
+              <Check className="w-4 h-4 text-success" />
             </div>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-success">
               {globalPolicies.filter(p => p.status === "PUBLISHED").length}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Drafts</p>
-              <Clock className="w-4 h-4 text-amber-500" />
+              <p className="text-sm text-muted-foreground">Drafts</p>
+              <Clock className="w-4 h-4 text-warning" />
             </div>
-            <p className="text-2xl font-bold text-amber-600">
+            <p className="text-2xl font-bold text-warning">
               {globalPolicies.filter(p => p.status === "DRAFT").length}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total Acceptances</p>
-              <Users className="w-4 h-4 text-blue-500" />
+              <p className="text-sm text-muted-foreground">Total Acceptances</p>
+              <Users className="w-4 h-4 text-primary" />
             </div>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-2xl font-bold text-primary">
               {globalPolicies.reduce((sum, p) => sum + p.acceptance_count, 0)}
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search policies..."
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full pl-9 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Types</option>
               {policyTypes.types?.map((type: any) => (
@@ -268,7 +268,7 @@ export default function GlobalPoliciesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Statuses</option>
               {policyTypes.statuses?.map((status: string) => (
@@ -283,13 +283,13 @@ export default function GlobalPoliciesPage() {
         {/* Policies Grid */}
         <div className="grid grid-cols-1 gap-4">
           {isLoading ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mx-auto" />
+            <div className="bg-card rounded-xl p-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/40 border-t-transparent mx-auto" />
             </div>
           ) : filteredPolicies.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">No policies found</p>
+            <div className="bg-card rounded-xl p-12 text-center">
+              <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">No policies found</p>
             </div>
           ) : (
             filteredPolicies.map((policy) => (
@@ -297,26 +297,26 @@ export default function GlobalPoliciesPage() {
                 key={policy.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-card rounded-xl shadow-sm border border-border p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{policy.title}</h3>
-                      <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                      <h3 className="font-semibold text-foreground">{policy.title}</h3>
+                      <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
                         v{policy.version}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(policy.status)}`}>
                         {policy.status}
                       </span>
-                      <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                      <span className="px-2 py-0.5 bg-primary/15 text-primary rounded-full text-xs">
                         {getTypeLabel(policy.type)}
                       </span>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{policy.summary || policy.content.substring(0, 200)}...</p>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{policy.summary || policy.content.substring(0, 200)}...</p>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         Effective: {new Date(policy.effective_date).toLocaleDateString()}
@@ -333,7 +333,7 @@ export default function GlobalPoliciesPage() {
                       </div>
                       {policy.requires_acceptance && (
                         <div className="flex items-center gap-1">
-                          <Check className="w-3 h-3 text-green-500" />
+                          <Check className="w-3 h-3 text-success" />
                           Requires acceptance
                         </div>
                       )}
@@ -343,14 +343,14 @@ export default function GlobalPoliciesPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setViewingPolicy(policy)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
                       title="View"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setShowHistory(true)}
-                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors"
                       title="History"
                     >
                       <History className="w-4 h-4" />
@@ -358,7 +358,7 @@ export default function GlobalPoliciesPage() {
                     {policy.status === "DRAFT" && (
                       <button
                         onClick={() => handlePublish(policy.id)}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        className="p-2 text-success hover:bg-success/10 rounded-lg transition-colors"
                         title="Publish"
                       >
                         <Send className="w-4 h-4" />
@@ -366,14 +366,14 @@ export default function GlobalPoliciesPage() {
                     )}
                     <button
                       onClick={() => handleEdit(policy)}
-                      className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(policy.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -397,33 +397,33 @@ export default function GlobalPoliciesPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+                className="relative bg-card rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
               >
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <FileText className="w-5 h-5 text-primary" />
+                    <h2 className="text-lg font-semibold text-foreground">
                       {editingPolicy ? "Edit Policy" : "Create New Policy"}
                     </h2>
                   </div>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg"
+                    className="p-1 hover:bg-muted rounded-lg"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Type <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Type <span className="text-destructive">*</span>
                       </label>
                       <select
                         value={formData.type}
                         onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
                         required
                       >
                         {policyTypes.types?.map((type: any) => (
@@ -435,69 +435,69 @@ export default function GlobalPoliciesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Title <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Title <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Summary
                     </label>
                     <textarea
                       value={formData.summary}
                       onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
                       placeholder="Brief summary of the policy..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Content <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
+                      Content <span className="text-destructive">*</span>
                     </label>
                     <textarea
                       value={formData.content}
                       onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                       rows={10}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500"
                       placeholder="Policy content (Markdown supported)"
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1">Markdown formatting is supported</p>
+                    <p className="text-xs text-muted-foreground mt-1">Markdown formatting is supported</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Effective Date
                       </label>
                       <input
                         type="date"
                         value={formData.effective_date?.split('T')[0] || ''}
                         onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Expiry Date (Optional)
                       </label>
                       <input
                         type="date"
                         value={formData.expiry_date?.split('T')[0] || ''}
                         onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-purple-500"
                       />
                     </div>
                   </div>
@@ -508,9 +508,9 @@ export default function GlobalPoliciesPage() {
                         type="checkbox"
                         checked={formData.requires_acceptance !== false}
                         onChange={(e) => setFormData({ ...formData, requires_acceptance: e.target.checked })}
-                        className="w-4 h-4 text-purple-600 rounded"
+                        className="w-4 h-4 text-primary rounded"
                       />
-                      <span className="text-sm text-gray-700">Requires user acceptance</span>
+                      <span className="text-sm text-muted-foreground">Requires user acceptance</span>
                     </label>
 
                     <label className="flex items-center gap-2">
@@ -518,16 +518,16 @@ export default function GlobalPoliciesPage() {
                         type="checkbox"
                         checked={formData.is_active !== false}
                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                        className="w-4 h-4 text-purple-600 rounded"
+                        className="w-4 h-4 text-primary rounded"
                       />
-                      <span className="text-sm text-gray-700">Active</span>
+                      <span className="text-sm text-muted-foreground">Active</span>
                     </label>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <div className="flex gap-3 pt-4 border-t border-border">
                     <button
                       type="submit"
-                      className="flex-1 flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                      className="flex-1 flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary"
                     >
                       <Save className="w-4 h-4" />
                       {editingPolicy ? "Update Policy" : "Create Policy"}
@@ -535,7 +535,7 @@ export default function GlobalPoliciesPage() {
                     <button
                       type="button"
                       onClick={() => setShowForm(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
                     >
                       Cancel
                     </button>
@@ -558,24 +558,24 @@ export default function GlobalPoliciesPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+                className="relative bg-card rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
               >
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">{viewingPolicy.title}</h2>
-                    <span className="text-xs text-gray-500">v{viewingPolicy.version}</span>
+                    <FileText className="w-5 h-5 text-primary" />
+                    <h2 className="text-lg font-semibold text-foreground">{viewingPolicy.title}</h2>
+                    <span className="text-xs text-muted-foreground">v{viewingPolicy.version}</span>
                   </div>
                   <button
                     onClick={() => setViewingPolicy(null)}
-                    className="p-1 hover:bg-gray-100 rounded-lg"
+                    className="p-1 hover:bg-muted rounded-lg"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
 
                 <div className="p-6">
-                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
                     <span>Type: {getTypeLabel(viewingPolicy.type)}</span>
                     <span>•</span>
                     <span>Status: {viewingPolicy.status}</span>
@@ -584,8 +584,8 @@ export default function GlobalPoliciesPage() {
                   </div>
 
                   {viewingPolicy.summary && (
-                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">{viewingPolicy.summary}</p>
+                    <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">{viewingPolicy.summary}</p>
                     </div>
                   )}
 

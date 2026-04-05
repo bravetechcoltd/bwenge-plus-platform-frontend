@@ -41,7 +41,6 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
         }, 3000);
 
       } catch (error) {
-        console.error('SSO initialization failed:', error);
         setStatus('error');
         setMessage('Failed to connect to BwengePlus');
       }
@@ -73,14 +72,14 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
       <motion.div
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
-        className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+        className="bg-card rounded-xl shadow-2xl max-w-md w-full p-6"
       >
         <div className="flex flex-col items-center text-center space-y-4">
           {/* Status Icon */}
           <div className="relative">
             {status === 'initializing' && (
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
               </div>
             )}
             
@@ -88,9 +87,9 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"
+                className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center"
               >
-                <Check className="w-8 h-8 text-green-600" />
+                <Check className="w-8 h-8 text-success" />
               </motion.div>
             )}
             
@@ -98,26 +97,26 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center"
+                className="w-16 h-16 rounded-full bg-destructive/15 flex items-center justify-center"
               >
-                <X className="w-8 h-8 text-red-600" />
+                <X className="w-8 h-8 text-destructive" />
               </motion.div>
             )}
           </div>
 
           {/* Message */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               {status === 'initializing' && 'Setting up SSO'}
               {status === 'success' && 'Success!'}
               {status === 'error' && 'Connection Failed'}
             </h3>
-            <p className="text-sm text-gray-600">{message}</p>
+            <p className="text-sm text-muted-foreground">{message}</p>
           </div>
 
           {/* Progress Info */}
           {status === 'success' && (
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               Redirecting in {countdown} seconds...
             </div>
           )}
@@ -127,7 +126,7 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
             {status === 'initializing' && onSkip && (
               <button
                 onClick={onSkip}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-secondary transition-colors"
               >
                 Skip for now
               </button>
@@ -137,13 +136,13 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
               <>
                 <button
                   onClick={onSkip || onComplete}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-secondary transition-colors"
                 >
                   Skip
                 </button>
                 <button
                   onClick={() => window.location.reload()}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary transition-colors"
                 >
                   Retry
                 </button>
@@ -153,7 +152,7 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
             {status === 'success' && (
               <button
                 onClick={onComplete}
-                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary transition-colors"
               >
                 Continue to Dashboard
               </button>
@@ -161,7 +160,7 @@ export default function SSOInitializer({ ssoToken, onComplete, onSkip }: SSOInit
           </div>
 
           {/* Info */}
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-muted-foreground mt-4">
             🔒 Secure single sign-on connection
           </p>
         </div>

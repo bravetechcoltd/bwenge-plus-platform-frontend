@@ -56,23 +56,23 @@ interface InviteFormEntry {
 }
 
 const ROLE_OPTIONS = [
-  { value: "MEMBER", label: "Member / Student", icon: GraduationCap, description: "Access courses and learning materials", color: "text-gray-600 bg-gray-50 border-gray-200" },
-  { value: "INSTRUCTOR", label: "Instructor", icon: UserCog, description: "Create and teach courses", color: "text-green-600 bg-green-50 border-green-200" },
-  { value: "ADMIN", label: "Administrator", icon: Crown, description: "Full institution management access", color: "text-purple-600 bg-purple-50 border-purple-200" },
+  { value: "MEMBER", label: "Member / Student", icon: GraduationCap, description: "Access courses and learning materials", color: "text-muted-foreground bg-muted/50 border-border" },
+  { value: "INSTRUCTOR", label: "Instructor", icon: UserCog, description: "Create and teach courses", color: "text-success bg-success/10 border-success/30" },
+  { value: "ADMIN", label: "Administrator", icon: Crown, description: "Full institution management access", color: "text-primary bg-primary/10 border-primary/30" },
 ];
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "PENDING": return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-    case "ACCEPTED": return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Accepted</Badge>;
-    case "EXPIRED": return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 text-xs"><XCircle className="w-3 h-3 mr-1" />Expired</Badge>;
-    case "CANCELLED": return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs"><XCircle className="w-3 h-3 mr-1" />Cancelled</Badge>;
+    case "PENDING": return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+    case "ACCEPTED": return <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Accepted</Badge>;
+    case "EXPIRED": return <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-xs"><XCircle className="w-3 h-3 mr-1" />Expired</Badge>;
+    case "CANCELLED": return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs"><XCircle className="w-3 h-3 mr-1" />Cancelled</Badge>;
     default: return null;
   }
 };
 
 const getRoleColor = (role: string) =>
-  ROLE_OPTIONS.find(r => r.value === role)?.color || "text-gray-600 bg-gray-50 border-gray-200";
+  ROLE_OPTIONS.find(r => r.value === role)?.color || "text-muted-foreground bg-muted/50 border-border";
 
 export default function InviteUsersPage() {
   const searchParams = useSearchParams();
@@ -274,9 +274,9 @@ export default function InviteUsersPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -291,10 +291,10 @@ export default function InviteUsersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
             <UserPlus className="w-7 h-7 text-primary" /> Invite Users
           </h1>
-          <p className="text-gray-500 mt-1">Invite new members to join your institution</p>
+          <p className="text-muted-foreground mt-1">Invite new members to join your institution</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchInvitations} disabled={isLoading}>
@@ -307,9 +307,9 @@ export default function InviteUsersPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Sent", value: pendingInvites.length, icon: Mail, color: "text-primary bg-primary/10" },
-          { label: "Pending", value: pendingCount, icon: Clock, color: "text-amber-600 bg-amber-50" },
-          { label: "Accepted", value: acceptedCount, icon: CheckCircle2, color: "text-green-600 bg-green-50" },
-          { label: "Expired", value: pendingInvites.filter(i => i.status === "EXPIRED").length, icon: XCircle, color: "text-gray-500 bg-gray-50" },
+          { label: "Pending", value: pendingCount, icon: Clock, color: "text-warning bg-warning/10" },
+          { label: "Accepted", value: acceptedCount, icon: CheckCircle2, color: "text-success bg-success/10" },
+          { label: "Expired", value: pendingInvites.filter(i => i.status === "EXPIRED").length, icon: XCircle, color: "text-muted-foreground bg-muted/50" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -318,7 +318,7 @@ export default function InviteUsersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -343,7 +343,7 @@ export default function InviteUsersPage() {
             <CardContent className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>First Name <span className="text-red-500">*</span></Label>
+                  <Label>First Name <span className="text-destructive">*</span></Label>
                   <Input
                     value={singleForm.first_name}
                     onChange={e => setSingleForm(f => ({ ...f, first_name: e.target.value }))}
@@ -360,7 +360,7 @@ export default function InviteUsersPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Email Address <span className="text-red-500">*</span></Label>
+                <Label>Email Address <span className="text-destructive">*</span></Label>
                 <Input
                   type="email"
                   value={singleForm.email}
@@ -379,14 +379,14 @@ export default function InviteUsersPage() {
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         singleForm.role === value
                           ? "border-primary bg-primary/5 shadow-sm"
-                          : "border-gray-100 hover:border-gray-200 bg-white"
+                          : "border-border hover:border-border bg-card"
                       }`}
                     >
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${color}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <p className="font-semibold text-sm">{label}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-tight">{description}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{description}</p>
                     </button>
                   ))}
                 </div>
@@ -430,7 +430,7 @@ export default function InviteUsersPage() {
                 </AlertDescription>
               </Alert>
               <div className="space-y-1.5">
-                <Label>Email Addresses <span className="text-red-500">*</span></Label>
+                <Label>Email Addresses <span className="text-destructive">*</span></Label>
                 <Textarea
                   value={multiEmails}
                   onChange={e => setMultiEmails(e.target.value)}
@@ -438,7 +438,7 @@ export default function InviteUsersPage() {
                   rows={6}
                   className="font-mono text-sm"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {multiEmails.split(/[\n,;]+/).filter(e => e.trim() && e.includes("@")).length} valid email(s) detected
                 </p>
               </div>
@@ -489,19 +489,19 @@ export default function InviteUsersPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {ROLE_OPTIONS.map(({ value, label, icon: Icon, description, color }) => (
-                <div key={value} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border bg-gray-50">
+                <div key={value} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border bg-muted/50">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm">{label}</p>
-                    <p className="text-xs text-gray-500">{description}</p>
+                    <p className="text-xs text-muted-foreground">{description}</p>
                     {inviteLinks[value] && (
                       <div className="mt-2 flex items-center gap-2">
                         <Input
                           readOnly
                           value={inviteLinks[value]}
-                          className="text-xs h-7 font-mono bg-white"
+                          className="text-xs h-7 font-mono bg-card"
                         />
                       </div>
                     )}
@@ -513,7 +513,7 @@ export default function InviteUsersPage() {
                         size="sm"
                         onClick={() => copyLink(inviteLinks[value], value)}
                       >
-                        {copiedLink === value ? <Check className="w-4 h-4 mr-1 text-green-600" /> : <Copy className="w-4 h-4 mr-1" />}
+                        {copiedLink === value ? <Check className="w-4 h-4 mr-1 text-success" /> : <Copy className="w-4 h-4 mr-1" />}
                         {copiedLink === value ? "Copied!" : "Copy"}
                       </Button>
                     ) : null}
@@ -542,7 +542,7 @@ export default function InviteUsersPage() {
               <CardTitle className="text-lg">Invitation History</CardTitle>
               <CardDescription>Track all sent invitations and their current status.</CardDescription>
             </div>
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
               {pendingCount} pending
             </Badge>
           </div>
@@ -552,15 +552,15 @@ export default function InviteUsersPage() {
             <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
           ) : pendingInvites.length === 0 ? (
             <div className="text-center py-12">
-              <Mail className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No invitations sent yet</p>
-              <p className="text-sm text-gray-400 mt-1">Sent invitations will appear here for tracking.</p>
+              <Mail className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No invitations sent yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Sent invitations will appear here for tracking.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
+                  <TableRow className="bg-muted/50">
                     <TableHead className="pl-6">Recipient</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
@@ -571,12 +571,12 @@ export default function InviteUsersPage() {
                 </TableHeader>
                 <TableBody>
                   {pendingInvites.map(invite => (
-                    <TableRow key={invite.id} className="hover:bg-gray-50">
+                    <TableRow key={invite.id} className="hover:bg-muted/50">
                       <TableCell className="pl-6">
                         <div>
                           <p className="font-semibold text-sm">{invite.email}</p>
                           {invite.invited_by_name && (
-                            <p className="text-xs text-gray-500">Invited by {invite.invited_by_name}</p>
+                            <p className="text-xs text-muted-foreground">Invited by {invite.invited_by_name}</p>
                           )}
                         </div>
                       </TableCell>
@@ -586,10 +586,10 @@ export default function InviteUsersPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(invite.status)}</TableCell>
-                      <TableCell className="text-sm text-gray-600">
+                      <TableCell className="text-sm text-muted-foreground">
                         {new Date(invite.created_at).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600">
+                      <TableCell className="text-sm text-muted-foreground">
                         {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString() : "—"}
                       </TableCell>
                       <TableCell className="text-right pr-6">
@@ -605,7 +605,7 @@ export default function InviteUsersPage() {
                                 <RefreshCw className="w-4 h-4 mr-2" /> Resend
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => setCancelTarget(invite)}>
+                              <DropdownMenuItem className="text-destructive" onClick={() => setCancelTarget(invite)}>
                                 <Trash2 className="w-4 h-4 mr-2" /> Cancel
                               </DropdownMenuItem>
                             </DropdownMenuContent>

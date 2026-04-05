@@ -50,7 +50,6 @@ export function AchievementModal({
           break
       }
     } catch (error) {
-      console.error('Share failed:', error)
     } finally {
       setIsSharing(false)
     }
@@ -58,7 +57,6 @@ export function AchievementModal({
 
   const handleDownloadCertificate = () => {
     // Implement certificate download logic
-    console.log('Download certificate for:', achievement.name)
   }
 
   // Mock next achievement data
@@ -105,9 +103,9 @@ export function AchievementModal({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-center justify-center text-2xl">
-            <Sparkles className="w-6 h-6 text-yellow-500 animate-pulse" />
+            <Sparkles className="w-6 h-6 text-warning animate-pulse" />
             Achievement Unlocked!
-            <Sparkles className="w-6 h-6 text-yellow-500 animate-pulse" />
+            <Sparkles className="w-6 h-6 text-warning animate-pulse" />
           </DialogTitle>
         </DialogHeader>
 
@@ -130,19 +128,19 @@ export function AchievementModal({
                   <Badge variant="outline" className="capitalize">
                     {achievement.rarity}
                   </Badge>
-                  <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                  <div className="flex items-center gap-1 text-warning dark:text-warning">
                     <Trophy className="w-4 h-4" />
                     <span className="font-medium">+{achievement.points} points</span>
                   </div>
                 </div>
               </div>
               
-              <p className="text-gray-600 dark:text-gray-300 text-lg">
+              <p className="text-muted-foreground dark:text-muted-foreground text-lg">
                 {achievement.description}
               </p>
               
               {achievement.earnedAt && (
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   <span>Earned on {new Date(achievement.earnedAt).toLocaleDateString()} at {new Date(achievement.earnedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
@@ -200,19 +198,19 @@ export function AchievementModal({
 
           {/* Achievement Stats */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-muted/50 dark:bg-card rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-primary mb-1">
                 +{achievement.points}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-muted-foreground dark:text-muted-foreground">
                 Points Earned
               </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div className="bg-muted/50 dark:bg-card rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-primary mb-1 capitalize">
                 {achievement.rarity}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-muted-foreground dark:text-muted-foreground">
                 Rarity Level
               </div>
             </div>
@@ -233,7 +231,7 @@ export function AchievementModal({
                 )}
               </div>
               
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center gap-4 p-4 bg-muted/50 dark:bg-card rounded-lg">
                 <BadgeDisplay badge={nextAchievement} size="md" />
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
@@ -242,7 +240,7 @@ export function AchievementModal({
                       {nextAchievement.rarity}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                     {nextAchievement.description}
                   </p>
                   {nextAchievement.progress && (
@@ -261,10 +259,10 @@ export function AchievementModal({
                   )}
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                  <div className="text-lg font-bold text-warning dark:text-warning">
                     +{nextAchievement.points}
                   </div>
-                  <div className="text-xs text-gray-500">points</div>
+                  <div className="text-xs text-muted-foreground">points</div>
                 </div>
               </div>
             </div>
@@ -281,12 +279,12 @@ export function AchievementModal({
                 {recentAchievements.map((achievement) => (
                   <div
                     key={achievement.id}
-                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-muted/50 dark:bg-card rounded-lg"
                   >
                     <BadgeDisplay badge={achievement} size="sm" />
                     <div className="flex-1 min-w-0">
                       <h5 className="font-medium text-sm truncate">{achievement.name}</h5>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(achievement.earnedAt!).toLocaleDateString()}
                       </div>
                     </div>
@@ -314,7 +312,7 @@ export function AchievementModal({
                   </Avatar>
                   <div className="text-sm">
                     <div className="font-medium">{user.first_name} {user.last_name}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       Level {Math.floor((user.total_points || 0) / 500) + 1}
                     </div>
                   </div>
@@ -327,19 +325,19 @@ export function AchievementModal({
                 <div className="text-xl font-bold text-primary">
                   {recentAchievements.length + 1}
                 </div>
-                <div className="text-xs text-gray-500">Total Badges</div>
+                <div className="text-xs text-muted-foreground">Total Badges</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-primary">
                   {recentAchievements.reduce((sum, a) => sum + a.points, achievement.points)}
                 </div>
-                <div className="text-xs text-gray-500">Points Earned</div>
+                <div className="text-xs text-muted-foreground">Points Earned</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-primary">
                   {achievement.rarity === 'legendary' ? 1 : 0}
                 </div>
-                <div className="text-xs text-gray-500">Legendary Badges</div>
+                <div className="text-xs text-muted-foreground">Legendary Badges</div>
               </div>
             </div>
           </div>

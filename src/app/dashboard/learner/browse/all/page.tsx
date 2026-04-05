@@ -11,43 +11,24 @@ import {
 import {
   checkEnrollmentEligibility,
   requestEnrollmentApproval,
-  selectEnrollmentEligibility,
-  selectIsUserEnrolled,
-  selectUserEnrollment,
 } from "@/lib/features/enrollments/enrollmentSlice"
 import { useAuth } from "@/hooks/use-auth"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Search,
-  Star,
-  Clock,
   Users,
   Award,
   Globe,
   Building2,
   BookOpen,
-  User,
-  Play,
-  Loader2,
   ChevronRight,
   Sparkles,
-  Target,
-  Trophy,
-  Crown,
-  GraduationCap,
 } from "lucide-react"
 import toast from "react-hot-toast"
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d"
 
 // Helper function to safely parse numbers
 const parseNumber = (value: any): number => {
@@ -182,206 +163,48 @@ export default function AllCoursesPage() {
     }
   }
 
-  const getEnrollmentButtonInfo = (course: Course) => {
-    const isEnrolled = useAppSelector(selectIsUserEnrolled(course.id))
-    const userEnrollment = useAppSelector(selectUserEnrollment(course.id))
-
-    if (isEnrolled && userEnrollment) {
-      return {
-        variant: "default" as const,
-        text: userEnrollment.status === "PENDING" ? "Pending Approval" : "Continue Learning",
-        icon: userEnrollment.status === "PENDING" ? Clock : Play,
-        disabled: false,
-        onClick: () => {
-          if (userEnrollment.status === "PENDING") {
-            toast.success("Your enrollment is pending instructor approval")
-          } else {
-            router.push(`/courses/${course.id}/learn`)
-          }
-        },
-      }
-    }
-
-    if (enrollingCourseId === course.id) {
-      return {
-        variant: "secondary" as const,
-        text: "Enrolling...",
-        icon: Loader2,
-        disabled: true,
-        onClick: () => {},
-      }
-    }
-
-    return {
-      variant: "default" as const,
-      text: "Enroll Now",
-      icon: BookOpen,
-      disabled: false,
-      onClick: () => handleEnroll(course),
-    }
-  }
-
-  const getLevelInfo = (level: string) => {
-    switch (level) {
-      case "BEGINNER":
-        return { icon: Target, color: "bg-green-500", label: "Beginner" }
-      case "INTERMEDIATE":
-        return { icon: Trophy, color: "bg-blue-500", label: "Intermediate" }
-      case "ADVANCED":
-        return { icon: Crown, color: "bg-purple-500", label: "Advanced" }
-      case "EXPERT":
-        return { icon: Award, color: "bg-red-500", label: "Expert" }
-      default:
-        return { icon: Target, color: "bg-gray-500", label: "Beginner" }
-    }
-  }
-
-  // Default Course Thumbnail Component
-  const DefaultCourseThumbnail = ({ title, level }: { title: string; level: string }) => {
-    const levelInfo = getLevelInfo(level)
-    const initials = title
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
+  const renderCourseCard = (course: Course, idx: number) => {
+    const totalLessons = course.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || parseNumber(course.total_lessons) || 0
 
     return (
-      <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-secondary/10 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        <div className="relative z-10 text-center">
-          <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
-            <GraduationCap className="w-8 h-8 text-primary" />
-          </div>
-          <div className="text-2xl font-bold text-primary/80">{initials}</div>
-        </div>
-      </div>
-    )
-  }
-
-  const CourseCard = ({ course }: { course: Course }) => {
-    const enrollmentButton = getEnrollmentButtonInfo(course)
-    const levelInfo = getLevelInfo(course.level)
-
-    return (
-      <Card className="group h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border hover:border-primary/30">
-        <div className="relative overflow-hidden h-40 flex-shrink-0">
-          {course.thumbnail_url ? (
-            <img
-              src={course.thumbnail_url}
-              alt={course.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <DefaultCourseThumbnail title={course.title} level={course.level} />
-          )}
-          <div className="absolute top-2 left-2">
-            <Badge className={`${levelInfo.color} text-white text-xs font-medium shadow-md flex items-center gap-1 px-2 py-0.5`}>
-              <levelInfo.icon className="w-3 h-3" />
-              {levelInfo.label}
-            </Badge>
-          </div>
-          <div className="absolute top-2 right-2">
-            <Badge
-              variant={course.course_type === "MOOC" ? "default" : "secondary"}
-              className="text-xs font-medium shadow-md px-2 py-0.5"
-            >
-              {course.course_type === "MOOC" ? (
-                <Globe className="w-3 h-3 mr-1" />
-              ) : (
-                <Building2 className="w-3 h-3 mr-1" />
-              )}
-              {course.course_type}
-            </Badge>
-          </div>
-          {course.is_certificate_available && (
-            <div className="absolute bottom-2 right-2">
-              <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium shadow-md px-2 py-0.5">
-                <Award className="w-3 h-3 mr-1" />
-                Certificate
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        <CardHeader className="pb-2 pt-3 px-4 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < Math.round(parseNumber(course.average_rating))
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "fill-gray-300 text-gray-300"
-                  }`}
-                />
-              ))}
-              <span className="ml-1 text-xs text-muted-foreground font-medium">
-                {parseNumber(course.average_rating).toFixed(1)}
-                <span className="text-xs opacity-75"> ({parseNumber(course.total_reviews)})</span>
-              </span>
-            </div>
-            {parseNumber(course.price) > 0 ? (
-              <Badge className="bg-green-500 hover:bg-green-600 text-xs font-semibold px-2 py-0.5">
-                ${parseNumber(course.price).toFixed(2)}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5">Free</Badge>
-            )}
-          </div>
-          <CardTitle className="text-sm font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors">
-            {course.title}
-          </CardTitle>
-          <CardDescription className="text-xs line-clamp-2 leading-snug">
-            {course.short_description || course.description}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="pb-3 pt-2 px-4 space-y-2">
-          <div className="flex items-center gap-2">
-            {course.instructor?.profile_picture_url ? (
-              <img
-                src={course.instructor.profile_picture_url}
-                alt={`${course.instructor.first_name} ${course.instructor.last_name}`}
-                className="w-7 h-7 rounded-full border-2 border-primary/20 flex-shrink-0"
-              />
-            ) : (
-              <div className="w-7 h-7 rounded-full border-2 border-primary/20 flex items-center justify-center bg-primary/5 flex-shrink-0">
-                <User className="w-3.5 h-3.5 text-primary" />
-              </div>
-            )}
-            <p className="text-xs font-medium truncate">
-              {course.instructor?.first_name} {course.instructor?.last_name}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-50 rounded-lg">
-              <Users className="w-3 h-3 text-blue-600 flex-shrink-0" />
-              <span className="text-xs font-medium text-blue-900 truncate">{parseNumber(course.enrollment_count).toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-purple-50 rounded-lg">
-              <Clock className="w-3 h-3 text-purple-600 flex-shrink-0" />
-              <span className="text-xs font-medium text-purple-900 truncate">{Math.ceil(parseNumber(course.duration_minutes) / 60)}h</span>
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter className="pt-0 pb-3 px-4 mt-auto">
-          <Button
-            className="w-full font-medium text-sm h-9"
-            variant={enrollmentButton.variant}
-            onClick={enrollmentButton.onClick}
-            disabled={enrollmentButton.disabled}
-          >
-            {enrollmentButton.icon && (
-              <enrollmentButton.icon className={`w-3.5 h-3.5 mr-1.5 ${enrollingCourseId === course.id ? "animate-spin" : ""}`} />
-            )}
-            {enrollmentButton.text}
-          </Button>
-        </CardFooter>
-      </Card>
+      <BwengeCourseCard3D
+        key={course.id}
+        id={course.id}
+        title={course.title}
+        description={course.description}
+        short_description={course.short_description}
+        thumbnail_url={course.thumbnail_url || undefined}
+        instructor={course.instructor ? {
+          id: course.instructor.id,
+          first_name: course.instructor.first_name,
+          last_name: course.instructor.last_name,
+          profile_picture_url: course.instructor.profile_picture_url || undefined,
+        } : undefined}
+        level={course.level}
+        course_type={course.course_type}
+        price={parseNumber(course.price)}
+        average_rating={parseNumber(course.average_rating)}
+        total_reviews={parseNumber(course.total_reviews)}
+        enrollment_count={parseNumber(course.enrollment_count)}
+        duration_minutes={parseNumber(course.duration_minutes)}
+        total_lessons={totalLessons}
+        tags={course.tags}
+        is_certificate_available={course.is_certificate_available}
+        institution={course.institution ? {
+          id: course.institution.id,
+          name: course.institution.name,
+          logo_url: course.institution.logo_url || undefined,
+        } : undefined}
+        category={course.course_category ? {
+          id: course.course_category.id,
+          name: course.course_category.name,
+        } : undefined}
+        variant="browse"
+        showActions={true}
+        showInstitution={true}
+        index={idx}
+        onLearnMoreClick={(id) => handleEnroll(course)}
+      />
     )
   }
 
@@ -390,9 +213,9 @@ export default function AllCoursesPage() {
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
           <Skeleton className="h-12 w-64 mb-6" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-[400px] rounded-xl" />
+              <Skeleton key={i} className="h-[380px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -423,7 +246,7 @@ export default function AllCoursesPage() {
                   placeholder="Search courses, topics, or instructors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 text-sm bg-white border-2 border-primary/20 rounded-full shadow-lg focus:outline-none focus:border-primary/50"
+                  className="w-full pl-11 pr-4 py-3 text-sm bg-card border-2 border-primary/20 rounded-full shadow-lg focus:outline-none focus:border-primary/50"
                 />
                 <Button size="sm" className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full h-8">
                   Search
@@ -485,10 +308,8 @@ export default function AllCoursesPage() {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categoryCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {categoryCourses.map((course, idx) => renderCourseCard(course, idx))}
             </div>
           </div>
         ))}
@@ -496,10 +317,8 @@ export default function AllCoursesPage() {
         {filteredCourses.length > 0 && Object.keys(coursesByCategory).length === 0 && (
           <div className="mb-10">
             <h2 className="text-xl font-bold mb-4">All Available Courses</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredCourses.map((course, idx) => renderCourseCard(course, idx))}
             </div>
           </div>
         )}
@@ -527,7 +346,7 @@ export default function AllCoursesPage() {
 
       {accessCodeModal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-card rounded-xl p-6 max-w-md w-full shadow-2xl">
             <h3 className="text-xl font-bold mb-2">Enter Access Code</h3>
             <p className="text-muted-foreground mb-4 text-sm">
               This course requires an access code to enroll. Please enter the code provided by your institution.

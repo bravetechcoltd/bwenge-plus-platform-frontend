@@ -28,11 +28,11 @@ export function TextBlockEditor({ blockId, content, onUpdate, onDelete }: TextBl
   }, [isEditing])
 
   return (
-    <Card className="p-4 border border-gray-200 dark:border-gray-700 relative group">
+    <Card className="p-4 border border-border dark:border-border relative group">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Type className="w-4 h-4 text-blue-600" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Text Block</span>
+          <Type className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">Text Block</span>
         </div>
         <Button
           variant="ghost"
@@ -47,8 +47,8 @@ export function TextBlockEditor({ blockId, content, onUpdate, onDelete }: TextBl
       {!isEditing ? (
         <div
           onClick={() => setIsEditing(true)}
-          className="min-h-24 p-3 bg-gray-50 dark:bg-gray-900 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors prose prose-sm max-w-none dark:prose-invert"
-          dangerouslySetInnerHTML={{ __html: content || "<p class='text-gray-400'>Click to add text...</p>" }}
+          className="min-h-24 p-3 bg-muted/50 dark:bg-card rounded cursor-pointer hover:bg-muted dark:hover:bg-card transition-colors prose prose-sm max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: content || "<p class='text-muted-foreground'>Click to add text...</p>" }}
         />
       ) : (
         <div className="space-y-3">

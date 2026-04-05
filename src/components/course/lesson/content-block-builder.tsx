@@ -84,7 +84,7 @@ export function ContentBlockBuilder({
   return (
     <div className="space-y-4">
       {/* Add Block Section */}
-      <Card className="p-4 bg-gray-50 dark:bg-gray-900/50 border-dashed border-2">
+      <Card className="p-4 bg-muted/50 dark:bg-card/50 border-dashed border-2">
         <div className="flex flex-col sm:flex-row gap-2">
           <Select value={blockType} onValueChange={(value: any) => setBlockType(value)}>
             <SelectTrigger className="w-full sm:w-48">
@@ -203,7 +203,7 @@ export function ContentBlockBuilder({
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteBlock(block.id)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-destructive hover:text-destructive"
                       >
                         Delete
                       </Button>
@@ -222,7 +222,7 @@ export function ContentBlockBuilder({
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <p className="text-sm">No content blocks yet. Add one to get started!</p>
         </div>
       )}

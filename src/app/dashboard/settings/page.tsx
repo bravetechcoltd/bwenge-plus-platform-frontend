@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Shield, Palette, Save, Lock, ShieldCheck, KeyRound, Loader2 } from "lucide-react"
+import { Shield, Palette, Save, Lock, ShieldCheck, KeyRound, Loader2, Sun, Moon, Monitor, Check } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -20,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -47,10 +49,12 @@ interface UserSettings {
 
 export default function SettingsPage() {
   const { user, token, updateUser } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [show2FADialog, setShow2FADialog] = useState(false)
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
 
@@ -59,6 +63,8 @@ export default function SettingsPage() {
     theme: "light",
     language: "en",
   })
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Password change
   const [passwordData, setPasswordData] = useState({
@@ -85,15 +91,17 @@ export default function SettingsPage() {
 
       if (data.success && data.data) {
         setSettings(data.data)
+        const savedTheme = data.data.appearance.theme || "light"
         setAppearance({
-          theme: data.data.appearance.theme || "light",
+          theme: savedTheme,
           language: data.data.appearance.language || "en",
         })
+        // Apply saved theme to the app
+        setTheme(savedTheme)
       } else {
         toast.error(data.message || "Failed to load settings")
       }
     } catch (error) {
-      console.error("Error fetching settings:", error)
       toast.error("Failed to load settings")
     } finally {
       setIsLoading(false)
@@ -118,6 +126,9 @@ export default function SettingsPage() {
       const data = await response.json()
 
       if (data.success) {
+        // Apply theme immediately
+        setTheme(data.data.theme || appearance.theme)
+
         // Update local state
         if (settings) {
           setSettings({
@@ -142,7 +153,6 @@ export default function SettingsPage() {
         toast.error(data.message || "Failed to update settings")
       }
     } catch (error) {
-      console.error("Error updating appearance:", error)
       toast.error("Failed to update settings")
     } finally {
       setIsSaving(false)
@@ -197,7 +207,6 @@ export default function SettingsPage() {
         toast.error(data.message || "Failed to update 2FA settings")
       }
     } catch (error) {
-      console.error("Error toggling 2FA:", error)
       toast.error("Failed to update 2FA settings")
     } finally {
       setIsSaving(false)
@@ -257,7 +266,6 @@ export default function SettingsPage() {
         toast.error(data.message || "Failed to change password")
       }
     } catch (error) {
-      console.error("Error changing password:", error)
       toast.error("Failed to change password")
     } finally {
       setIsSaving(false)
@@ -298,22 +306,66 @@ export default function SettingsPage() {
               <CardDescription>Customize the look and feel of your dashboard</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="theme">Theme</Label>
-                <Select
-                  value={appearance.theme}
-                  onValueChange={(value) => setAppearance({ ...appearance, theme: value })}
-                >
-                  <SelectTrigger id="theme">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">Choose your preferred color theme</p>
+              <div className="space-y-3">
+                <Label>Theme</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {
+                      value: "light",
+                      label: "Light",
+                      icon: Sun,
+                      preview: "bg-card border-border",
+                      previewContent: "bg-muted",
+                    },
+                    {
+                      value: "dark",
+                      label: "Dark",
+                      icon: Moon,
+                      preview: "bg-zinc-900 border-zinc-700",
+                      previewContent: "bg-zinc-800",
+                    },
+                    {
+                      value: "system",
+                      label: "System",
+                      icon: Monitor,
+                      preview: "bg-gradient-to-br from-white to-zinc-900 border-border",
+                      previewContent: "bg-gradient-to-br from-gray-100 to-zinc-800",
+                    },
+                  ].map(({ value, label, icon: Icon, preview, previewContent }) => {
+                    const isSelected = mounted ? appearance.theme === value : false
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => {
+                          setAppearance({ ...appearance, theme: value })
+                          setTheme(value)
+                        }}
+                        className={cn(
+                          "relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
+                          isSelected
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/40 hover:bg-accent"
+                        )}
+                      >
+                        {/* Mini preview */}
+                        <div className={cn("w-full h-10 rounded-md border overflow-hidden", preview)}>
+                          <div className={cn("h-3 w-3/4 rounded m-1.5", previewContent)} />
+                          <div className={cn("h-2 w-1/2 rounded ml-1.5 mb-1", previewContent, "opacity-60")} />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="text-sm font-medium text-foreground">{label}</span>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                            <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">Choose your preferred color theme. Changes apply immediately.</p>
               </div>
 
               <div className="space-y-2">
@@ -391,7 +443,7 @@ export default function SettingsPage() {
                           {settings?.security.two_factor_enabled ? "Disable 2FA" : "Enable 2FA"}
                         </Button>
                         {settings?.security.two_factor_enabled && (
-                          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                          <div className="flex items-center gap-2 text-sm text-success dark:text-success">
                             <ShieldCheck className="w-4 h-4" />
                             <span className="font-medium">Active</span>
                           </div>

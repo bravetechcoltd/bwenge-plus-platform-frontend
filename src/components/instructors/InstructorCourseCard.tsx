@@ -58,24 +58,24 @@ export function InstructorCourseCard({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "bg-success/15 text-success";
       case "DRAFT":
-        return "bg-amber-100 text-amber-800";
+        return "bg-warning/15 text-warning";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
   const getCourseTypeColor = (type: string) => {
     switch (type) {
       case "MOOC":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/15 text-primary";
       case "SPOC":
-        return "bg-purple-100 text-purple-800";
+        return "bg-primary/15 text-primary";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -91,7 +91,7 @@ export function InstructorCourseCard({
           variant="ghost"
           size="sm"
           title="Publish Course"
-          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+          className="text-success hover:text-success hover:bg-success/10"
           onClick={(e) => {
             if (stopProp) e.stopPropagation();
             onPublish(course.id);
@@ -109,7 +109,7 @@ export function InstructorCourseCard({
           variant="ghost"
           size="sm"
           title="Unpublish Course"
-          className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+          className="text-warning hover:text-warning hover:bg-warning/10"
           onClick={(e) => {
             if (stopProp) e.stopPropagation();
             onUnpublish(course.id);
@@ -139,7 +139,7 @@ export function InstructorCourseCard({
               />
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-blue-300" />
+                <BookOpen className="h-16 w-16 text-primary" />
               </div>
             )}
 
@@ -150,15 +150,15 @@ export function InstructorCourseCard({
               {course.course_type}
             </Badge>
             {!course.instructor_role.is_primary && (
-              <Badge className="absolute bottom-3 left-3 bg-cyan-100 text-cyan-800">
+              <Badge className="absolute bottom-3 left-3 bg-primary/15 text-primary">
                 Additional Instructor
               </Badge>
             )}
           </div>
 
           <CardHeader className="pb-2">
-            <h3 className="font-semibold text-gray-900 line-clamp-2">{course.title}</h3>
-            <p className="text-sm text-gray-600 line-clamp-2">
+            <h3 className="font-semibold text-foreground line-clamp-2">{course.title}</h3>
+            <p className="text-sm text-muted-foreground line-clamp-2">
               {course.short_description || course.description}
             </p>
             {course.institution && (
@@ -170,7 +170,7 @@ export function InstructorCourseCard({
                     className="h-5 w-5 rounded object-cover"
                   />
                 )}
-                <span className="text-xs text-gray-500">{course.institution.name}</span>
+                <span className="text-xs text-muted-foreground">{course.institution.name}</span>
               </div>
             )}
           </CardHeader>
@@ -181,44 +181,44 @@ export function InstructorCourseCard({
           <div className="grid grid-cols-4 gap-2 mb-3">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
-                <Users className="h-3 w-3 text-gray-400" />
+                <Users className="h-3 w-3 text-muted-foreground" />
                 <span className="font-semibold">{course.statistics?.enrollments.total || 0}</span>
               </div>
-              <div className="text-xs text-gray-500">Students</div>
+              <div className="text-xs text-muted-foreground">Students</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
-                <Star className="h-3 w-3 text-amber-400" />
+                <Star className="h-3 w-3 text-warning" />
                 <span className="font-semibold">
                   {course.statistics?.ratings.average.toFixed(1) || "0.0"}
                 </span>
               </div>
-              <div className="text-xs text-gray-500">Rating</div>
+              <div className="text-xs text-muted-foreground">Rating</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
-                <Target className="h-3 w-3 text-green-400" />
+                <Target className="h-3 w-3 text-success" />
                 <span className="font-semibold">
                   {course.statistics?.progress.average_completion.toFixed(0) || 0}%
                 </span>
               </div>
-              <div className="text-xs text-gray-500">Complete</div>
+              <div className="text-xs text-muted-foreground">Complete</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
-                <BookOpen className="h-3 w-3 text-blue-400" />
+                <BookOpen className="h-3 w-3 text-primary" />
                 <span className="font-semibold">
                   {course.statistics?.content.modules_count || 0}
                 </span>
               </div>
-              <div className="text-xs text-gray-500">Modules</div>
+              <div className="text-xs text-muted-foreground">Modules</div>
             </div>
           </div>
 
           {course.statistics?.progress.average_completion ? (
             <div className="mb-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-600">Average Progress</span>
+                <span className="text-xs text-muted-foreground">Average Progress</span>
                 <span className="text-xs font-medium">
                   {course.statistics.progress.average_completion.toFixed(1)}%
                 </span>
@@ -282,7 +282,7 @@ export function InstructorCourseCard({
                   Download Reports
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-destructive">
                   <Archive className="h-4 w-4 mr-2" />
                   {course.status === "ARCHIVED" ? "Unarchive" : "Archive"}
                 </DropdownMenuItem>
@@ -296,11 +296,11 @@ export function InstructorCourseCard({
 
   // ── LIST VIEW ────────────────────────────────────────────────────────────
   return (
-    <tr className="border-b hover:bg-gray-50">
+    <tr className="border-b hover:bg-muted/50">
       {/* Course info */}
       <td className="p-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+          <div className="h-10 w-10 rounded bg-secondary flex-shrink-0 overflow-hidden">
             {course.thumbnail_url ? (
               <img
                 src={course.thumbnail_url}
@@ -308,14 +308,14 @@ export function InstructorCourseCard({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                <BookOpen className="h-5 w-5 text-gray-400" />
+              <div className="h-full w-full flex items-center justify-center bg-muted">
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
           </div>
           <div>
-            <div className="font-medium text-gray-900">{course.title}</div>
-            <div className="text-sm text-gray-500 truncate max-w-[200px]">
+            <div className="font-medium text-foreground">{course.title}</div>
+            <div className="text-sm text-muted-foreground truncate max-w-[200px]">
               {course.short_description || course.description.substring(0, 60)}...
             </div>
             {!course.instructor_role.is_primary && (
@@ -338,10 +338,10 @@ export function InstructorCourseCard({
                 className="h-6 w-6 rounded object-cover"
               />
             )}
-            <span className="text-sm text-gray-700">{course.institution.name}</span>
+            <span className="text-sm text-muted-foreground">{course.institution.name}</span>
           </div>
         ) : (
-          <span className="text-sm text-gray-500">—</span>
+          <span className="text-sm text-muted-foreground">—</span>
         )}
       </td>
 
@@ -353,11 +353,11 @@ export function InstructorCourseCard({
       {/* Rating */}
       <td className="p-4">
         <div className="flex items-center gap-2">
-          <Star className="h-4 w-4 text-amber-400" />
+          <Star className="h-4 w-4 text-warning" />
           <span className="text-sm font-medium">
             {course.statistics?.ratings.average.toFixed(1) || "0.0"}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             ({course.statistics?.ratings.total_reviews || 0})
           </span>
         </div>
@@ -403,7 +403,7 @@ export function InstructorCourseCard({
                 Download Reports
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-destructive">
                 <Archive className="h-4 w-4 mr-2" />
                 {course.status === "ARCHIVED" ? "Unarchive" : "Archive"}
               </DropdownMenuItem>

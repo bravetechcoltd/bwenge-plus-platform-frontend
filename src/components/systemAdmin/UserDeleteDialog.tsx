@@ -72,7 +72,7 @@ export default function UserDeleteDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-red-600 flex items-center gap-2">
+          <DialogTitle className="text-2xl text-destructive flex items-center gap-2">
             <AlertCircle className="w-6 h-6" />
             Delete User
           </DialogTitle>
@@ -94,12 +94,12 @@ export default function UserDeleteDialog({
           <div className="space-y-3">
             <h4 className="font-medium">Impact Analysis</h4>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 border rounded-lg bg-red-50">
-                <div className="flex items-center gap-2 text-red-700">
+              <div className="p-3 border rounded-lg bg-destructive/10">
+                <div className="flex items-center gap-2 text-destructive">
                   <UserX className="w-4 h-4" />
                   <span className="font-medium">User Account</span>
                 </div>
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {deletionType === 'soft' 
                     ? 'Will be deactivated but data preserved' 
                     : 'Will be permanently deleted'}
@@ -107,35 +107,35 @@ export default function UserDeleteDialog({
               </div>
               
               {user.statistics?.courses_taught > 0 && (
-                <div className="p-3 border rounded-lg bg-amber-50">
-                  <div className="flex items-center gap-2 text-amber-700">
+                <div className="p-3 border rounded-lg bg-warning/10">
+                  <div className="flex items-center gap-2 text-warning">
                     <Archive className="w-4 h-4" />
                     <span className="font-medium">Courses Taught</span>
                   </div>
-                  <p className="text-sm text-amber-600 mt-1">
+                  <p className="text-sm text-warning mt-1">
                     {user.statistics.courses_taught} courses will be affected
                   </p>
                 </div>
               )}
               
               {user.institutions?.some((inst: any) => inst.role === 'ADMIN') && (
-                <div className="p-3 border rounded-lg bg-purple-50">
-                  <div className="flex items-center gap-2 text-purple-700">
+                <div className="p-3 border rounded-lg bg-primary/10">
+                  <div className="flex items-center gap-2 text-primary">
                     <UserX className="w-4 h-4" />
                     <span className="font-medium">Institution Admin</span>
                   </div>
-                  <p className="text-sm text-purple-600 mt-1">
+                  <p className="text-sm text-primary mt-1">
                     Admin role in {user.institutions.filter((inst: any) => inst.role === 'ADMIN').length} institutions
                   </p>
                 </div>
               )}
               
-              <div className="p-3 border rounded-lg bg-blue-50">
-                <div className="flex items-center gap-2 text-blue-700">
+              <div className="p-3 border rounded-lg bg-primary/10">
+                <div className="flex items-center gap-2 text-primary">
                   <Archive className="w-4 h-4" />
                   <span className="font-medium">Data Retention</span>
                 </div>
-                <p className="text-sm text-blue-600 mt-1">
+                <p className="text-sm text-primary mt-1">
                   {deletionType === 'soft' 
                     ? 'All data will be preserved for recovery' 
                     : 'Most data will be permanently deleted'}
@@ -156,7 +156,7 @@ export default function UserDeleteDialog({
                 <Label htmlFor="soft" className="flex-1 cursor-pointer">
                   <div>
                     <div className="font-medium">Soft Delete (Recommended)</div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Deactivate the user account but keep all data. Can be reactivated later.
                     </p>
                   </div>
@@ -168,7 +168,7 @@ export default function UserDeleteDialog({
                 <Label htmlFor="hard" className="flex-1 cursor-pointer">
                   <div>
                     <div className="font-medium">Permanent Delete</div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Permanently delete the user and most associated data. Cannot be recovered.
                     </p>
                   </div>
@@ -178,14 +178,14 @@ export default function UserDeleteDialog({
             
             {/* Dependencies Handling */}
             {hasDependencies && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
                 <h5 className="font-medium">Handle Dependencies</h5>
                 
                 {/* Courses taught handling */}
                 {user.statistics?.courses_taught > 0 && (
                   <div className="space-y-2">
                     <Label>Reassign Courses</Label>
-                    <p className="text-sm text-gray-500 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       User teaches {user.statistics.courses_taught} courses. Choose how to handle them:
                     </p>
                     <Select value={reassignInstructorId} onValueChange={setReassignInstructorId}>
@@ -215,7 +215,7 @@ export default function UserDeleteDialog({
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="force_delete">Force Delete</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Delete even if there are unresolved dependencies
                     </p>
                   </div>
@@ -244,17 +244,17 @@ export default function UserDeleteDialog({
             {deletionType === 'hard' && (
               <div className="space-y-2">
                 <Label htmlFor="confirmation">
-                  Type <span className="font-mono text-red-600">DELETE</span> to confirm
+                  Type <span className="font-mono text-destructive">DELETE</span> to confirm
                 </Label>
                 <Input
                   id="confirmation"
                   value={confirmationText}
                   onChange={(e) => setConfirmationText(e.target.value)}
                   placeholder="Type DELETE to confirm"
-                  className={confirmationText === 'DELETE' ? 'border-green-500' : 'border-red-500'}
+                  className={confirmationText === 'DELETE' ? 'border-success' : 'border-destructive'}
                 />
                 {confirmationText && confirmationText !== 'DELETE' && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-destructive">
                     Please type DELETE exactly as shown to confirm permanent deletion
                   </p>
                 )}
@@ -267,7 +267,7 @@ export default function UserDeleteDialog({
             <input
               type="checkbox"
               id="understand"
-              className="mt-1 rounded border-gray-300"
+              className="mt-1 rounded border-border"
               required
             />
             <Label htmlFor="understand" className="text-sm">

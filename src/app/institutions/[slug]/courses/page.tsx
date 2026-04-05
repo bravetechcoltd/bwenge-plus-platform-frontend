@@ -111,17 +111,17 @@ function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="flex min-h-screen">
-        <aside className="hidden lg:block w-72 xl:w-80 bg-white border-r border-gray-200 flex-shrink-0" />
+        <aside className="hidden lg:block w-72 xl:w-80 bg-card border-r border-border flex-shrink-0" />
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-          <div className="h-10 bg-gray-200 rounded-lg animate-pulse mb-6 max-w-md" />
+          <div className="h-10 bg-secondary rounded-lg animate-pulse mb-6 max-w-md" />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div className="h-44 bg-gray-200 animate-pulse" />
+              <div key={i} className="bg-card rounded-xl shadow-sm border overflow-hidden">
+                <div className="h-44 bg-secondary animate-pulse" />
                 <div className="p-4 space-y-3">
-                  <div className="h-5 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                  <div className="h-8 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-5 bg-secondary rounded animate-pulse" />
+                  <div className="h-4 bg-secondary rounded animate-pulse w-3/4" />
+                  <div className="h-8 bg-secondary rounded animate-pulse" />
                 </div>
               </div>
             ))}
@@ -158,15 +158,15 @@ function DefaultCourseThumbnail({ title, level }: { title: string; level: string
   return (
     <div className={`w-full h-full bg-gradient-to-br ${getGradientByLevel()} relative overflow-hidden flex items-center justify-center`}>
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-48 h-48 bg-white rounded-full translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-0 left-0 w-40 h-40 bg-card rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-48 h-48 bg-card rounded-full translate-x-1/3 translate-y-1/3" />
       </div>
       <div className="relative z-10 flex flex-col items-center gap-3">
-        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border-2 border-white/30 shadow-2xl">
+        <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-5 border-2 border-white/30 shadow-2xl">
           <IconComponent className="w-12 h-12 text-white" />
         </div>
-        <div className="bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-lg">
-          <p className="text-xs font-bold text-gray-800 uppercase tracking-wide">{level}</p>
+        <div className="bg-card/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-lg">
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">{level}</p>
         </div>
       </div>
     </div>
@@ -198,18 +198,18 @@ function CourseCard({
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "BEGINNER": return "bg-emerald-500"
-      case "INTERMEDIATE": return "bg-blue-500"
-      case "ADVANCED": return "bg-purple-500"
+      case "BEGINNER": return "bg-success/100"
+      case "INTERMEDIATE": return "bg-primary"
+      case "ADVANCED": return "bg-primary/100"
       case "EXPERT": return "bg-pink-500"
-      default: return "bg-gray-500"
+      default: return "bg-muted"
     }
   }
 
   const getTypeBadge = (type: string) => {
     return type === "MOOC"
-      ? { color: "bg-blue-500", icon: <Globe className="w-3 h-3" /> }
-      : { color: "bg-purple-500", icon: <Shield className="w-3 h-3" /> }
+      ? { color: "bg-primary", icon: <Globe className="w-3 h-3" /> }
+      : { color: "bg-primary/100", icon: <Shield className="w-3 h-3" /> }
   }
 
   const formatDuration = (minutes: number) => {
@@ -229,11 +229,11 @@ function CourseCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -4, boxShadow: "0 20px 40px rgba(0,0,0,0.12)" }}
-      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 cursor-pointer flex flex-col h-full"
+      className="bg-card rounded-xl shadow-sm border border-border overflow-hidden transition-all duration-300 cursor-pointer flex flex-col h-full"
       onClick={() => onLearnMoreClick(course.id)}
     >
       {/* Image */}
-      <div className="relative h-44 overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="relative h-44 overflow-hidden bg-muted flex-shrink-0">
         {course.thumbnail_url ? (
           <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
         ) : (
@@ -259,9 +259,9 @@ function CourseCard({
         {/* Bookmark */}
         <button
           onClick={(e) => { e.stopPropagation(); setIsBookmarked(!isBookmarked) }}
-          className="absolute bottom-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all shadow-lg z-10"
+          className="absolute bottom-3 right-3 p-2 bg-card/90 backdrop-blur-sm rounded-full hover:bg-card transition-all shadow-lg z-10"
         >
-          <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? "fill-blue-600 text-blue-600" : "text-gray-700"}`} />
+          <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? "fill-blue-600 text-primary" : "text-muted-foreground"}`} />
         </button>
       </div>
 
@@ -270,11 +270,11 @@ function CourseCard({
         {/* Rating row */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
-            <Star className="w-3 h-3 text-yellow-500 fill-current" />
+            <Star className="w-3 h-3 text-warning fill-current" />
             <span className="text-xs font-medium">{formattedRating}</span>
           </div>
           {course.is_certificate_available && (
-            <Badge variant="outline" className="text-xs border-yellow-200 bg-yellow-50 text-yellow-700">
+            <Badge variant="outline" className="text-xs border-warning/30 bg-warning/10 text-warning">
               <Award className="w-3 h-3 mr-1" />
               Certificate
             </Badge>
@@ -282,7 +282,7 @@ function CourseCard({
         </div>
 
         {/* Title */}
-        <h3 className="text-base font-bold text-gray-900 mb-1.5 line-clamp-2 leading-snug">
+        <h3 className="text-base font-bold text-foreground mb-1.5 line-clamp-2 leading-snug">
           {course.title}
         </h3>
 
@@ -296,27 +296,27 @@ function CourseCard({
                 <User className="w-3 h-3 text-white" />
               </div>
             )}
-            <span className="text-xs text-gray-600">{course.instructor.first_name} {course.instructor.last_name}</span>
+            <span className="text-xs text-muted-foreground">{course.instructor.first_name} {course.instructor.last_name}</span>
           </div>
         )}
 
         {/* Description */}
-        <p className="text-xs text-gray-500 mb-3 line-clamp-2 flex-1">
+        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">
           {course.short_description || course.description || "Explore this comprehensive course"}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Users className="w-3 h-3" />
             <span>{course.enrollment_count.toLocaleString()}</span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             <span>{formatDuration(course.duration_minutes)}</span>
           </div>
           {course.language && (
-            <Badge variant="outline" className="text-xs border-gray-200 bg-gray-50 text-gray-600">
+            <Badge variant="outline" className="text-xs border-border bg-muted/50 text-muted-foreground">
               {course.language}
             </Badge>
           )}
@@ -326,9 +326,9 @@ function CourseCard({
         <div className="flex items-center justify-between mb-3">
           {course.price !== undefined && (
             course.price === 0 ? (
-              <Badge className="bg-green-600 text-white">Free</Badge>
+              <Badge className="bg-success text-white">Free</Badge>
             ) : (
-              <span className="text-sm font-bold text-yellow-600">{course.price.toLocaleString()} RWF</span>
+              <span className="text-sm font-bold text-warning">{course.price.toLocaleString()} RWF</span>
             )
           )}
         </div>
@@ -360,11 +360,11 @@ function CourseListCard({
 }) {
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "BEGINNER": return "bg-emerald-500"
-      case "INTERMEDIATE": return "bg-blue-500"
-      case "ADVANCED": return "bg-purple-500"
+      case "BEGINNER": return "bg-success/100"
+      case "INTERMEDIATE": return "bg-primary"
+      case "ADVANCED": return "bg-primary/100"
       case "EXPERT": return "bg-pink-500"
-      default: return "bg-gray-500"
+      default: return "bg-muted"
     }
   }
 
@@ -375,7 +375,7 @@ function CourseListCard({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onLearnMoreClick(course.id)}
     >
       <div className="relative w-48 flex-shrink-0 h-32">
@@ -390,12 +390,12 @@ function CourseListCard({
       </div>
       <div className="flex-1 p-4 flex flex-col justify-between">
         <div>
-          <h3 className="text-sm font-bold text-gray-900 line-clamp-1 mb-1">{course.title}</h3>
-          <p className="text-xs text-gray-500 line-clamp-2">{course.short_description || course.description}</p>
+          <h3 className="text-sm font-bold text-foreground line-clamp-1 mb-1">{course.title}</h3>
+          <p className="text-xs text-muted-foreground line-clamp-2">{course.short_description || course.description}</p>
         </div>
         <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-current" />{numericRating > 0 ? numericRating.toFixed(1) : "New"}</span>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Star className="w-3 h-3 text-warning fill-current" />{numericRating > 0 ? numericRating.toFixed(1) : "New"}</span>
             <span className="flex items-center gap-1"><Users className="w-3 h-3" />{course.enrollment_count.toLocaleString()}</span>
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{Math.ceil(course.duration_minutes / 60)}h</span>
           </div>
@@ -445,11 +445,11 @@ function SidebarContent({
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "BEGINNER": return "bg-emerald-500"
-      case "INTERMEDIATE": return "bg-blue-500"
-      case "ADVANCED": return "bg-purple-500"
+      case "BEGINNER": return "bg-success/100"
+      case "INTERMEDIATE": return "bg-primary"
+      case "ADVANCED": return "bg-primary/100"
       case "EXPERT": return "bg-pink-500"
-      default: return "bg-gray-500"
+      default: return "bg-muted"
     }
   }
 
@@ -463,19 +463,19 @@ function SidebarContent({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-5 border-b border-gray-200 flex-shrink-0">
+      <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Filter className="w-4 h-4 text-white" />
           </div>
-          <h3 className="font-bold text-gray-900">Filters</h3>
+          <h3 className="font-bold text-foreground">Filters</h3>
           {activeFilterCount > 0 && (
             <Badge className="bg-primary text-white text-xs ml-1">{activeFilterCount}</Badge>
           )}
         </div>
         <button
           onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+          className="lg:hidden p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-muted-foreground"
           aria-label="Close filters"
         >
           <X className="w-5 h-5" />
@@ -488,22 +488,22 @@ function SidebarContent({
         {/* Category filter */}
         {categories.length > 0 && (
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-2 block">Category</label>
+            <label className="text-sm font-semibold text-muted-foreground mb-2 block">Category</label>
             <div className="space-y-1.5">
               <div
-                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", activeCategory === "all" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", activeCategory === "all" ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
                 onClick={() => onCategoryChange("all")}
               >
-                <span className="font-medium text-gray-800">All Courses ({institution?.total_courses || 0})</span>
+                <span className="font-medium text-foreground">All Courses ({institution?.total_courses || 0})</span>
               </div>
               {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", activeCategory === cat.name ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+                  className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", activeCategory === cat.name ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
                   onClick={() => onCategoryChange(cat.name)}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-800">{cat.name}</span>
+                    <span className="font-medium text-foreground">{cat.name}</span>
                     <Badge variant="outline" className="text-xs">{cat.course_count}</Badge>
                   </div>
                 </div>
@@ -514,18 +514,18 @@ function SidebarContent({
 
         {/* Level */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Difficulty Level</label>
+          <label className="text-sm font-semibold text-muted-foreground mb-2 block">Difficulty Level</label>
           <div className="space-y-1.5">
             <div
-              className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.levels.length === 0 ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+              className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.levels.length === 0 ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
               onClick={() => onFilterChange({ ...filters, levels: [] })}
             >
-              <span className="font-medium text-gray-800">All Levels</span>
+              <span className="font-medium text-foreground">All Levels</span>
             </div>
             {levels.map((level) => (
               <div
                 key={level}
-                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.levels.includes(level) ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.levels.includes(level) ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
                 onClick={() => {
                   const has = filters.levels.includes(level)
                   onFilterChange({ ...filters, levels: has ? filters.levels.filter((l) => l !== level) : [...filters.levels, level] })
@@ -535,8 +535,8 @@ function SidebarContent({
                   <div className={`${getLevelColor(level)} w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0`}>
                     {getLevelIcon(level)}
                   </div>
-                  <span className="font-medium text-gray-800">{level.charAt(0) + level.slice(1).toLowerCase()}</span>
-                  {filters.levels.includes(level) && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                  <span className="font-medium text-foreground">{level.charAt(0) + level.slice(1).toLowerCase()}</span>
+                  {filters.levels.includes(level) && <Check className="w-3 h-3 text-primary ml-auto" />}
                 </div>
               </div>
             ))}
@@ -545,21 +545,21 @@ function SidebarContent({
 
         {/* Course Type */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Course Type</label>
+          <label className="text-sm font-semibold text-muted-foreground mb-2 block">Course Type</label>
           <div className="space-y-1.5">
             {courseTypes.map((type) => (
               <div
                 key={type}
-                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.types.includes(type) ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.types.includes(type) ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
                 onClick={() => {
                   const has = filters.types.includes(type)
                   onFilterChange({ ...filters, types: has ? filters.types.filter((t) => t !== type) : [...filters.types, type] })
                 }}
               >
                 <div className="flex items-center gap-2">
-                  {type === "MOOC" ? <Globe className="w-4 h-4 text-blue-500" /> : <Shield className="w-4 h-4 text-purple-500" />}
-                  <span className="font-medium text-gray-800">{type}</span>
-                  {filters.types.includes(type) && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                  {type === "MOOC" ? <Globe className="w-4 h-4 text-primary" /> : <Shield className="w-4 h-4 text-primary" />}
+                  <span className="font-medium text-foreground">{type}</span>
+                  {filters.types.includes(type) && <Check className="w-3 h-3 text-primary ml-auto" />}
                 </div>
               </div>
             ))}
@@ -568,36 +568,36 @@ function SidebarContent({
 
         {/* Certificate */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Certificate</label>
+          <label className="text-sm font-semibold text-muted-foreground mb-2 block">Certificate</label>
           <div
-            className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.certificate ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+            className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.certificate ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
             onClick={() => onFilterChange({ ...filters, certificate: !filters.certificate })}
           >
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-yellow-500" />
-              <span className="font-medium text-gray-800">Certificate Available</span>
-              {filters.certificate && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+              <Award className="w-4 h-4 text-warning" />
+              <span className="font-medium text-foreground">Certificate Available</span>
+              {filters.certificate && <Check className="w-3 h-3 text-primary ml-auto" />}
             </div>
           </div>
         </div>
 
         {/* Language */}
         <div>
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Language</label>
+          <label className="text-sm font-semibold text-muted-foreground mb-2 block">Language</label>
           <div className="space-y-1.5">
             {languages.map((lang) => (
               <div
                 key={lang}
-                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.languages.includes(lang) ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300")}
+                className={cn("p-3 rounded-lg border-2 cursor-pointer transition-all text-sm", filters.languages.includes(lang) ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}
                 onClick={() => {
                   const has = filters.languages.includes(lang)
                   onFilterChange({ ...filters, languages: has ? filters.languages.filter((l) => l !== lang) : [...filters.languages, lang] })
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium text-gray-800">{lang}</span>
-                  {filters.languages.includes(lang) && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-medium text-foreground">{lang}</span>
+                  {filters.languages.includes(lang) && <Check className="w-3 h-3 text-primary ml-auto" />}
                 </div>
               </div>
             ))}
@@ -613,18 +613,18 @@ function SidebarContent({
         )}
 
         {/* Stats */}
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-          <h4 className="font-semibold mb-3 text-blue-900 text-sm">Course Statistics</h4>
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-primary/20">
+          <h4 className="font-semibold mb-3 text-primary text-sm">Course Statistics</h4>
           <div className="space-y-2 text-sm">
             {[
-              { label: "Total Courses", count: institution?.total_courses || 0, color: "bg-blue-600" },
-              { label: "Categories", count: categories.length, color: "bg-indigo-600" },
-              { label: "MOOC Courses", count: allCourses.filter((c) => c.course_type === "MOOC").length, color: "bg-purple-600" },
-              { label: "SPOC Courses", count: allCourses.filter((c) => c.course_type === "SPOC").length, color: "bg-violet-600" },
-              { label: "With Certificate", count: allCourses.filter((c) => c.is_certificate_available).length, color: "bg-yellow-600" },
+              { label: "Total Courses", count: institution?.total_courses || 0, color: "bg-primary" },
+              { label: "Categories", count: categories.length, color: "bg-primary" },
+              { label: "MOOC Courses", count: allCourses.filter((c) => c.course_type === "MOOC").length, color: "bg-primary" },
+              { label: "SPOC Courses", count: allCourses.filter((c) => c.course_type === "SPOC").length, color: "bg-primary" },
+              { label: "With Certificate", count: allCourses.filter((c) => c.is_certificate_available).length, color: "bg-warning" },
             ].map(({ label, count, color }) => (
               <div key={label} className="flex items-center justify-between">
-                <span className="text-gray-600">{label}:</span>
+                <span className="text-muted-foreground">{label}:</span>
                 <Badge className={`${color} text-white text-xs`}>{count}</Badge>
               </div>
             ))}
@@ -806,20 +806,20 @@ function Navigation({
 
   return (
     <>
-      <header className={`fixed top-0 w-full z-50 transition-all duration-300 bg-white ${isScrolled ? "shadow-lg border-b border-gray-200" : "shadow-sm border-b border-gray-100"}`}>
+      <header className={`fixed top-0 w-full z-50 transition-all duration-300 bg-card ${isScrolled ? "shadow-lg border-b border-border" : "shadow-sm border-b border-border"}`}>
         <div className="max-w-full px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3 min-w-0">
               <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
                 <motion.div 
-                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md" 
+                  className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md" 
                   whileHover={{ scale: 1.05, rotate: 5 }} 
                   whileTap={{ scale: 0.95 }}
                 >
                   <GraduationCap className="w-5 h-5 text-white" />
                 </motion.div>
-                <span className="font-bold text-lg text-gray-900 hidden sm:block">BwengePlus</span>
+                <span className="font-bold text-lg text-foreground hidden sm:block">BwengePlus</span>
               </Link>
 
               {/* Institution Selector */}
@@ -827,15 +827,15 @@ function Navigation({
                 <div className="relative hidden md:block">
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowInstitutionDropdown(!showInstitutionDropdown) }}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-lg transition-colors border border-border"
                   >
                     {institution.logo_url ? (
                       <img src={institution.logo_url} alt={institution.name} className="w-6 h-6 rounded-md object-cover" />
                     ) : (
-                      <Building2 className="w-5 h-5 text-blue-600" />
+                      <Building2 className="w-5 h-5 text-primary" />
                     )}
-                    <span className="text-sm font-medium text-gray-700 max-w-[150px] truncate">{institution.name}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showInstitutionDropdown ? "rotate-180" : ""}`} />
+                    <span className="text-sm font-medium text-muted-foreground max-w-[150px] truncate">{institution.name}</span>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showInstitutionDropdown ? "rotate-180" : ""}`} />
                   </button>
 
                   <AnimatePresence>
@@ -844,17 +844,17 @@ function Navigation({
                         initial={{ opacity: 0, y: -10 }} 
                         animate={{ opacity: 1, y: 0 }} 
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                        className="absolute left-0 mt-2 w-72 bg-card rounded-xl shadow-xl border border-border py-2 z-50"
                       >
-                        <div className="px-4 py-2 border-b border-gray-100">
-                          <h3 className="text-sm font-semibold text-gray-900">Switch Institution</h3>
+                        <div className="px-4 py-2 border-b border-border">
+                          <h3 className="text-sm font-semibold text-foreground">Switch Institution</h3>
                         </div>
                         <div className="max-h-80 overflow-y-auto">
                           {institutions.map((inst) => (
                             <button 
                               key={inst.id} 
                               onClick={() => { onInstitutionChange(inst.slug); setShowInstitutionDropdown(false) }}
-                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors ${inst.slug === selectedInstitutionSlug ? "bg-blue-50" : ""}`}
+                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors ${inst.slug === selectedInstitutionSlug ? "bg-primary/10" : ""}`}
                             >
                               {inst.logo_url ? 
                                 <img src={inst.logo_url} alt={inst.name} className="w-8 h-8 rounded-md object-cover" /> : 
@@ -863,10 +863,10 @@ function Navigation({
                                 </div>
                               }
                               <div className="flex-1 text-left">
-                                <div className="text-sm font-medium text-gray-900">{inst.name}</div>
-                                <div className="text-xs text-gray-500">{inst.total_courses} courses</div>
+                                <div className="text-sm font-medium text-foreground">{inst.name}</div>
+                                <div className="text-xs text-muted-foreground">{inst.total_courses} courses</div>
                               </div>
-                              {inst.slug === selectedInstitutionSlug && <Check className="w-4 h-4 text-blue-600" />}
+                              {inst.slug === selectedInstitutionSlug && <Check className="w-4 h-4 text-primary" />}
                             </button>
                           ))}
                         </div>
@@ -886,7 +886,7 @@ function Navigation({
                 <Link 
                   key={link.href} 
                   href={link.href} 
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
                 >
                   <link.icon className="w-4 h-4" />
                   {link.label}
@@ -911,24 +911,24 @@ function Navigation({
                       logo_alignment="left"
                     />
                     {isGoogleLoggingIn && (
-                      <div className="absolute inset-0 bg-white/80 rounded-lg flex items-center justify-center">
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
                       </div>
                     )}
                   </div>
                   
                   {/* Divider */}
-                  <div className="hidden sm:block h-8 w-px bg-gray-300"></div>
+                  <div className="hidden sm:block h-8 w-px bg-secondary"></div>
                   
                   <Link 
                     href="/login" 
-                    className="hidden sm:block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="hidden sm:block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link 
                     href="/register" 
-                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm"
+                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary transition-all shadow-sm"
                   >
                     Join Free
                   </Link>
@@ -937,27 +937,27 @@ function Navigation({
                 <div className="relative">
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowUserMenu(!showUserMenu) }}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-accent transition-colors border border-transparent hover:border-border"
                   >
                     <div className="relative">
                       {actualUser?.profile_picture_url ? (
                         <img 
                           src={actualUser.profile_picture_url} 
                           alt={actualUser.first_name} 
-                          className="w-8 h-8 rounded-full object-cover border-2 border-blue-600" 
+                          className="w-8 h-8 rounded-full object-cover border-2 border-primary" 
                         />
                       ) : (
                         <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarGradient()} flex items-center justify-center text-white font-semibold text-sm shadow-md border-2 border-white ring-2 ring-blue-600/30`}>
                           {getUserInitials()}
                         </div>
                       )}
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
+                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success/100 rounded-full border-2 border-white" />
                     </div>
                     <div className="hidden lg:block text-left">
-                      <div className="text-sm font-semibold text-gray-900">{actualUser?.first_name} {actualUser?.last_name}</div>
-                      <div className="text-xs text-gray-500">{roleDisplayName}</div>
+                      <div className="text-sm font-semibold text-foreground">{actualUser?.first_name} {actualUser?.last_name}</div>
+                      <div className="text-xs text-muted-foreground">{roleDisplayName}</div>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 hidden lg:block transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground hidden lg:block transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
                   </button>
 
                   <AnimatePresence>
@@ -966,15 +966,15 @@ function Navigation({
                         initial={{ opacity: 0, y: -10 }} 
                         animate={{ opacity: 1, y: 0 }} 
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                        className="absolute right-0 mt-2 w-64 bg-card rounded-xl shadow-xl border border-border py-2 z-50"
                       >
-                        <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="px-4 py-3 border-b border-border">
                           <div className="flex items-center gap-3">
                             {actualUser?.profile_picture_url ? (
                               <img 
                                 src={actualUser.profile_picture_url} 
                                 alt={actualUser.first_name} 
-                                className="w-10 h-10 rounded-full object-cover border-2 border-blue-600" 
+                                className="w-10 h-10 rounded-full object-cover border-2 border-primary" 
                               />
                             ) : (
                               <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()} flex items-center justify-center text-white font-semibold text-lg shadow-lg border-2 border-white`}>
@@ -982,12 +982,12 @@ function Navigation({
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-gray-900 truncate">{actualUser?.first_name} {actualUser?.last_name}</div>
-                              <div className="text-xs text-gray-500 truncate">{actualUser?.email}</div>
+                              <div className="text-sm font-semibold text-foreground truncate">{actualUser?.first_name} {actualUser?.last_name}</div>
+                              <div className="text-xs text-muted-foreground truncate">{actualUser?.email}</div>
                             </div>
                           </div>
-                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded-full">
-                            <span className="text-xs font-medium text-blue-700">{roleDisplayName}</span>
+                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
+                            <span className="text-xs font-medium text-primary">{roleDisplayName}</span>
                           </div>
                         </div>
                         <div className="py-1">
@@ -999,7 +999,7 @@ function Navigation({
                             <Link 
                               key={item.href} 
                               href={item.href} 
-                              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors" 
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors" 
                               onClick={() => setShowUserMenu(false)}
                             >
                               <item.icon className="w-4 h-4" />
@@ -1007,10 +1007,10 @@ function Navigation({
                             </Link>
                           ))}
                         </div>
-                        <div className="border-t border-gray-100 py-1">
+                        <div className="border-t border-border py-1">
                           <button 
                             onClick={() => { setShowUserMenu(false); handleLogout() }} 
-                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -1024,7 +1024,7 @@ function Navigation({
 
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -1039,15 +1039,15 @@ function Navigation({
                 animate={{ opacity: 1, height: "auto" }} 
                 exit={{ opacity: 0, height: 0 }} 
                 transition={{ duration: 0.3 }}
-                className="lg:hidden border-t border-gray-200 py-3 overflow-hidden"
+                className="lg:hidden border-t border-border py-3 overflow-hidden"
               >
                 {institution && (
                   <div className="mb-3 px-1">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Institution</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Institution</label>
                     <select 
                       value={selectedInstitutionSlug} 
                       onChange={(e) => { onInstitutionChange(e.target.value); setIsMobileMenuOpen(false) }}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     >
                       {institutions.map((inst) => (
                         <option key={inst.id} value={inst.slug}>{inst.name} ({inst.total_courses})</option>
@@ -1063,14 +1063,14 @@ function Navigation({
                     <Link 
                       key={link.href} 
                       href={link.href} 
-                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" 
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" 
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <link.icon className="w-5 h-5" />
                       {link.label}
                     </Link>
                   ))}
-                  <div className="pt-3 mt-3 border-t border-gray-200 space-y-2">
+                  <div className="pt-3 mt-3 border-t border-border space-y-2">
                     {!isAuthenticated ? (
                       <>
                         {/* Mobile Google Login */}
@@ -1087,8 +1087,8 @@ function Navigation({
                               logo_alignment="left"
                             />
                             {isGoogleLoggingIn && (
-                              <div className="absolute inset-0 bg-white/80 rounded-lg flex items-center justify-center">
-                                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                              <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center">
+                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
                               </div>
                             )}
                           </div>
@@ -1097,16 +1097,16 @@ function Navigation({
                         {/* Divider */}
                         <div className="relative py-2">
                           <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200"></div>
+                            <div className="w-full border-t border-border"></div>
                           </div>
                           <div className="relative flex justify-center text-xs">
-                            <span className="px-2 bg-white text-gray-500">OR</span>
+                            <span className="px-2 bg-card text-muted-foreground">OR</span>
                           </div>
                         </div>
                         
                         <Link 
                           href="/login" 
-                          className="block px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg" 
+                          className="block px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent rounded-lg" 
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Sign In with Email
@@ -1121,20 +1121,20 @@ function Navigation({
                       </>
                     ) : (
                       <>
-                        <div className="px-3 py-2 bg-blue-50 rounded-lg">
+                        <div className="px-3 py-2 bg-primary/10 rounded-lg">
                           <div className="flex items-center gap-2">
                             <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient()} flex items-center justify-center text-white font-semibold shadow-lg`}>
                               {getUserInitials()}
                             </div>
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">{actualUser?.first_name} {actualUser?.last_name}</div>
-                              <div className="text-xs text-gray-500">{roleDisplayName}</div>
+                              <div className="text-sm font-semibold text-foreground">{actualUser?.first_name} {actualUser?.last_name}</div>
+                              <div className="text-xs text-muted-foreground">{roleDisplayName}</div>
                             </div>
                           </div>
                         </div>
                         <Link 
                           href={dashboardPath} 
-                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg" 
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-primary/10 rounded-lg" 
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <BookOpen className="w-5 h-5" />
@@ -1142,7 +1142,7 @@ function Navigation({
                         </Link>
                         <button 
                           onClick={() => { setIsMobileMenuOpen(false); handleLogout() }} 
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg"
                         >
                           <LogOut className="w-5 h-5" />
                           Sign Out
@@ -1216,7 +1216,6 @@ function InstitutionCoursesContent() {
           if (categoryParam) setActiveCategory(decodeURIComponent(categoryParam))
         }
       } catch (error) {
-        console.error("Failed to fetch institutions:", error)
       } finally {
         setIsLoading(false)
       }
@@ -1282,11 +1281,11 @@ function InstitutionCoursesContent() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-            <GraduationCap className="w-12 h-12 text-gray-400" />
+            <GraduationCap className="w-12 h-12 text-muted-foreground" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Institution Not Found</h2>
-          <p className="text-gray-600 mb-6">The requested institution could not be found.</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">
+          <h2 className="text-3xl font-bold text-foreground mb-3">Institution Not Found</h2>
+          <p className="text-muted-foreground mb-6">The requested institution could not be found.</p>
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary font-semibold shadow-lg">
             <Home className="w-5 h-5" />Go Home
           </Link>
         </motion.div>
@@ -1328,7 +1327,7 @@ function InstitutionCoursesContent() {
 
         <div className="flex min-h-[calc(100vh-4rem)] pt-16">
           {/* Desktop Sidebar */}
-          <aside className="hidden lg:flex flex-col sticky top-16 h-[calc(100vh-4rem)] w-72 xl:w-80 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden">
+          <aside className="hidden lg:flex flex-col sticky top-16 h-[calc(100vh-4rem)] w-72 xl:w-80 bg-card border-r border-border flex-shrink-0 overflow-hidden">
             <SidebarContent
               filters={filters}
               onFilterChange={setFilters}
@@ -1343,7 +1342,7 @@ function InstitutionCoursesContent() {
 
           {/* Mobile Sidebar Drawer */}
           <div className={cn(
-            "fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 bg-white border-r border-gray-200 z-40 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",
+            "fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 bg-card border-r border-border z-40 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}>
             <SidebarContent
@@ -1362,7 +1361,7 @@ function InstitutionCoursesContent() {
           <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-8">
             {/* Mobile filter toggle */}
             <div className="lg:hidden mb-5">
-              <Button onClick={() => setSidebarOpen(true)} variant="outline" className="bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 shadow-sm">
+              <Button onClick={() => setSidebarOpen(true)} variant="outline" className="bg-card hover:bg-accent text-muted-foreground border-2 border-border shadow-sm">
                 <Filter className="w-4 h-4 mr-2" />
                 Filters
                 {activeFilterCount > 0 && <Badge className="ml-2 bg-primary text-white text-xs">{activeFilterCount}</Badge>}
@@ -1377,15 +1376,15 @@ function InstitutionCoursesContent() {
                   {institution.logo_url ? (
                     <img src={institution.logo_url} alt={institution.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
                   ) : (
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <Building2 className="w-7 h-7 text-blue-600" />
+                    <div className="p-3 bg-primary/15 rounded-full">
+                      <Building2 className="w-7 h-7 text-primary" />
                     </div>
                   )}
                   <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     {institution.name}
                   </h1>
                 </div>
-                <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto">
+                <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
                   Browse {institution.total_courses} courses across {institution.categories.length} categories
                 </p>
               </div>
@@ -1394,19 +1393,19 @@ function InstitutionCoursesContent() {
             {/* Search + View toggle */}
             <div className="flex flex-col sm:flex-row gap-3 mb-5">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search courses, instructors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-2 focus:border-blue-500 transition-colors"
+                  className="pl-10 border-2 focus:border-primary transition-colors"
                 />
               </div>
-              <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl self-start sm:self-auto">
-                <button onClick={() => setViewMode("grid")} className={cn("p-2.5 rounded-lg transition-colors", viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600")}>
+              <div className="flex items-center gap-2 p-1 bg-muted rounded-xl self-start sm:self-auto">
+                <button onClick={() => setViewMode("grid")} className={cn("p-2.5 rounded-lg transition-colors", viewMode === "grid" ? "bg-card text-primary shadow-sm" : "text-muted-foreground")}>
                   <Grid className="w-4 h-4" />
                 </button>
-                <button onClick={() => setViewMode("list")} className={cn("p-2.5 rounded-lg transition-colors", viewMode === "list" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600")}>
+                <button onClick={() => setViewMode("list")} className={cn("p-2.5 rounded-lg transition-colors", viewMode === "list" ? "bg-card text-primary shadow-sm" : "text-muted-foreground")}>
                   <List className="w-4 h-4" />
                 </button>
               </div>
@@ -1415,40 +1414,40 @@ function InstitutionCoursesContent() {
             {/* Active filter chips */}
             {activeFilterCount > 0 && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold text-gray-700">Active:</span>
+                <span className="text-sm font-semibold text-muted-foreground">Active:</span>
                 {filters.levels.map((level) => (
-                  <span key={level} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  <span key={level} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/15 text-primary rounded-full text-xs font-medium">
                     {level.charAt(0) + level.slice(1).toLowerCase()}
                     <button onClick={() => setFilters({ ...filters, levels: filters.levels.filter((l) => l !== level) })}><X className="w-3 h-3" /></button>
                   </span>
                 ))}
                 {filters.types.map((type) => (
-                  <span key={type} className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                  <span key={type} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/15 text-primary rounded-full text-xs font-medium">
                     {type}<button onClick={() => setFilters({ ...filters, types: filters.types.filter((t) => t !== type) })}><X className="w-3 h-3" /></button>
                   </span>
                 ))}
                 {filters.certificate && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-warning/15 text-warning rounded-full text-xs font-medium">
                     Certificate<button onClick={() => setFilters({ ...filters, certificate: false })}><X className="w-3 h-3" /></button>
                   </span>
                 )}
                 {filters.languages.map((lang) => (
-                  <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 bg-success/15 text-success rounded-full text-xs font-medium">
                     {lang}<button onClick={() => setFilters({ ...filters, languages: filters.languages.filter((l) => l !== lang) })}><X className="w-3 h-3" /></button>
                   </span>
                 ))}
-                <button onClick={() => setFilters({ levels: [], types: [], certificate: false, languages: [] })} className="text-sm text-gray-500 hover:text-gray-900 underline">Clear all</button>
+                <button onClick={() => setFilters({ levels: [], types: [], certificate: false, languages: [] })} className="text-sm text-muted-foreground hover:text-foreground underline">Clear all</button>
               </motion.div>
             )}
 
             {/* Results count */}
             <div className="mb-5 flex items-center gap-3 flex-wrap">
-              <Badge variant="outline" className="px-3 py-1.5 text-sm border-blue-200 bg-blue-50 text-blue-700">
+              <Badge variant="outline" className="px-3 py-1.5 text-sm border-primary/30 bg-primary/10 text-primary">
                 <Trophy className="w-3 h-3 mr-1.5" />
                 {filteredCourses.length} Courses Found
               </Badge>
-              {searchQuery && <span className="text-gray-500 text-sm">for "{searchQuery}"</span>}
-              {activeCategory !== "all" && <Badge variant="outline" className="text-sm border-indigo-200 bg-indigo-50 text-indigo-700">{activeCategory}</Badge>}
+              {searchQuery && <span className="text-muted-foreground text-sm">for "{searchQuery}"</span>}
+              {activeCategory !== "all" && <Badge variant="outline" className="text-sm border-primary/30 bg-primary/10 text-primary">{activeCategory}</Badge>}
             </div>
 
             {/* Courses */}
@@ -1469,10 +1468,10 @@ function InstitutionCoursesContent() {
             ) : (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                  <Search className="w-10 h-10 text-blue-400" />
+                  <Search className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">No Courses Found</h3>
-                <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">
+                <h3 className="text-xl font-bold mb-2 text-foreground">No Courses Found</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto text-sm">
                   {searchQuery ? `No courses match "${searchQuery}".` : `No courses available in ${activeCategory}.`}
                 </p>
                 <div className="flex gap-3 justify-center flex-wrap">

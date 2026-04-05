@@ -169,7 +169,6 @@ export default function InstructorsPage() {
         toast.error(data.message || "Failed to load instructors");
       }
     } catch (error) {
-      console.error("Failed to load instructors:", error);
       toast.error("Failed to load instructors");
     } finally {
       setIsLoading(false);
@@ -259,9 +258,9 @@ export default function InstructorsPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -273,10 +272,10 @@ export default function InstructorsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <UserCog className="w-7 h-7 text-green-600" /> Instructors
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+            <UserCog className="w-7 h-7 text-success" /> Instructors
           </h1>
-          <p className="text-gray-500 mt-1">Manage and invite instructors for your institution</p>
+          <p className="text-muted-foreground mt-1">Manage and invite instructors for your institution</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchInstructors} disabled={isLoading}>
@@ -294,10 +293,10 @@ export default function InstructorsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Instructors", value: stats.total, icon: UserCog, color: "text-green-600 bg-green-50" },
-          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-blue-600 bg-blue-50" },
-          { label: "Total Courses", value: stats.total_courses, icon: BookOpen, color: "text-purple-600 bg-purple-50" },
-          { label: "Avg Rating", value: stats.avg_rating > 0 ? `${stats.avg_rating} ★` : "—", icon: Star, color: "text-amber-600 bg-amber-50" },
+          { label: "Total Instructors", value: stats.total, icon: UserCog, color: "text-success bg-success/10" },
+          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-primary bg-primary/10" },
+          { label: "Total Courses", value: stats.total_courses, icon: BookOpen, color: "text-primary bg-primary/10" },
+          { label: "Avg Rating", value: stats.avg_rating > 0 ? `${stats.avg_rating} ★` : "—", icon: Star, color: "text-warning bg-warning/10" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -306,7 +305,7 @@ export default function InstructorsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -319,7 +318,7 @@ export default function InstructorsPage() {
           <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input placeholder="Search instructors..." value={search}
                   onChange={e => { setSearch(e.target.value); setPage(1); }} className="pl-9" />
               </div>
@@ -335,7 +334,7 @@ export default function InstructorsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-sm text-gray-500">{totalCount} instructors</p>
+            <p className="text-sm text-muted-foreground">{totalCount} instructors</p>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -343,9 +342,9 @@ export default function InstructorsPage() {
             <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : instructors.length === 0 ? (
             <div className="text-center py-16">
-              <UserCog className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No instructors found</p>
-              <p className="text-sm text-gray-400 mt-1">Invite instructors to start creating courses.</p>
+              <UserCog className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No instructors found</p>
+              <p className="text-sm text-muted-foreground mt-1">Invite instructors to start creating courses.</p>
               <Button className="mt-4" onClick={() => setInviteOpen(true)}>
                 <UserPlus className="w-4 h-4 mr-2" /> Invite Instructor
               </Button>
@@ -355,7 +354,7 @@ export default function InstructorsPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50">
+                    <TableRow className="bg-muted/50">
                       <TableHead className="pl-6">Instructor</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead className="text-center">Courses</TableHead>
@@ -367,7 +366,7 @@ export default function InstructorsPage() {
                   </TableHeader>
                   <TableBody>
                     {instructors.map(inst => (
-                      <TableRow key={inst.member_id} className="hover:bg-gray-50 transition-colors">
+                      <TableRow key={inst.member_id} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="pl-6">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-10 h-10">
@@ -378,24 +377,24 @@ export default function InstructorsPage() {
                             </Avatar>
                             <div>
                               <p className="font-semibold text-sm">{inst.user.first_name} {inst.user.last_name}</p>
-                              <p className="text-xs text-gray-500">{inst.user.email}</p>
+                              <p className="text-xs text-muted-foreground">{inst.user.email}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             {inst.user.phone_number && (
-                              <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
                                 <Phone className="w-3 h-3" />{inst.user.phone_number}
                               </span>
                             )}
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Mail className="w-3 h-3" />{inst.user.email}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 px-3 py-1">
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 px-3 py-1">
                             <BookOpen className="w-3 h-3 mr-1" />
                             {inst.courses_count ?? inst.user?.courses_count ?? inst.user?.courses?.length ?? 0}
                           </Badge>
@@ -403,22 +402,22 @@ export default function InstructorsPage() {
                         <TableCell className="text-center">
                           {inst.average_rating && inst.average_rating > 0 ? (
                             <div className="flex items-center justify-center gap-1">
-                              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                              <span className="text-sm font-medium text-amber-600">{inst.average_rating.toFixed(1)}</span>
+                              <Star className="w-4 h-4 text-warning fill-amber-500" />
+                              <span className="text-sm font-medium text-warning">{inst.average_rating.toFixed(1)}</span>
                             </div>
                           ) : (
-                            <span className="text-xs text-gray-400">No ratings</span>
+                            <span className="text-xs text-muted-foreground">No ratings</span>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
                           {inst.is_active
-                            ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0.5"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
-                            : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs px-2 py-0.5"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
+                            ? <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs px-2 py-0.5"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
+                            : <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs px-2 py-0.5"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
                           }
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-sm text-gray-600">
-                            <Calendar className="w-3 h-3 text-gray-400" />
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="w-3 h-3 text-muted-foreground" />
                             {new Date(inst.joined_at).toLocaleDateString()}
                           </div>
                         </TableCell>
@@ -440,7 +439,7 @@ export default function InstructorsPage() {
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => setRemoveTarget(inst)}>
+                              <DropdownMenuItem className="text-destructive" onClick={() => setRemoveTarget(inst)}>
                                 <Trash2 className="w-4 h-4 mr-2" /> Remove
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -452,7 +451,7 @@ export default function InstructorsPage() {
                 </Table>
               </div>
               <div className="flex items-center justify-between px-6 py-4 border-t">
-                <p className="text-sm text-gray-500">Page {page} of {totalPages} · {totalCount} instructors</p>
+                <p className="text-sm text-muted-foreground">Page {page} of {totalPages} · {totalCount} instructors</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
                     <ChevronLeft className="w-4 h-4" />
@@ -481,12 +480,12 @@ export default function InstructorsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+              className="bg-card rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-5 py-4 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 bg-card/20 rounded-xl flex items-center justify-center overflow-hidden">
                     {viewInstructor.user.profile_picture_url ? (
                       <img
                         src={viewInstructor.user.profile_picture_url}
@@ -509,7 +508,7 @@ export default function InstructorsPage() {
                 </div>
                 <button
                   onClick={() => setViewInstructor(null)}
-                  className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/15 transition-colors"
+                  className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-card/15 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -519,36 +518,36 @@ export default function InstructorsPage() {
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                 {/* Identity */}
                 <div className="mb-4">
-                  <div className="bg-green-50 px-3 py-1.5 rounded-t-lg">
-                    <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Identity</span>
+                  <div className="bg-success/10 px-3 py-1.5 rounded-t-lg">
+                    <span className="text-xs font-bold text-success uppercase tracking-wider">Identity</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Full Name</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Full Name</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {viewInstructor.user.first_name} {viewInstructor.user.last_name}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Username</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Username</span>
+                      <span className="text-xs font-semibold text-foreground">
                         @{viewInstructor.user.username || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Email</span>
-                      <span className="text-xs font-semibold text-gray-800">{viewInstructor.user.email}</span>
+                      <span className="text-xs text-muted-foreground font-medium">Email</span>
+                      <span className="text-xs font-semibold text-foreground">{viewInstructor.user.email}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Phone</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Phone</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {viewInstructor.user.phone_number || "—"}
                       </span>
                     </div>
                     {(viewInstructor.user.country || viewInstructor.user.city) && (
                       <div className="flex justify-between py-2">
-                        <span className="text-xs text-gray-500 font-medium">Location</span>
-                        <span className="text-xs font-semibold text-gray-800">
+                        <span className="text-xs text-muted-foreground font-medium">Location</span>
+                        <span className="text-xs font-semibold text-foreground">
                           {[viewInstructor.user.city, viewInstructor.user.country].filter(Boolean).join(", ")}
                         </span>
                       </div>
@@ -558,31 +557,31 @@ export default function InstructorsPage() {
 
                 {/* Institution Membership */}
                 <div className="mb-4">
-                  <div className="bg-green-50 px-3 py-1.5 rounded-t-lg">
-                    <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Institution Membership</span>
+                  <div className="bg-success/10 px-3 py-1.5 rounded-t-lg">
+                    <span className="text-xs font-bold text-success uppercase tracking-wider">Institution Membership</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Institution Role</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700`}>
+                      <span className="text-xs text-muted-foreground font-medium">Institution Role</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-success/15 text-success`}>
                         Instructor
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Membership Status</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Membership Status</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.is_active ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                         {viewInstructor.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Courses Created</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Courses Created</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {viewInstructor.courses_count ?? 0}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Joined</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Joined</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {new Date(viewInstructor.joined_at).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })}
                       </span>
                     </div>
@@ -591,45 +590,45 @@ export default function InstructorsPage() {
 
                 {/* Account Details */}
                 <div className="mb-4">
-                  <div className="bg-green-50 px-3 py-1.5 rounded-t-lg">
-                    <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Account Details</span>
+                  <div className="bg-success/10 px-3 py-1.5 rounded-t-lg">
+                    <span className="text-xs font-bold text-success uppercase tracking-wider">Account Details</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Account Type</span>
-                      <span className="text-xs font-semibold text-gray-800 capitalize">
+                      <span className="text-xs text-muted-foreground font-medium">Account Type</span>
+                      <span className="text-xs font-semibold text-foreground capitalize">
                         {viewInstructor.user.account_type?.replace(/_/g, " ").toLowerCase() || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Platform Role</span>
-                      <span className="text-xs font-semibold text-gray-800 capitalize">
+                      <span className="text-xs text-muted-foreground font-medium">Platform Role</span>
+                      <span className="text-xs font-semibold text-foreground capitalize">
                         {viewInstructor.user.bwenge_role?.replace(/_/g, " ").toLowerCase() || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Verified</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.user.is_verified ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Verified</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.user.is_verified ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
                         {viewInstructor.user.is_verified ? "Verified" : "Unverified"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Account Status</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.user.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Account Status</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${viewInstructor.user.is_active ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                         {viewInstructor.user.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Date Joined Platform</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Date Joined Platform</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {viewInstructor.user.date_joined
                           ? new Date(viewInstructor.user.date_joined).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })
                           : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Last Login</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Last Login</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {viewInstructor.user.last_login
                           ? new Date(viewInstructor.user.last_login).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })
                           : "Never"}
@@ -641,21 +640,21 @@ export default function InstructorsPage() {
                 {/* Courses */}
                 {viewInstructor.user?.courses && viewInstructor.user.courses.length > 0 && (
                   <div className="mb-4">
-                    <div className="bg-green-50 px-3 py-1.5 rounded-t-lg">
-                      <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Courses ({viewInstructor.user.courses.length})</span>
+                    <div className="bg-success/10 px-3 py-1.5 rounded-t-lg">
+                      <span className="text-xs font-bold text-success uppercase tracking-wider">Courses ({viewInstructor.user.courses.length})</span>
                     </div>
-                    <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2">
+                    <div className="bg-card border border-border rounded-b-lg px-3 py-2">
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {viewInstructor.user.courses.slice(0, 3).map((course) => (
                           <div key={course.id} className="flex items-center justify-between py-1">
-                            <span className="text-xs font-medium text-gray-800 truncate flex-1 mr-2">{course.title}</span>
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                            <span className="text-xs font-medium text-foreground truncate flex-1 mr-2">{course.title}</span>
+                            <Badge variant="outline" className="text-xs bg-success/10 text-success">
                               {course.status === "PUBLISHED" ? "Published" : course.status}
                             </Badge>
                           </div>
                         ))}
                         {viewInstructor.user.courses.length > 3 && (
-                          <p className="text-xs text-gray-500 text-center py-1">
+                          <p className="text-xs text-muted-foreground text-center py-1">
                             +{viewInstructor.user.courses.length - 3} more courses
                           </p>
                         )}
@@ -667,21 +666,21 @@ export default function InstructorsPage() {
                 {/* Bio */}
                 {viewInstructor.user.bio && (
                   <div className="mb-4">
-                    <div className="bg-green-50 px-3 py-1.5 rounded-t-lg">
-                      <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Bio</span>
+                    <div className="bg-success/10 px-3 py-1.5 rounded-t-lg">
+                      <span className="text-xs font-bold text-success uppercase tracking-wider">Bio</span>
                     </div>
-                    <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-3">
-                      <p className="text-xs text-gray-700 leading-relaxed">{viewInstructor.user.bio}</p>
+                    <div className="bg-card border border-border rounded-b-lg px-3 py-3">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{viewInstructor.user.bio}</p>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 bg-gray-50 border-t border-gray-200 px-5 py-3 flex items-center justify-end">
+              <div className="shrink-0 bg-muted/50 border-t border-border px-5 py-3 flex items-center justify-end">
                 <button
                   onClick={() => setViewInstructor(null)}
-                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Close
                 </button>
@@ -701,7 +700,7 @@ export default function InstructorsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="i-first">First Name <span className="text-red-500">*</span></Label>
+                <Label htmlFor="i-first">First Name <span className="text-destructive">*</span></Label>
                 <Input id="i-first" value={inviteForm.first_name}
                   onChange={e => setInviteForm(f => ({ ...f, first_name: e.target.value }))} placeholder="John" />
               </div>
@@ -712,7 +711,7 @@ export default function InstructorsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-email">Email Address <span className="text-red-500">*</span></Label>
+              <Label htmlFor="i-email">Email Address <span className="text-destructive">*</span></Label>
               <Input id="i-email" type="email" value={inviteForm.email}
                 onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))} placeholder="instructor@example.com" />
             </div>

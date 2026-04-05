@@ -24,7 +24,7 @@ const roleOptions = [
     value: "SYSTEM_ADMIN",
     label: "System Administrator",
     icon: Shield,
-    color: "text-red-600 bg-red-50",
+    color: "text-destructive bg-destructive/10",
     description: "Full system access, can manage all users and institutions",
     warning: "This role has complete control over the entire platform",
   },
@@ -32,7 +32,7 @@ const roleOptions = [
     value: "INSTITUTION_ADMIN",
     label: "Institution Administrator",
     icon: Building2,
-    color: "text-purple-600 bg-purple-50",
+    color: "text-primary bg-primary/10",
     description: "Manages institution, can create SPOC courses",
     requirement: "Must be assigned to an institution",
   },
@@ -40,7 +40,7 @@ const roleOptions = [
     value: "CONTENT_CREATOR",
     label: "Content Creator",
     icon: Edit,
-    color: "text-blue-600 bg-blue-50",
+    color: "text-primary bg-primary/10",
     description: "Can create and manage course content",
     recommendation: "Recommended to assign to an institution",
   },
@@ -48,7 +48,7 @@ const roleOptions = [
     value: "INSTRUCTOR",
     label: "Instructor",
     icon: GraduationCap,
-    color: "text-green-600 bg-green-50",
+    color: "text-success bg-success/10",
     description: "Teaches courses, manages enrollments",
     recommendation: "Recommended to assign to an institution",
   },
@@ -56,7 +56,7 @@ const roleOptions = [
     value: "LEARNER",
     label: "Learner",
     icon: User,
-    color: "text-gray-600 bg-gray-50",
+    color: "text-muted-foreground bg-muted/50",
     description: "Enrolls in courses, takes lessons",
   },
 ];
@@ -99,24 +99,24 @@ export default function RoleSelector({
                   </Badge>
                 </div>
                 {showDescriptions && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {role.description}
                   </p>
                 )}
                 {role.warning && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+                  <div className="flex items-center gap-1 mt-1 text-xs text-destructive">
                     <AlertCircle className="w-3 h-3" />
                     <span>{role.warning}</span>
                   </div>
                 )}
                 {role.requirement && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-amber-600">
+                  <div className="flex items-center gap-1 mt-1 text-xs text-warning">
                     <AlertCircle className="w-3 h-3" />
                     <span>{role.requirement}</span>
                   </div>
                 )}
                 {role.recommendation && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                  <div className="flex items-center gap-1 mt-1 text-xs text-primary">
                     <AlertCircle className="w-3 h-3" />
                     <span>{role.recommendation}</span>
                   </div>
@@ -128,7 +128,7 @@ export default function RoleSelector({
       </Select>
       
       {showDescriptions && selectedRole && (
-        <div className="p-3 border rounded-lg bg-gray-50">
+        <div className="p-3 border rounded-lg bg-muted/50">
           <div className="flex items-start gap-2">
             <div className={`p-1 rounded ${selectedRole.color}`}>
               <selectedRole.icon className="w-4 h-4" />
@@ -140,23 +140,23 @@ export default function RoleSelector({
                   {selectedRole.value.replace(/_/g, ' ')}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {selectedRole.description}
               </p>
               {selectedRole.warning && (
-                <div className="flex items-center gap-2 mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                <div className="flex items-center gap-2 mt-2 p-2 bg-destructive/10 border border-destructive/30 rounded text-destructive text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{selectedRole.warning}</span>
                 </div>
               )}
               {selectedRole.requirement && (
-                <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700 text-sm">
+                <div className="flex items-center gap-2 mt-2 p-2 bg-warning/10 border border-warning/30 rounded text-warning text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{selectedRole.requirement}</span>
                 </div>
               )}
               {selectedRole.recommendation && (
-                <div className="flex items-center gap-2 mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-700 text-sm">
+                <div className="flex items-center gap-2 mt-2 p-2 bg-primary/10 border border-primary/30 rounded text-primary text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{selectedRole.recommendation}</span>
                 </div>

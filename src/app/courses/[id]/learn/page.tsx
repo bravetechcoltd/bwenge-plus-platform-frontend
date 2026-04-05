@@ -172,7 +172,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
         setAllSteps(steps)
         await fetchCourseRating(currentToken)
       } catch (err: any) {
-        console.error("❌ [fetchCourseData] Error:", err)
         setError(err.message || "Error fetching course")
       } finally {
         setLoading(false)
@@ -205,7 +204,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
         setCourseReviews(reviewsData.data || [])
       }
     } catch (error) {
-      console.error("❌ [fetchCourseRating] Error:", error)
     }
   }
 
@@ -226,7 +224,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
         setShowRating(false)
       }
     } catch (error) {
-      console.error("❌ [handleRatingSubmit] Error:", error)
     }
   }
 
@@ -370,8 +367,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
       }
     })
 
-    console.log("✅ [generateLearningSteps] Generated", steps.length, "steps:",
-      steps.map((s) => ({ id: s.id, type: s.type, title: s.title })))
     return steps
   }
 
@@ -451,7 +446,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
         }
       }
     } catch (error) {
-      console.error("❌ [handleStepComplete] Error:", error)
     } finally {
       setIsStepping(false)
     }
@@ -480,7 +474,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
       const failed = isStepFailed(currentStep.id)
       const pending = isStepPending(currentStep.id)
       if (failed || pending) {
-        console.log("🔒 [handleNextStep] Blocked: assessment is", failed ? "failed" : "pending")
         return
       }
     }
@@ -490,7 +483,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
     } else if (currentStepIndex === allSteps.length - 1) {
       // Moving to course completion — ONLY if all steps truly passed
       if (!checkAllStepsCompleted()) {
-        console.log("🔒 [handleNextStep] Blocked: not all steps truly passed")
         return
       }
       setCurrentStepIndex(allSteps.length)
@@ -512,7 +504,6 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
   // handleCourseCompletionSelect — GUARDED: only when all steps truly passed
   const handleCourseCompletionSelect = () => {
     if (!checkAllStepsCompleted()) {
-      console.log("🔒 [handleCourseCompletionSelect] Blocked: not all steps truly passed")
       return
     }
     setCurrentStepIndex(allSteps.length)
@@ -712,10 +703,10 @@ export default function CourseLearningPage({ params }: { params: Promise<{ id: s
               <>
                 {daysRemaining !== null && daysRemaining <= 7 && (
                   <div className="px-8 pt-4">
-                    <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950">
-                      <Clock className="h-4 w-4 text-orange-600" />
-                      <AlertTitle className="text-orange-800 dark:text-orange-200">Course Deadline Approaching</AlertTitle>
-                      <AlertDescription className="text-orange-700 dark:text-orange-300">
+                    <Alert className="border-orange-500 bg-warning/10 dark:bg-warning/20">
+                      <Clock className="h-4 w-4 text-warning" />
+                      <AlertTitle className="text-warning dark:text-warning">Course Deadline Approaching</AlertTitle>
+                      <AlertDescription className="text-warning dark:text-warning">
                         You have {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining to complete this course before access expires.
                       </AlertDescription>
                     </Alert>

@@ -122,10 +122,10 @@ function GaugeBar({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-gray-500">{label}</span>
-        <span className="text-xs font-semibold text-gray-700">{pct.toFixed(1)}%</span>
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-xs font-semibold text-muted-foreground">{pct.toFixed(1)}%</span>
       </div>
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, backgroundColor: color }}
@@ -241,19 +241,19 @@ export default function SystemHealthPage() {
   const cpuPct = Math.min(100, (cpuLoad1 / cpuMax) * 100);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-muted/50 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">System Health</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-foreground">System Health</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Real-time server metrics · Auto-refreshes every {REFRESH_SECONDS}s
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-500">
+          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-muted-foreground">
             <Clock size={13} />
-            Refreshing in <span className="font-mono font-bold text-gray-700 w-5 text-right">{countdown}</span>s
+            Refreshing in <span className="font-mono font-bold text-muted-foreground w-5 text-right">{countdown}</span>s
           </div>
           <Button
             onClick={fetchHealth}
@@ -292,14 +292,14 @@ export default function SystemHealthPage() {
       {/* Top Row: Server + Memory + CPU */}
       <div className="grid grid-cols-3 gap-4">
         {/* Server Info */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="h-[3px]" style={{ backgroundColor: P }} />
           <div className="p-4">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${P}15` }}>
                 <Server size={15} style={{ color: P }} />
               </div>
-              <p className="text-sm font-semibold text-gray-800">Server</p>
+              <p className="text-sm font-semibold text-foreground">Server</p>
             </div>
             {loading ? (
               <div className="space-y-2">
@@ -308,22 +308,22 @@ export default function SystemHealthPage() {
             ) : (
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Uptime</span>
-                  <span className="text-xs font-semibold text-gray-800 font-mono">
+                  <span className="text-xs text-muted-foreground">Uptime</span>
+                  <span className="text-xs font-semibold text-foreground font-mono">
                     {health?.server.uptime_human}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Node.js</span>
-                  <span className="text-xs font-mono text-gray-700">{health?.server.node_version}</span>
+                  <span className="text-xs text-muted-foreground">Node.js</span>
+                  <span className="text-xs font-mono text-muted-foreground">{health?.server.node_version}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Platform</span>
-                  <span className="text-xs text-gray-700 capitalize">{health?.server.platform}</span>
+                  <span className="text-xs text-muted-foreground">Platform</span>
+                  <span className="text-xs text-muted-foreground capitalize">{health?.server.platform}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Architecture</span>
-                  <span className="text-xs text-gray-700">{health?.server.arch}</span>
+                  <span className="text-xs text-muted-foreground">Architecture</span>
+                  <span className="text-xs text-muted-foreground">{health?.server.arch}</span>
                 </div>
               </div>
             )}
@@ -331,14 +331,14 @@ export default function SystemHealthPage() {
         </div>
 
         {/* Memory */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="h-[3px]" style={{ backgroundColor: memPct > 80 ? "#ef4444" : memPct > 60 ? "#f59e0b" : "#10b981" }} />
           <div className="p-4">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50">
-                <HardDrive size={15} className="text-blue-500" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
+                <HardDrive size={15} className="text-primary" />
               </div>
-              <p className="text-sm font-semibold text-gray-800">Memory</p>
+              <p className="text-sm font-semibold text-foreground">Memory</p>
             </div>
             {loading ? (
               <div className="space-y-3">
@@ -359,8 +359,8 @@ export default function SystemHealthPage() {
                   label={`Heap — ${health?.memory.heap_used_mb}MB / ${health?.memory.heap_total_mb}MB`}
                 />
                 <div className="flex justify-between items-center pt-1">
-                  <span className="text-xs text-gray-500">RSS</span>
-                  <span className="text-xs font-mono text-gray-700">{health?.memory.rss_mb} MB</span>
+                  <span className="text-xs text-muted-foreground">RSS</span>
+                  <span className="text-xs font-mono text-muted-foreground">{health?.memory.rss_mb} MB</span>
                 </div>
               </div>
             )}
@@ -368,14 +368,14 @@ export default function SystemHealthPage() {
         </div>
 
         {/* CPU */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="h-[3px]" style={{ backgroundColor: cpuPct > 80 ? "#ef4444" : cpuPct > 60 ? "#f59e0b" : "#06b6d4" }} />
           <div className="p-4">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-50">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                 <Cpu size={15} className="text-cyan-500" />
               </div>
-              <p className="text-sm font-semibold text-gray-800">CPU</p>
+              <p className="text-sm font-semibold text-foreground">CPU</p>
             </div>
             {loading ? (
               <div className="space-y-3">
@@ -386,17 +386,17 @@ export default function SystemHealthPage() {
                 <GaugeBar value={cpuLoad1} max={cpuMax} color="#06b6d4" label={`Load (1m) — ${health?.cpu.load_1m}`} />
                 <div className="grid grid-cols-2 gap-x-4 pt-1">
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500">5m avg</span>
-                    <span className="text-xs font-mono text-gray-700">{health?.cpu.load_5m}</span>
+                    <span className="text-xs text-muted-foreground">5m avg</span>
+                    <span className="text-xs font-mono text-muted-foreground">{health?.cpu.load_5m}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500">15m avg</span>
-                    <span className="text-xs font-mono text-gray-700">{health?.cpu.load_15m}</span>
+                    <span className="text-xs text-muted-foreground">15m avg</span>
+                    <span className="text-xs font-mono text-muted-foreground">{health?.cpu.load_15m}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">CPU cores</span>
-                  <span className="text-xs font-semibold text-gray-700">{health?.cpu.cpu_count}</span>
+                  <span className="text-xs text-muted-foreground">CPU cores</span>
+                  <span className="text-xs font-semibold text-muted-foreground">{health?.cpu.cpu_count}</span>
                 </div>
               </div>
             )}
@@ -407,22 +407,22 @@ export default function SystemHealthPage() {
       {/* Middle Row: Database + Services */}
       <div className="grid grid-cols-2 gap-4">
         {/* Database */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="h-[3px]" style={{ backgroundColor: health?.database.status === "healthy" ? "#10b981" : "#ef4444" }} />
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-50">
-                  <Database size={15} className="text-emerald-500" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-success/10">
+                  <Database size={15} className="text-success" />
                 </div>
-                <p className="text-sm font-semibold text-gray-800">Database</p>
+                <p className="text-sm font-semibold text-foreground">Database</p>
               </div>
               {loading ? (
                 <Skeleton className="h-5 w-16" />
               ) : (
                 <div className="flex items-center gap-2">
                   <StatusBadge status={health?.database.status ?? "healthy"} />
-                  <span className="text-xs font-mono text-gray-500">{health?.database.response_ms}ms</span>
+                  <span className="text-xs font-mono text-muted-foreground">{health?.database.response_ms}ms</span>
                 </div>
               )}
             </div>
@@ -439,12 +439,12 @@ export default function SystemHealthPage() {
                   { label: "Courses", value: health?.database.total_courses, icon: BookOpen, color: "#f59e0b" },
                   { label: "Enrollments", value: health?.database.total_enrollments, icon: Activity, color: "#06b6d4" },
                 ].map((stat) => (
-                  <div key={stat.label} className="p-3 bg-gray-50 rounded-xl">
+                  <div key={stat.label} className="p-3 bg-muted/50 rounded-xl">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <stat.icon size={11} style={{ color: stat.color }} />
-                      <p className="text-[10px] text-gray-500 font-medium">{stat.label}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
                     </div>
-                    <p className="text-lg font-black text-gray-800">
+                    <p className="text-lg font-black text-foreground">
                       {stat.value?.toLocaleString() ?? "—"}
                     </p>
                   </div>
@@ -455,19 +455,19 @@ export default function SystemHealthPage() {
         </div>
 
         {/* Services */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="h-[3px]" style={{ backgroundColor: "#8b5cf6" }} />
           <div className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-50">
-                <Zap size={15} className="text-violet-500" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
+                <Zap size={15} className="text-primary" />
               </div>
-              <p className="text-sm font-semibold text-gray-800">Services</p>
+              <p className="text-sm font-semibold text-foreground">Services</p>
             </div>
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-5 w-16" />
                   </div>
@@ -478,15 +478,15 @@ export default function SystemHealthPage() {
                 {health?.services.map((svc) => (
                   <div
                     key={svc.name}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-xl"
                   >
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{svc.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{svc.message}</p>
+                      <p className="text-sm font-medium text-foreground">{svc.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{svc.message}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {svc.response_ms > 0 && (
-                        <span className="text-xs font-mono text-gray-400">{svc.response_ms}ms</span>
+                        <span className="text-xs font-mono text-muted-foreground">{svc.response_ms}ms</span>
                       )}
                       <StatusBadge status={svc.status} />
                     </div>
@@ -499,29 +499,29 @@ export default function SystemHealthPage() {
       </div>
 
       {/* Activity Trend Chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="h-[3px]" style={{ backgroundColor: "#f59e0b" }} />
         <div className="p-5">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50">
-                <BarChart3 size={15} className="text-amber-500" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-warning/10">
+                <BarChart3 size={15} className="text-warning" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800">Activity Trend</p>
-                <p className="text-xs text-gray-400">Hourly events — last 24 hours</p>
+                <p className="text-sm font-semibold text-foreground">Activity Trend</p>
+                <p className="text-xs text-muted-foreground">Hourly events — last 24 hours</p>
               </div>
             </div>
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-                <span className="text-xs text-gray-500">Events/hour</span>
+                <span className="text-xs text-muted-foreground">Events/hour</span>
               </div>
               {!loading && health && (
                 <div className="flex items-center gap-3 text-xs font-mono">
-                  <span className="text-gray-600">24h: <strong>{health.activity.logs_last_24h.toLocaleString()}</strong></span>
-                  <span className="text-gray-600">1h: <strong>{health.activity.logs_last_1h}</strong></span>
-                  <span className={Number(health.activity.error_rate_pct) > 5 ? "text-red-500" : "text-gray-600"}>
+                  <span className="text-muted-foreground">24h: <strong>{health.activity.logs_last_24h.toLocaleString()}</strong></span>
+                  <span className="text-muted-foreground">1h: <strong>{health.activity.logs_last_1h}</strong></span>
+                  <span className={Number(health.activity.error_rate_pct) > 5 ? "text-destructive" : "text-muted-foreground"}>
                     Errors: <strong>{health.activity.error_rate_pct}%</strong>
                   </span>
                 </div>
@@ -576,7 +576,7 @@ export default function SystemHealthPage() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-44 flex items-center justify-center text-gray-400 text-sm">
+            <div className="h-44 flex items-center justify-center text-muted-foreground text-sm">
               No activity data for the last 24 hours
             </div>
           )}
@@ -584,20 +584,20 @@ export default function SystemHealthPage() {
       </div>
 
       {/* Sessions Cleanup Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="h-[3px]" style={{ backgroundColor: "#ef4444" }} />
         <div className="p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-              <Activity size={18} className="text-red-400" />
+            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <Activity size={18} className="text-destructive" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">Session Cleanup</p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-sm font-semibold text-foreground">Session Cleanup</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {loading ? "Loading…" : (
                   <>
-                    <span className="font-semibold text-gray-700">{health?.sessions.active.toLocaleString()}</span> active ·{" "}
-                    <span className={`font-semibold ${(health?.sessions.expired_pending_cleanup ?? 0) > 0 ? "text-red-500" : "text-gray-700"}`}>
+                    <span className="font-semibold text-muted-foreground">{health?.sessions.active.toLocaleString()}</span> active ·{" "}
+                    <span className={`font-semibold ${(health?.sessions.expired_pending_cleanup ?? 0) > 0 ? "text-destructive" : "text-muted-foreground"}`}>
                       {health?.sessions.expired_pending_cleanup.toLocaleString()}
                     </span> expired pending cleanup
                   </>
@@ -609,7 +609,7 @@ export default function SystemHealthPage() {
             onClick={handleCleanup}
             disabled={cleaning || loading || (health?.sessions.expired_pending_cleanup ?? 0) === 0}
             variant="outline"
-            className="flex items-center gap-2 text-sm border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-40"
+            className="flex items-center gap-2 text-sm border-destructive/30 text-destructive hover:bg-destructive/10 disabled:opacity-40"
           >
             <Trash2 size={14} />
             {cleaning ? "Cleaning up…" : "Clean Expired Sessions"}

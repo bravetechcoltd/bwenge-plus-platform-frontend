@@ -60,10 +60,10 @@ interface StudentsResponse {
 const SkeletonCard = () => (
   <Card className="animate-pulse">
     <CardHeader className="pb-2">
-      <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-1/3"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-1/3"></div>
     </CardHeader>
     <CardContent>
-      <div className="h-6 bg-gray-200 dark:bg-gray-900 rounded w-1/4"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-1/4"></div>
     </CardContent>
   </Card>
 )
@@ -72,30 +72,30 @@ const SkeletonTableRow = () => (
   <TableRow>
     <TableCell>
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
+        <div className="w-8 h-8 bg-secondary dark:bg-card rounded-full"></div>
         <div className="space-y-1">
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-24"></div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-32"></div>
+          <div className="h-4 bg-secondary dark:bg-card rounded w-24"></div>
+          <div className="h-3 bg-secondary dark:bg-card rounded w-32"></div>
         </div>
       </div>
     </TableCell>
     <TableCell>
-      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-full"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-16"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-16"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-12"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-12"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-20"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-20"></div>
     </TableCell>
     <TableCell>
-      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-20"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-20"></div>
     </TableCell>
     <TableCell className="text-right">
-      <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-8 ml-auto"></div>
+      <div className="h-8 bg-secondary dark:bg-card rounded w-8 ml-auto"></div>
     </TableCell>
   </TableRow>
 )
@@ -217,7 +217,6 @@ export default function StudentsManagement() {
           setStudents(formatted)
         }
       } catch (error) {
-        console.error("Failed to fetch students:", error)
       } finally {
         setIsLoading(false)
       }
@@ -256,17 +255,17 @@ export default function StudentsManagement() {
   }
 
   const getLevelBadgeColor = (level: number) => {
-    if (level >= 10) return "bg-purple-100 text-purple-800"
-    if (level >= 5) return "bg-blue-100 text-blue-800"
-    if (level >= 3) return "bg-green-100 text-green-800"
-    return "bg-gray-100 text-gray-800"
+    if (level >= 10) return "bg-primary/15 text-primary"
+    if (level >= 5) return "bg-primary/15 text-primary"
+    if (level >= 3) return "bg-success/15 text-success"
+    return "bg-muted text-foreground"
   }
 
   const getPointsBadgeColor = (points: number) => {
-    if (points >= 1000) return "bg-yellow-100 text-yellow-800"
-    if (points >= 500) return "bg-orange-100 text-orange-800"
-    if (points >= 100) return "bg-green-100 text-green-800"
-    return "bg-gray-100 text-gray-800"
+    if (points >= 1000) return "bg-warning/15 text-warning"
+    if (points >= 500) return "bg-warning/15 text-warning"
+    if (points >= 100) return "bg-success/15 text-success"
+    return "bg-muted text-foreground"
   }
 
   // Handle items per page change
@@ -301,8 +300,8 @@ export default function StudentsManagement() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-900 rounded w-64 mb-2 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-80 animate-pulse"></div>
+            <div className="h-8 bg-secondary dark:bg-card rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-secondary dark:bg-card rounded w-80 animate-pulse"></div>
           </div>
         </div>
 
@@ -319,12 +318,12 @@ export default function StudentsManagement() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <div className="h-6 bg-gray-200 dark:bg-gray-900 rounded w-32 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-48 animate-pulse"></div>
+                <div className="h-6 bg-secondary dark:bg-card rounded w-32 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-secondary dark:bg-card rounded w-48 animate-pulse"></div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <div className="h-9 bg-gray-200 dark:bg-gray-900 rounded w-64 animate-pulse"></div>
+                  <div className="h-9 bg-secondary dark:bg-card rounded w-64 animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -482,7 +481,7 @@ export default function StudentsManagement() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {student.email}
-                          {!student.isEmailVerified && <Mail className="w-3 h-3 text-yellow-500" />}
+                          {!student.isEmailVerified && <Mail className="w-3 h-3 text-warning" />}
                         </div>
                       </TableCell>
                       <TableCell>

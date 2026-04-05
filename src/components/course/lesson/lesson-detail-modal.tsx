@@ -64,19 +64,19 @@ export function LessonDetailModal({
   const getLessonTypeBadge = (type: string) => {
     switch (type) {
       case "VIDEO":
-        return { text: "Video", color: "bg-blue-500", icon: Video }
+        return { text: "Video", color: "bg-primary", icon: Video }
       case "TEXT":
-        return { text: "Text", color: "bg-gray-500", icon: FileText }
+        return { text: "Text", color: "bg-muted/500", icon: FileText }
       case "QUIZ":
-        return { text: "Quiz", color: "bg-purple-500", icon: Trophy }
+        return { text: "Quiz", color: "bg-primary/100", icon: Trophy }
       case "ASSIGNMENT":
-        return { text: "Assignment", color: "bg-orange-500", icon: Briefcase }
+        return { text: "Assignment", color: "bg-warning/100", icon: Briefcase }
       case "LIVE_SESSION":
-        return { text: "Live Session", color: "bg-red-500", icon: Zap }
+        return { text: "Live Session", color: "bg-destructive/100", icon: Zap }
       case "RESOURCE":
-        return { text: "Resource", color: "bg-green-500", icon: FileDown }
+        return { text: "Resource", color: "bg-success/100", icon: FileDown }
       default:
-        return { text: "Lesson", color: "bg-gray-500", icon: FileText }
+        return { text: "Lesson", color: "bg-muted/500", icon: FileText }
     }
   }
 
@@ -134,7 +134,7 @@ export function LessonDetailModal({
                 {durationMinutes} min
               </Badge>
               {isPreview && (
-                <Badge className="flex items-center gap-1 bg-yellow-500 text-white">
+                <Badge className="flex items-center gap-1 bg-warning/100 text-white">
                   <Eye className="w-3 h-3" />
                   Preview Available
                 </Badge>
@@ -158,7 +158,7 @@ export function LessonDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative">
+                  <div className="aspect-video bg-card rounded-lg flex items-center justify-center relative">
                     {thumbnailUrl ? (
                       <img
                         src={thumbnailUrl || "/placeholder.svg"}
@@ -176,7 +176,7 @@ export function LessonDetailModal({
                         href={videoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-white/90 hover:bg-white text-gray-900 rounded-full p-4 transition-all hover:scale-110"
+                        className="bg-card/90 hover:bg-card text-foreground rounded-full p-4 transition-all hover:scale-110"
                       >
                         <ExternalLink className="w-6 h-6" />
                       </a>

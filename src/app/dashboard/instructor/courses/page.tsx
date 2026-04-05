@@ -91,6 +91,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { InstructorCourseCard } from "@/components/instructors/InstructorCourseCard";
 import { StatCard } from "@/components/instructors/StatCard";
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d";
 import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
 import {
@@ -198,24 +199,24 @@ export default function InstructorCoursesPage() {
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "bg-success/15 text-success";
       case "DRAFT":
-        return "bg-amber-100 text-amber-800";
+        return "bg-warning/15 text-warning";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   }, []);
 
   const getCourseTypeColor = useCallback((type: string) => {
     switch (type) {
       case "MOOC":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/15 text-primary";
       case "SPOC":
-        return "bg-purple-100 text-purple-800";
+        return "bg-primary/15 text-primary";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   }, []);
 
@@ -262,12 +263,10 @@ export default function InstructorCoursesPage() {
 
   const handleExportCourses = useCallback((format: 'csv' | 'excel' | 'pdf') => {
     // Implement export functionality
-    console.log(`Exporting courses in ${format} format`);
   }, []);
 
   const handleBulkAction = useCallback((action: 'archive' | 'publish' | 'delete') => {
     // Implement bulk actions
-    console.log(`Bulk ${action} action`);
   }, []);
 
   if (isLoading && courses.length === 0) {
@@ -307,8 +306,8 @@ export default function InstructorCoursesPage() {
       {/* Section 1: Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Courses</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
+          <p className="text-muted-foreground mt-2">
             Manage all courses you're assigned to as instructor
           </p>
         </div>
@@ -396,7 +395,7 @@ export default function InstructorCoursesPage() {
             {/* Search */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search courses by title..."
                   value={searchInput}
@@ -561,38 +560,38 @@ export default function InstructorCoursesPage() {
 
       {/* Section 4: Summary Statistics Bar */}
       <div className="mb-6">
-        <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Showing</span>
+            <span className="text-sm text-muted-foreground">Showing</span>
             <span className="font-semibold">{totalCourses} courses</span>
           </div>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <Badge variant="outline" className="bg-success/10 text-success border-success/30">
               {publishedCount} published
             </Badge>
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
               {draftCount} draft
             </Badge>
-            <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-300">
+            <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
               {archivedCount} archived
             </Badge>
           </div>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
               {moocCount} MOOC
             </Badge>
-            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
               {spocCount} SPOC
             </Badge>
           </div>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
               {primaryInstructorCourses.length} primary
             </Badge>
-            <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-cyan-200">
               {additionalInstructorCourses.length} additional
             </Badge>
           </div>
@@ -601,14 +600,14 @@ export default function InstructorCoursesPage() {
 
       {/* Section 5: Courses Display */}
       {error ? (
-        <Card className="border-red-200">
+        <Card className="border-destructive/30">
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-700 mb-2">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-destructive mb-2">
                 Failed to load courses
               </h3>
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button
                 onClick={() => dispatch(fetchInstructorCourses({ filters }))}
                 variant="outline"
@@ -623,11 +622,11 @@ export default function InstructorCoursesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
                 No courses found
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {filters.search || filters.status || filters.course_type
                   ? "Try adjusting your filters"
                   : "You haven't been assigned to any courses yet"}
@@ -641,19 +640,41 @@ export default function InstructorCoursesPage() {
         </Card>
       ) : viewMode === "grid" ? (
         // Grid View
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {courses.map((course) => (
-            <InstructorCourseCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+          {courses.map((course, idx) => (
+            <BwengeCourseCard3D
               key={course.id}
-              course={course}
-              view="grid"
-              onViewStudents={() => handleCourseClick(course.id)}
-              onViewAnalytics={() =>
-                router.push(`/dashboard/instructor/courses/${course.id}/analytics`)
-              }
-              onEditCourse={() =>
-                router.push(`/dashboard/instructor/courses/${course.id}`)
-              }
+              id={course.id}
+              title={course.title}
+              description={course.description}
+              short_description={course.short_description}
+              thumbnail_url={course.thumbnail_url || undefined}
+              instructor={course.instructor ? {
+                id: course.instructor.id,
+                first_name: course.instructor.first_name,
+                last_name: course.instructor.last_name,
+                profile_picture_url: course.instructor.profile_picture_url || undefined,
+              } : undefined}
+              level={course.level}
+              course_type={course.course_type}
+              price={course.price}
+              average_rating={course.statistics?.ratings.average || 0}
+              total_reviews={course.statistics?.ratings.total_reviews || 0}
+              enrollment_count={course.statistics?.enrollments.total || 0}
+              duration_minutes={course.duration_minutes}
+              total_lessons={course.statistics?.content.lessons_count || 0}
+              is_certificate_available={course.is_certificate_available}
+              institution={course.institution ? {
+                id: course.institution.id,
+                name: course.institution.name,
+                logo_url: course.institution.logo_url || undefined,
+              } : undefined}
+              status={course.status}
+              variant="instructor"
+              showActions={true}
+              showInstitution={!!course.institution}
+              index={idx}
+              onLearnMoreClick={(id) => handleCourseClick(id)}
             />
           ))}
         </div>
@@ -674,10 +695,10 @@ export default function InstructorCoursesPage() {
                 </TableHeader>
                 <TableBody>
                   {courses.map((course) => (
-                    <TableRow key={course.id} className="hover:bg-gray-50">
+                    <TableRow key={course.id} className="hover:bg-muted/50">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                          <div className="h-10 w-10 rounded bg-secondary flex-shrink-0 overflow-hidden">
                             {course.thumbnail_url ? (
                               <img
                                 src={course.thumbnail_url}
@@ -685,13 +706,13 @@ export default function InstructorCoursesPage() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                                <BookOpen className="h-5 w-5 text-gray-400" />
+                              <div className="h-full w-full flex items-center justify-center bg-muted">
+                                <BookOpen className="h-5 w-5 text-muted-foreground" />
                               </div>
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-foreground">
                               {course.title}
                             </div>
                      
@@ -702,7 +723,7 @@ export default function InstructorCoursesPage() {
          
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-gray-400" />
+                          <Users className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">
                             {course.statistics?.enrollments.total || 0}
                           </span>
@@ -710,11 +731,11 @@ export default function InstructorCoursesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-amber-400" />
+                          <Star className="h-4 w-4 text-warning" />
                           <span className="font-medium">
                             {course.statistics?.ratings.average.toFixed(1) || "0.0"}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             ({course.statistics?.ratings.total_reviews || 0})
                           </span>
                         </div>
@@ -734,7 +755,7 @@ export default function InstructorCoursesPage() {
                               onClick={() => handlePublish(course.id)}
                               disabled={publishingCourseId === course.id}
                               title="Publish Course"
-                              className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 hover:border-green-300 disabled:opacity-50"
+                              className="border-success/30 text-success hover:bg-success/10 hover:text-success hover:border-success/40 disabled:opacity-50"
                             >
                               {publishingCourseId === course.id ? (
                                 <>
@@ -752,7 +773,7 @@ export default function InstructorCoursesPage() {
                               onClick={() => handleUnpublish(course.id)}
                               disabled={publishingCourseId === course.id}
                               title="Unpublish Course"
-                              className="border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800 hover:border-yellow-300 disabled:opacity-50"
+                              className="border-warning/30 text-warning hover:bg-warning/10 hover:text-warning hover:border-warning/40 disabled:opacity-50"
                             >
                               {publishingCourseId === course.id ? (
                                 <>
@@ -814,7 +835,7 @@ export default function InstructorCoursesPage() {
       {/* Section 6: Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
             {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
             {pagination.total} courses

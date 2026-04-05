@@ -115,7 +115,6 @@ export default function MyCertificatesPage() {
 
     try {
       setLoading(true)
-      console.log("📜 [fetchCertificates] Fetching certificates...")
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/certificates/user/my-certificates?page=${page}&limit=20`,
@@ -129,7 +128,6 @@ export default function MyCertificatesPage() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log("✅ [fetchCertificates] Certificates loaded:", result)
 
         if (result.success && result.data) {
           setCertificatesData(result.data)
@@ -138,7 +136,6 @@ export default function MyCertificatesPage() {
         throw new Error("Failed to fetch certificates")
       }
     } catch (error) {
-      console.error("❌ [fetchCertificates] Error:", error)
       toast({
         title: "Error",
         description: "Failed to load certificates. Please try again.",
@@ -164,7 +161,6 @@ export default function MyCertificatesPage() {
         description: "Your certificate PDF is being downloaded.",
       })
     } catch (error) {
-      console.error("❌ [handleDownloadPDF] Error:", error)
       toast({
         title: "Error",
         description: "Failed to download certificate.",
@@ -258,12 +254,12 @@ export default function MyCertificatesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Valid Certificates</p>
-                      <p className="text-3xl font-bold text-green-600">
+                      <p className="text-3xl font-bold text-success">
                         {certificatesData.statistics.valid_certificates}
                       </p>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 rounded-full bg-success/15 dark:bg-success/20/30 flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-success" />
                     </div>
                   </div>
                 </CardContent>
@@ -274,7 +270,7 @@ export default function MyCertificatesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Average Score</p>
-                      <p className="text-3xl font-bold text-blue-600">
+                      <p className="text-3xl font-bold text-primary">
                         {certificatesData.certificates.length > 0
                           ? Math.round(
                               certificatesData.certificates.reduce(
@@ -286,8 +282,8 @@ export default function MyCertificatesPage() {
                         %
                       </p>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <GraduationCap className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 rounded-full bg-primary/15 dark:bg-primary/20/30 flex items-center justify-center">
+                      <GraduationCap className="w-6 h-6 text-primary" />
                     </div>
                   </div>
                 </CardContent>

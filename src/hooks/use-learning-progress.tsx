@@ -62,7 +62,6 @@ export function useLearningProgress(courseId: string) {
         const response = await fetcher(url, currentToken)
         return response.progress as ProgressData
       } catch (err) {
-        console.log("⚠️ No progress found, returning empty progress")
         return {
           courseId,
           userId: user!.id,
@@ -89,28 +88,20 @@ export function useLearningProgress(courseId: string) {
   const getCurrentStep = (allSteps: LearningStep[], progressData: ProgressData | null): LearningStep | null => {
     if (!progressData || !allSteps.length) return allSteps[0] || null
 
-    console.log("🔍 [getCurrentStep] Progress Data:", {
-      currentStepId: progressData.currentStepId,
-      completedSteps: progressData.completedSteps?.length || 0,
-    })
-    console.log("📋 All Steps:", allSteps.map((s) => ({ id: s.id, lessonId: s.lessonId, type: s.type })))
 
     if (progressData.currentStepId) {
       const stepFromCurrentStepId = allSteps.find(
         (step) => step.lessonId === progressData.currentStepId,
       )
       if (stepFromCurrentStepId) {
-        console.log("✅ Found step by currentStepId (lessonId match):", stepFromCurrentStepId)
         if (isStepCompletedHelper(stepFromCurrentStepId, progressData)) {
           const stepIndex = allSteps.findIndex((step) => step.id === stepFromCurrentStepId.id)
           const nextStep =
             stepIndex + 1 < allSteps.length ? allSteps[stepIndex + 1] : stepFromCurrentStepId
-          console.log("↪️ Step is completed, moving to next:", nextStep)
           return nextStep
         }
         return stepFromCurrentStepId
       }
-      console.log("⚠️ No step found with lessonId matching currentStepId:", progressData.currentStepId)
     }
 
     const sortedCompleted = [...progressData.completedSteps]
@@ -118,12 +109,10 @@ export function useLearningProgress(courseId: string) {
       .sort((a, b) => new Date(a.completedAt!).getTime() - new Date(b.completedAt!).getTime())
 
     if (sortedCompleted.length === 0) {
-      console.log("📌 No completed steps, returning first step")
       return allSteps[0] || null
     }
 
     const lastCompleted = sortedCompleted[sortedCompleted.length - 1]
-    console.log("📌 Last completed step:", lastCompleted)
 
     let lastStepIndex = -1
     if (lastCompleted.type === "assessment" && lastCompleted.assessmentId) {
@@ -135,14 +124,11 @@ export function useLearningProgress(courseId: string) {
     }
 
     if (lastStepIndex >= 0 && lastStepIndex + 1 < allSteps.length) {
-      console.log("↪️ Returning next step after last completed")
       return allSteps[lastStepIndex + 1]
     } else if (lastStepIndex >= 0) {
-      console.log("📌 Returning last step")
       return allSteps[lastStepIndex]
     }
 
-    console.log("📌 Default: returning first step")
     return allSteps[0] || null
   }
 
@@ -179,11 +165,9 @@ export function useLearningProgress(courseId: string) {
       const cookieToken = Cookies.get("bwenge_token")
       const currentToken = token || cookieToken
       if (!currentToken) {
-        console.error("❌ No authentication token found")
         return
       }
       if (payload.assessmentId && !payload.passed) {
-        console.log("⚠️ Assessment not passed, skipping completion")
         return
       }
       const cacheKey = getCacheKey()
@@ -243,7 +227,6 @@ export function useLearningProgress(courseId: string) {
         if (!response.ok) throw new Error("Failed to mark step complete")
         mutateProgress()
       } catch (err) {
-        console.error("❌ Failed to mark step complete:", err)
         mutateProgress()
       }
     },
@@ -255,7 +238,6 @@ export function useLearningProgress(courseId: string) {
       const cookieToken = Cookies.get("bwenge_token")
       const currentToken = token || cookieToken
       if (!currentToken || !user) {
-        console.error("❌ No authentication found")
         return
       }
       const cacheKey = getCacheKey()
@@ -291,7 +273,6 @@ export function useLearningProgress(courseId: string) {
         if (!response.ok) throw new Error("Failed to update current step")
         mutateProgress()
       } catch (err) {
-        console.error("❌ Failed to update current step:", err)
         mutateProgress()
       }
     },
@@ -342,7 +323,6 @@ export function useLearningProgress(courseId: string) {
     (stepId: string) => {
       if (!progressData || !progressData.completedSteps) return false
 
-      console.log(`🔍 [isStepCompleted] Checking step: ${stepId}`)
 
       // ── 1. Lesson step ────────────────────────────────────────────────────
       if (stepId.endsWith("-lesson")) {
@@ -353,7 +333,6 @@ export function useLearningProgress(courseId: string) {
             String(s.lessonId) === String(lessonId) &&
             s.isCompleted === true,
         )
-        console.log(`📚 Lesson step ${stepId}: ${isCompleted ? "✅" : "❌"}`)
         return isCompleted
       }
 
@@ -372,12 +351,6 @@ export function useLearningProgress(courseId: string) {
           !!step &&
           step.isCompleted === true &&
           (step.status === "passed" || step.passed === true)
-        console.log(
-          `📝 Assessment step ${stepId} (assessmentId=${assessmentId}): ${isCompleted ? "✅" : "❌"}`,
-          step
-            ? { isCompleted: step.isCompleted, status: step.status, passed: step.passed }
-            : "not found",
-        )
         return isCompleted
       }
 
@@ -394,7 +367,6 @@ export function useLearningProgress(courseId: string) {
           !!step &&
           step.isCompleted === true &&
           (step.status === "passed" || step.passed === true)
-        console.log(`🧪 Quiz step ${stepId} (quizId=${quizId}): ${isCompleted ? "✅" : "❌"}`)
         return isCompleted
       }
 
@@ -415,16 +387,9 @@ export function useLearningProgress(courseId: string) {
           !!finalStep &&
           finalStep.isCompleted === true &&
           (finalStep.status === "passed" || finalStep.passed === true)
-        console.log(
-          `🏆 Module final ${stepId}: ${isCompleted ? "✅" : "❌"}`,
-          finalStep
-            ? { isCompleted: finalStep.isCompleted, status: finalStep.status, passed: finalStep.passed }
-            : "not found",
-        )
         return isCompleted
       }
 
-      console.log(`❓ Unknown step ID format: ${stepId}`)
       return false
     },
     [progressData],
@@ -453,7 +418,6 @@ export function useLearningProgress(courseId: string) {
       const cookieToken = Cookies.get("bwenge_token")
       const currentToken = token || cookieToken
       if (!currentToken) {
-        console.error("❌ No authentication token found")
         return
       }
       const cacheKey = getCacheKey()
@@ -501,7 +465,6 @@ export function useLearningProgress(courseId: string) {
         if (!response.ok) throw new Error("Failed to mark step pending")
         mutateProgress()
       } catch (err) {
-        console.error("❌ Failed to mark step pending:", err)
         mutateProgress()
       }
     },
@@ -518,7 +481,6 @@ export function useLearningProgress(courseId: string) {
     (stepId: string) => {
       if (!progressData || !progressData.completedSteps) return false
 
-      console.log(`🔍 [isStepPending] Checking step: ${stepId}`)
 
       // Module final assessment: lessonId is null in the API
       if (stepId.endsWith("-final-assessment")) {
@@ -529,7 +491,6 @@ export function useLearningProgress(courseId: string) {
         )
         if (!finalStep) return false
         const isPending = finalStep.status === "pending"
-        console.log(`🏆 [isStepPending] Final: ${isPending ? "PENDING" : "NOT PENDING"}`, finalStep)
         return isPending
       }
 
@@ -553,7 +514,6 @@ export function useLearningProgress(courseId: string) {
       if (!assessmentStep) return false
 
       const isPending = assessmentStep.status === "pending"
-      console.log(`📝 [isStepPending] Result: ${isPending ? "PENDING" : "NOT PENDING"}`, assessmentStep)
       return isPending
     },
     [progressData],
@@ -572,7 +532,6 @@ export function useLearningProgress(courseId: string) {
     (stepId: string) => {
       if (!progressData || !progressData.completedSteps) return false
 
-      console.log(`🔍 [isStepFailed] Checking step: ${stepId}`)
 
       // Module final assessment: lessonId is null in the API
       if (stepId.endsWith("-final-assessment")) {
@@ -587,7 +546,6 @@ export function useLearningProgress(courseId: string) {
           finalStep.isCompleted === true &&
           finalStep.status !== "passed" &&
           finalStep.passed !== true
-        console.log(`🏆 [isStepFailed] Final: ${isFailed ? "FAILED" : "NOT FAILED"}`, finalStep)
         return isFailed
       }
 
@@ -615,7 +573,6 @@ export function useLearningProgress(courseId: string) {
         step.isCompleted === true &&
         step.status !== "passed" &&
         step.passed !== true
-      console.log(`📝 [isStepFailed] Result: ${isFailed ? "FAILED" : "NOT FAILED"}`, step)
       return isFailed
     },
     [progressData],
@@ -634,7 +591,6 @@ export function useLearningProgress(courseId: string) {
     (allSteps: LearningStep[]) => {
       if (!progressData || !allSteps.length) return false
       const result = allSteps.every((step) => isStepCompleted(step.id))
-      console.log(`🔍 [areAllStepsTrulyPassed] Result: ${result}`)
       return result
     },
     [progressData, isStepCompleted],

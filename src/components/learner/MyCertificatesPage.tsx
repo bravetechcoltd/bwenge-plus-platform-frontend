@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/hooks";
+import { useRealtimeEvent } from "@/hooks/use-realtime";
 import {
   Card,
   CardContent,
@@ -145,6 +146,9 @@ export default function MyCertificatesPage() {
     }
   }, [user, currentPage]);
 
+  // Real-time: refresh when a new certificate is issued
+  useRealtimeEvent("certificate-issued", () => fetchCertificates(currentPage));
+
   const fetchCertificates = async (page: number) => {
     setLoading(true);
     try {
@@ -170,7 +174,6 @@ export default function MyCertificatesPage() {
         throw new Error("Failed to fetch certificates");
       }
     } catch (error) {
-      console.error("Error fetching certificates:", error);
       toast.error("Failed to load certificates");
     } finally {
       setLoading(false);
@@ -206,7 +209,6 @@ export default function MyCertificatesPage() {
       
       toast.success("Certificate download started");
     } catch (error) {
-      console.error("Error downloading certificate:", error);
       toast.error("Failed to download certificate");
     } finally {
       setDownloadingId(null);
@@ -296,21 +298,21 @@ export default function MyCertificatesPage() {
     switch (status) {
       case "VALID":
         return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
+          <Badge className="bg-success/15 text-success border-success/30">
             <CheckCircle className="w-3 h-3 mr-1" />
             Valid
           </Badge>
         );
       case "EXPIRED":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+          <Badge className="bg-warning/15 text-warning border-warning/30">
             <Clock className="w-3 h-3 mr-1" />
             Expired
           </Badge>
         );
       case "REVOKED":
         return (
-          <Badge className="bg-red-100 text-red-800 border-red-200">
+          <Badge className="bg-destructive/15 text-destructive border-destructive/30">
             <AlertCircle className="w-3 h-3 mr-1" />
             Revoked
           </Badge>
@@ -337,14 +339,14 @@ export default function MyCertificatesPage() {
   const getLevelColor = (level: string) => {
     switch (level?.toUpperCase()) {
       case "BEGINNER":
-        return "bg-green-500";
+        return "bg-success/100";
       case "INTERMEDIATE":
-        return "bg-blue-500";
+        return "bg-primary";
       case "ADVANCED":
       case "EXPERT":
-        return "bg-purple-500";
+        return "bg-primary/100";
       default:
-        return "bg-gray-500";
+        return "bg-muted/500";
     }
   };
 
@@ -367,10 +369,10 @@ export default function MyCertificatesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             My Certificates
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             View and manage all your earned certificates
           </p>
         </div>
@@ -394,13 +396,13 @@ export default function MyCertificatesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Certificates</p>
-                  <p className="text-3xl font-bold text-blue-600">
+                  <p className="text-sm text-muted-foreground">Total Certificates</p>
+                  <p className="text-3xl font-bold text-primary">
                     {certificatesData.statistics.total_certificates}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -410,13 +412,13 @@ export default function MyCertificatesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Valid Certificates</p>
-                  <p className="text-3xl font-bold text-green-600">
+                  <p className="text-sm text-muted-foreground">Valid Certificates</p>
+                  <p className="text-3xl font-bold text-success">
                     {certificatesData.statistics.valid_certificates}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -426,8 +428,8 @@ export default function MyCertificatesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Average Score</p>
-                  <p className="text-3xl font-bold text-purple-600">
+                  <p className="text-sm text-muted-foreground">Average Score</p>
+                  <p className="text-3xl font-bold text-primary">
                     {certificatesData.certificates.length > 0
                       ? Math.round(
                           certificatesData.certificates.reduce(
@@ -439,8 +441,8 @@ export default function MyCertificatesPage() {
                     %
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -450,13 +452,13 @@ export default function MyCertificatesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Courses Completed</p>
-                  <p className="text-3xl font-bold text-orange-600">
+                  <p className="text-sm text-muted-foreground">Courses Completed</p>
+                  <p className="text-3xl font-bold text-warning">
                     {certificatesData.statistics.total_certificates}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -467,7 +469,7 @@ export default function MyCertificatesPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search by course, certificate number, instructor..."
             value={searchQuery}
@@ -518,13 +520,13 @@ export default function MyCertificatesPage() {
       {sortedCertificates.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <Award className="w-10 h-10 text-gray-400" />
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <Award className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Certificates Found
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchQuery || filterStatus !== "all" || filterYear !== "all"
                 ? "No certificates match your search or filter criteria."
                 : "You haven't earned any certificates yet. Complete a course to earn your first certificate!"}
@@ -547,7 +549,7 @@ export default function MyCertificatesPage() {
                   {getStatusBadge(certificate.status)}
                 </div>
                 <div className="absolute bottom-2 left-2">
-                  <Badge className="bg-white/90 text-gray-800">
+                  <Badge className="bg-card/90 text-foreground">
                     <Calendar className="w-3 h-3 mr-1" />
                     {format(new Date(certificate.issue_date), "MMM d, yyyy")}
                   </Badge>
@@ -561,7 +563,7 @@ export default function MyCertificatesPage() {
                   </Badge>
                 </div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <Trophy className="w-12 h-12 text-yellow-300 opacity-80" />
+                  <Trophy className="w-12 h-12 text-warning opacity-80" />
                 </div>
               </div>
 
@@ -577,7 +579,7 @@ export default function MyCertificatesPage() {
               <CardContent className="pb-2 space-y-3">
                 {/* Score */}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Final Score</span>
+                  <span className="text-sm text-muted-foreground">Final Score</span>
                   <span className="text-lg font-bold text-primary">
                     {certificate.final_score}%
                   </span>
@@ -585,12 +587,12 @@ export default function MyCertificatesPage() {
 
                 {/* Course Details */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-1 p-2 bg-gray-50 rounded">
-                    <BookOpen className="w-3 h-3 text-blue-500" />
+                  <div className="flex items-center gap-1 p-2 bg-muted/50 rounded">
+                    <BookOpen className="w-3 h-3 text-primary" />
                     <span className="truncate">{certificate.course.language}</span>
                   </div>
-                  <div className="flex items-center gap-1 p-2 bg-gray-50 rounded">
-                    <Clock className="w-3 h-3 text-purple-500" />
+                  <div className="flex items-center gap-1 p-2 bg-muted/50 rounded">
+                    <Clock className="w-3 h-3 text-primary" />
                     <span>{formatTime(certificate.course.duration_minutes)}</span>
                   </div>
                 </div>
@@ -598,7 +600,7 @@ export default function MyCertificatesPage() {
                 {/* Instructor */}
                 {certificate.course.instructor && (
                   <div className="flex items-center gap-2 text-xs">
-                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
                       {certificate.course.instructor.profile_picture_url ? (
                         <img
                           src={certificate.course.instructor.profile_picture_url}
@@ -606,18 +608,18 @@ export default function MyCertificatesPage() {
                           className="w-6 h-6 rounded-full object-cover"
                         />
                       ) : (
-                        <GraduationCap className="w-3 h-3 text-gray-500" />
+                        <GraduationCap className="w-3 h-3 text-muted-foreground" />
                       )}
                     </div>
-                    <span className="text-gray-600 truncate">
+                    <span className="text-muted-foreground truncate">
                       {certificate.course.instructor.name}
                     </span>
                   </div>
                 )}
 
                 {/* Certificate Number (truncated) */}
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <p className="text-xs text-gray-400">Certificate #</p>
+                <div className="bg-muted/50 rounded-lg p-2">
+                  <p className="text-xs text-muted-foreground">Certificate #</p>
                   <p className="text-xs font-mono truncate">
                     {certificate.certificate_number}
                   </p>
@@ -672,7 +674,7 @@ export default function MyCertificatesPage() {
           >
             Previous
           </Button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             Page {currentPage} of {certificatesData.pagination.totalPages}
           </span>
           <Button
@@ -691,7 +693,7 @@ export default function MyCertificatesPage() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-yellow-500" />
+              <Award className="w-5 h-5 text-warning" />
               Certificate Details
             </DialogTitle>
             <DialogDescription>
@@ -702,40 +704,40 @@ export default function MyCertificatesPage() {
           {selectedCertificate && (
             <div className="space-y-6">
               {/* Certificate Preview */}
-              <div className="border-4 border-double border-yellow-400 p-6 bg-gradient-to-br from-yellow-50 to-white rounded-lg text-center">
+              <div className="border-4 border-double border-warning/50 p-6 bg-gradient-to-br from-yellow-50 to-white rounded-lg text-center">
                 <div className="mb-4">
-                  <Trophy className="w-16 h-16 text-yellow-500 mx-auto" />
+                  <Trophy className="w-16 h-16 text-warning mx-auto" />
                 </div>
                 
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
                   Certificate of Completion
                 </h2>
                 
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   This is to certify that
                 </p>
                 
-                <p className="text-xl font-bold text-blue-600 mb-4">
+                <p className="text-xl font-bold text-primary mb-4">
                   {user?.first_name} {user?.last_name}
                 </p>
                 
-                <p className="text-gray-600 mb-2">
+                <p className="text-muted-foreground mb-2">
                   has successfully completed the course
                 </p>
                 
-                <p className="text-lg font-bold text-gray-900 mb-4">
+                <p className="text-lg font-bold text-foreground mb-4">
                   {selectedCertificate.course.title}
                 </p>
                 
                 <div className="flex items-center justify-center gap-6 mb-4">
                   <div>
-                    <p className="text-xs text-gray-500">Final Score</p>
+                    <p className="text-xs text-muted-foreground">Final Score</p>
                     <p className="text-lg font-bold text-primary">
                       {selectedCertificate.final_score}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Issue Date</p>
+                    <p className="text-xs text-muted-foreground">Issue Date</p>
                     <p className="text-sm font-medium">
                       {format(new Date(selectedCertificate.issue_date), "MMMM d, yyyy")}
                     </p>
@@ -743,16 +745,16 @@ export default function MyCertificatesPage() {
                 </div>
                 
                 {selectedCertificate.course.institution && (
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     Issued by {selectedCertificate.course.institution.name}
                   </p>
                 )}
                 
                 <div className="border-t pt-4 mt-4">
-                  <p className="text-xs text-gray-400 mb-1">
+                  <p className="text-xs text-muted-foreground mb-1">
                     Certificate #: {selectedCertificate.certificate_number}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Verification Code: {selectedCertificate.verification_code}
                   </p>
                 </div>
@@ -789,7 +791,7 @@ export default function MyCertificatesPage() {
                     className="w-full"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 mr-2 text-green-600" />
+                      <Check className="w-4 h-4 mr-2 text-success" />
                     ) : (
                       <Copy className="w-4 h-4 mr-2" />
                     )}
@@ -807,7 +809,7 @@ export default function MyCertificatesPage() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2 text-center">
+                  <p className="text-sm font-medium text-muted-foreground mb-2 text-center">
                     Share your achievement
                   </p>
                   <div className="flex justify-center gap-2">
@@ -844,32 +846,32 @@ export default function MyCertificatesPage() {
               </div>
 
               {/* Verification Details */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-muted/50 rounded-lg p-4">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-green-600" />
+                  <Shield className="w-4 h-4 text-success" />
                   Verification Details
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Certificate Number:</span>
+                    <span className="text-muted-foreground">Certificate Number:</span>
                     <span className="font-mono">{selectedCertificate.certificate_number}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Verification Code:</span>
+                    <span className="text-muted-foreground">Verification Code:</span>
                     <span className="font-mono">{selectedCertificate.verification_code}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-muted-foreground">Status:</span>
                     {getStatusBadge(selectedCertificate.status)}
                   </div>
                   {selectedCertificate.expires_at && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Expires:</span>
+                      <span className="text-muted-foreground">Expires:</span>
                       <span>{format(new Date(selectedCertificate.expires_at), "MMMM d, yyyy")}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Verification Link:</span>
+                    <span className="text-muted-foreground">Verification Link:</span>
                     <Button
                       variant="link"
                       className="p-0 h-auto text-xs"

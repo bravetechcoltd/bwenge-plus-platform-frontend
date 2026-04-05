@@ -112,7 +112,6 @@ export default function CourseBasicInfoForm({
     try {
       await onSave(formData)
     } catch (error) {
-      console.error("Failed to save course:", error)
     } finally {
       setSaving(false)
     }
@@ -184,7 +183,7 @@ export default function CourseBasicInfoForm({
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-semibold">
-              Course Title <span className="text-red-500">*</span>
+              Course Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
@@ -199,7 +198,7 @@ export default function CourseBasicInfoForm({
           {/* Short Description */}
           <div className="space-y-2">
             <Label htmlFor="short_description" className="text-sm font-semibold">
-              Short Description <span className="text-red-500">*</span>
+              Short Description <span className="text-destructive">*</span>
             </Label>
             <div>
               <RichTextEditor
@@ -211,7 +210,7 @@ export default function CourseBasicInfoForm({
             </div>
             <div className="flex justify-between items-center mt-2">
               <p className="text-xs text-muted-foreground italic">Displayed in course cards and search results</p>
-              <p className={`text-xs font-medium ${formData.short_description.replace(/<[^>]*>/g, '').length > 180 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+              <p className={`text-xs font-medium ${formData.short_description.replace(/<[^>]*>/g, '').length > 180 ? 'text-warning' : 'text-muted-foreground'}`}>
                 {formData.short_description.replace(/<[^>]*>/g, '').length}/200
               </p>
             </div>
@@ -220,7 +219,7 @@ export default function CourseBasicInfoForm({
           {/* Full Description */}
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-semibold">
-              Full Description <span className="text-red-500">*</span>
+              Full Description <span className="text-destructive">*</span>
             </Label>
             <div>
               <RichTextEditor
@@ -236,7 +235,7 @@ export default function CourseBasicInfoForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 p-4 border-2 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
               <Label htmlFor="what_you_will_learn" className="text-sm font-semibold flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-blue-600" />
+                <BookOpen className="w-4 h-4 text-primary" />
                 What You Will Learn
               </Label>
               <div className="rounded-md overflow-hidden">
@@ -244,15 +243,15 @@ export default function CourseBasicInfoForm({
                   value={formData.what_you_will_learn}
                   onChange={handleWhatYouWillLearnChange}
                   placeholder="• Master key concepts&#10;• Apply practical skills&#10;• Build real projects"
-                  className="border-2 bg-white dark:bg-gray-950"
+                  className="border-2 bg-card dark:bg-background"
                 />
               </div>
-              <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">Use bullet points or formatted lists for better organization</p>
+              <p className="text-xs text-primary dark:text-primary font-medium">Use bullet points or formatted lists for better organization</p>
             </div>
 
             <div className="space-y-2 p-4 border-2 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
               <Label htmlFor="requirements" className="text-sm font-semibold flex items-center gap-2">
-                <Users className="w-4 h-4 text-amber-600" />
+                <Users className="w-4 h-4 text-warning" />
                 Prerequisites
               </Label>
               <div className="rounded-md overflow-hidden">
@@ -260,10 +259,10 @@ export default function CourseBasicInfoForm({
                   value={formData.requirements}
                   onChange={handleRequirementsChange}
                   placeholder="• Basic programming knowledge&#10;• Computer with internet&#10;• Willingness to learn"
-                  className="border-2 bg-white dark:bg-gray-950"
+                  className="border-2 bg-card dark:bg-background"
                 />
               </div>
-              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Use bullet points or formatted lists for better organization</p>
+              <p className="text-xs text-warning dark:text-warning font-medium">Use bullet points or formatted lists for better organization</p>
             </div>
           </div>
 
@@ -273,7 +272,7 @@ export default function CourseBasicInfoForm({
 
             <div className="space-y-2">
               <Label htmlFor="duration_minutes" className="text-sm font-semibold flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-primary" />
                 Duration (minutes)
               </Label>
               <Input
@@ -289,7 +288,7 @@ export default function CourseBasicInfoForm({
 
             <div className="space-y-2">
               <Label htmlFor="language" className="text-sm font-semibold flex items-center gap-2">
-                <Languages className="w-4 h-4 text-purple-600" />
+                <Languages className="w-4 h-4 text-primary" />
                 Language
               </Label>
               <Input
@@ -310,7 +309,7 @@ export default function CourseBasicInfoForm({
                 SPOC Course Settings
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 rounded-md bg-white/60 dark:bg-gray-900/60 border">
+                <div className="flex items-center space-x-3 p-3 rounded-md bg-card/60 dark:bg-card/60 border">
                   <Switch
                     checked={formData.requires_approval}
                     onCheckedChange={(checked) => setFormData({ ...formData, requires_approval: checked })}
@@ -318,7 +317,7 @@ export default function CourseBasicInfoForm({
                   />
                   <Label htmlFor="requires_approval" className="font-medium cursor-pointer">Requires Approval</Label>
                 </div>
-                <div className="flex items-center space-x-3 p-3 rounded-md bg-white/60 dark:bg-gray-900/60 border">
+                <div className="flex items-center space-x-3 p-3 rounded-md bg-card/60 dark:bg-card/60 border">
                   <Switch
                     checked={formData.is_institution_wide}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_institution_wide: checked })}
@@ -357,7 +356,7 @@ export default function CourseBasicInfoForm({
                   id="is_public"
                 />
                 <Label htmlFor="is_public" className="flex items-center gap-2 font-medium cursor-pointer">
-                  <Globe className="w-5 h-5 text-blue-600" />
+                  <Globe className="w-5 h-5 text-primary" />
                   Public Course (visible to all)
                 </Label>
               </div>
@@ -370,7 +369,7 @@ export default function CourseBasicInfoForm({
                 id="is_certificate_available"
               />
               <Label htmlFor="is_certificate_available" className="flex items-center gap-2 font-medium cursor-pointer">
-                <BookOpen className="w-5 h-5 text-green-600" />
+                <BookOpen className="w-5 h-5 text-success" />
                 Certificate Available
               </Label>
             </div>
@@ -397,7 +396,7 @@ export default function CourseBasicInfoForm({
               </Button>
             </div>
             {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-3 bg-white/60 dark:bg-gray-900/60 rounded-md border">
+              <div className="flex flex-wrap gap-2 p-3 bg-card/60 dark:bg-card/60 rounded-md border">
                 {formData.tags.map((tag, index) => (
                   <Badge key={index} className="flex items-center gap-1 px-3 py-1.5 text-sm">
                     {tag}
@@ -412,7 +411,7 @@ export default function CourseBasicInfoForm({
                 ))}
               </div>
             )}
-            <p className="text-xs text-purple-700 dark:text-purple-400 font-medium">
+            <p className="text-xs text-primary dark:text-primary font-medium">
               Add relevant tags to improve course discoverability
             </p>
           </div>

@@ -54,6 +54,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d";
 
 interface SavedCourse {
   id: string;
@@ -142,7 +143,6 @@ export default function LearnerSavedCoursesPage() {
         toast.error("Failed to load saved courses");
       }
     } catch (error) {
-      console.error("Error fetching saved courses:", error);
       toast.error("Failed to load saved courses");
     } finally {
       setLoading(false);
@@ -198,7 +198,6 @@ export default function LearnerSavedCoursesPage() {
         toast.error("Failed to remove course");
       }
     } catch (error) {
-      console.error("Error removing saved course:", error);
       toast.error("Failed to remove course");
     } finally {
       setRemovingId(null);
@@ -231,7 +230,6 @@ export default function LearnerSavedCoursesPage() {
         toast.success("Note added");
       }
     } catch (error) {
-      console.error("Error adding note:", error);
       toast.error("Failed to add note");
     }
   };
@@ -290,14 +288,14 @@ export default function LearnerSavedCoursesPage() {
   const getLevelColor = (level: string) => {
     switch (level?.toUpperCase()) {
       case "BEGINNER":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-success/15 text-success border-success/30";
       case "INTERMEDIATE":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-primary/15 text-primary border-primary/30";
       case "ADVANCED":
       case "EXPERT":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return "bg-primary/15 text-primary border-primary/30";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-muted text-foreground border-border";
     }
   };
 
@@ -320,10 +318,10 @@ export default function LearnerSavedCoursesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Saved Courses
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Courses you've bookmarked for later
           </p>
         </div>
@@ -347,11 +345,11 @@ export default function LearnerSavedCoursesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Saved Courses</p>
+                  <p className="text-sm text-muted-foreground">Saved Courses</p>
                   <p className="text-3xl font-bold">{stats.total_saved}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Bookmark className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Bookmark className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -361,11 +359,11 @@ export default function LearnerSavedCoursesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">MOOCs</p>
+                  <p className="text-sm text-muted-foreground">MOOCs</p>
                   <p className="text-3xl font-bold">{stats.mooc_count}</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -375,11 +373,11 @@ export default function LearnerSavedCoursesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">SPOCs</p>
+                  <p className="text-sm text-muted-foreground">SPOCs</p>
                   <p className="text-3xl font-bold">{stats.spoc_count}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -389,11 +387,11 @@ export default function LearnerSavedCoursesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Recently Saved</p>
+                  <p className="text-sm text-muted-foreground">Recently Saved</p>
                   <p className="text-3xl font-bold">{stats.recently_saved}</p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -404,7 +402,7 @@ export default function LearnerSavedCoursesPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search saved courses..."
             value={searchTerm}
@@ -453,11 +451,11 @@ export default function LearnerSavedCoursesPage() {
       {filteredCourses.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Bookmark className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <Bookmark className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Saved Courses
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm
                 ? "No courses match your search criteria"
                 : "You haven't saved any courses yet. Browse courses and click the bookmark icon to save them for later."}
@@ -470,134 +468,39 @@ export default function LearnerSavedCoursesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <Card key={course.saved_id} className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
-              {/* Thumbnail */}
-              <div className="relative h-40">
-                {course.thumbnail_url ? (
-                  <img
-                    src={course.thumbnail_url}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                    <BookOpen className="w-12 h-12 text-white opacity-50" />
-                  </div>
-                )}
-                <Badge
-                  className={`absolute top-2 left-2 ${getLevelColor(course.level)}`}
-                >
-                  <span className="flex items-center gap-1">
-                    {getLevelIcon(course.level)}
-                    {course.level}
-                  </span>
-                </Badge>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="absolute top-2 right-2 bg-white/90 hover:bg-white"
-                  onClick={() => {
-                    setSelectedCourse(course);
-                    setShowRemoveDialog(true);
-                  }}
-                >
-                  <BookmarkCheck className="w-4 h-4 text-blue-600" />
-                </Button>
-                <div className="absolute bottom-2 right-2">
-                  <Badge variant="secondary">
-                    {course.course_type}
-                  </Badge>
-                </div>
-              </div>
-
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3 h-3 ${
-                          i < Math.round(course.average_rating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                    <span className="ml-1 text-xs text-gray-500">
-                      ({course.total_reviews})
-                    </span>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {course.price === 0 ? "Free" : `$${course.price}`}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg line-clamp-1">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {course.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="pb-2 space-y-3">
-                {/* Instructor */}
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-                    <GraduationCap className="w-3 h-3 text-gray-500" />
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {course.instructor.name}
-                  </span>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="flex items-center justify-center gap-1 p-1 bg-gray-50 rounded">
-                    <Users className="w-3 h-3 text-blue-500" />
-                    <span>{course.enrollment_count}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 p-1 bg-gray-50 rounded">
-                    <Clock className="w-3 h-3 text-green-500" />
-                    <span>{formatTime(course.duration_minutes)}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-1 p-1 bg-gray-50 rounded">
-                    <Calendar className="w-3 h-3 text-purple-500" />
-                    <span>{format(new Date(course.saved_at), "MMM d")}</span>
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {course.notes && (
-                  <div className="bg-blue-50 rounded-lg p-2">
-                    <p className="text-xs text-blue-700 italic line-clamp-2">
-                      "{course.notes}"
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-
-              <CardFooter className="flex gap-2 pt-2">
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleEnrollNow(course.id)}
-                >
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Enroll Now
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  asChild
-                >
-                  <Link href={`/courses/${course.id}`}>
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Details
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredCourses.map((course, idx) => (
+            <BwengeCourseCard3D
+              key={course.saved_id}
+              id={course.id}
+              title={course.title}
+              description={course.description}
+              thumbnail_url={course.thumbnail_url || undefined}
+              instructor={{
+                id: course.instructor.id,
+                first_name: course.instructor.name.split(" ")[0] || "",
+                last_name: course.instructor.name.split(" ").slice(1).join(" ") || "",
+                profile_picture_url: course.instructor.avatar || undefined,
+              }}
+              level={course.level}
+              course_type={course.course_type}
+              price={course.price}
+              average_rating={course.average_rating}
+              total_reviews={course.total_reviews}
+              enrollment_count={course.enrollment_count}
+              duration_minutes={course.duration_minutes}
+              is_certificate_available={course.is_certificate_available}
+              institution={course.institution ? {
+                id: course.institution.id,
+                name: course.institution.name,
+                logo_url: course.institution.logo || undefined,
+              } : undefined}
+              variant="browse"
+              showActions={true}
+              showInstitution={!!course.institution}
+              index={idx}
+              onLearnMoreClick={(id) => handleEnrollNow(id)}
+            />
           ))}
         </div>
       )}
@@ -614,7 +517,7 @@ export default function LearnerSavedCoursesPage() {
 
           {selectedCourse && (
             <div className="py-4">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 {selectedCourse.thumbnail_url ? (
                   <img
                     src={selectedCourse.thumbnail_url}
@@ -628,7 +531,7 @@ export default function LearnerSavedCoursesPage() {
                 )}
                 <div className="flex-1">
                   <h4 className="font-medium text-sm">{selectedCourse.title}</h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Saved on {format(new Date(selectedCourse.saved_at), "MMM d, yyyy")}
                   </p>
                 </div>

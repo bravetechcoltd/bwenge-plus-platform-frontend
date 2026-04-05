@@ -138,11 +138,11 @@ export default function PlatformConfigPage() {
 
     if (config.data_type === "BOOLEAN") {
       return config.value === "true" ? (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success/15 text-success rounded-full text-xs">
           <Check className="w-3 h-3" /> True
         </span>
       ) : (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-destructive/15 text-destructive rounded-full text-xs">
           <X className="w-3 h-3" /> False
         </span>
       );
@@ -152,7 +152,7 @@ export default function PlatformConfigPage() {
       return (
         <button
           onClick={() => alert(JSON.stringify(config.json_value, null, 2))}
-          className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200"
+          className="text-xs bg-muted px-2 py-1 rounded hover:bg-secondary"
         >
           View JSON
         </button>
@@ -163,38 +163,38 @@ export default function PlatformConfigPage() {
       return (
         <div className="flex flex-wrap gap-1">
           {config.array_value.slice(0, 3).map((item, i) => (
-            <span key={i} className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">
+            <span key={i} className="px-1.5 py-0.5 bg-muted rounded text-xs">
               {item}
             </span>
           ))}
           {config.array_value.length > 3 && (
-            <span className="text-xs text-gray-500">+{config.array_value.length - 3}</span>
+            <span className="text-xs text-muted-foreground">+{config.array_value.length - 3}</span>
           )}
         </div>
       );
     }
 
-    return config.value || <span className="text-gray-400">—</span>;
+    return config.value || <span className="text-muted-foreground">—</span>;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted/50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600 rounded-xl">
+            <div className="p-2.5 bg-primary rounded-xl">
               <Cpu className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Platform Configuration</h1>
-              <p className="text-sm text-gray-600">Manage system-wide settings and feature flags</p>
+              <h1 className="text-2xl font-bold text-foreground">Platform Configuration</h1>
+              <p className="text-sm text-muted-foreground">Manage system-wide settings and feature flags</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={loadData}
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="p-2 border border-border rounded-lg hover:bg-muted/50"
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
             </button>
@@ -214,7 +214,7 @@ export default function PlatformConfigPage() {
                 });
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary"
             >
               <Plus className="w-4 h-4" />
               New Setting
@@ -223,22 +223,22 @@ export default function PlatformConfigPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search configurations..."
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Types</option>
               {platformConfigTypes.config_types?.map((type) => (
@@ -253,13 +253,13 @@ export default function PlatformConfigPage() {
         {/* Configurations Grid */}
         <div className="grid grid-cols-1 gap-4">
           {isLoading ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto" />
+            <div className="bg-card rounded-xl p-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto" />
             </div>
           ) : filteredConfigs.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <Cpu className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">No configurations found</p>
+            <div className="bg-card rounded-xl p-12 text-center">
+              <Cpu className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">No configurations found</p>
             </div>
           ) : (
             filteredConfigs.map((config) => (
@@ -267,35 +267,35 @@ export default function PlatformConfigPage() {
                 key={config.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-card rounded-xl shadow-sm border border-border p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{config.display_name}</h3>
-                      <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                      <h3 className="font-semibold text-foreground">{config.display_name}</h3>
+                      <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
                         {config.key}
                       </span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
+                      <span className="px-2 py-0.5 bg-primary/15 text-primary rounded-full text-xs">
                         {config.type}
                       </span>
                       {!config.is_active && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                        <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs">
                           Inactive
                         </span>
                       )}
                       {config.requires_restart && (
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs">
+                        <span className="px-2 py-0.5 bg-warning/15 text-warning rounded-full text-xs">
                           Requires Restart
                         </span>
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-3">{config.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3">{config.description}</p>
 
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Value:</span>
+                        <span className="text-xs text-muted-foreground">Value:</span>
                         <div className="flex items-center gap-1">
                           {getValueDisplay(config)}
                           {config.metadata?.is_sensitive && (
@@ -306,25 +306,25 @@ export default function PlatformConfigPage() {
                                   [config.id]: !prev[config.id],
                                 }))
                               }
-                              className="p-1 hover:bg-gray-100 rounded"
+                              className="p-1 hover:bg-muted rounded"
                             >
                               {showSensitive[config.id] ? (
-                                <EyeOff className="w-3 h-3 text-gray-500" />
+                                <EyeOff className="w-3 h-3 text-muted-foreground" />
                               ) : (
-                                <Eye className="w-3 h-3 text-gray-500" />
+                                <Eye className="w-3 h-3 text-muted-foreground" />
                               )}
                                        </button>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Type:</span>
-                        <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                        <span className="text-xs text-muted-foreground">Type:</span>
+                        <span className="text-xs bg-muted px-2 py-0.5 rounded">
                           {config.data_type}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Updated:</span>
+                        <span className="text-xs text-muted-foreground">Updated:</span>
                         <span className="text-xs">
                           {new Date(config.updated_at).toLocaleDateString()}
                         </span>
@@ -335,14 +335,14 @@ export default function PlatformConfigPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleEdit(config)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(config.key)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -366,49 +366,49 @@ export default function PlatformConfigPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                className="relative bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               >
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-blue-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <Settings className="w-5 h-5 text-primary" />
+                    <h2 className="text-lg font-semibold text-foreground">
                       {editingConfig ? "Edit Configuration" : "New Configuration"}
                     </h2>
                   </div>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg"
+                    className="p-1 hover:bg-muted rounded-lg"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Key <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Key <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.key}
                         onChange={(e) => setFormData({ ...formData, key: e.target.value })}
                         disabled={!!editingConfig}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-muted"
                         required
                       />
-                      <p className="text-xs text-gray-500 mt-1">Unique identifier, e.g., "site.name"</p>
+                      <p className="text-xs text-muted-foreground mt-1">Unique identifier, e.g., "site.name"</p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Display Name <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
+                        Display Name <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.display_name}
                         onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -416,13 +416,13 @@ export default function PlatformConfigPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Type
                       </label>
                       <select
                         value={formData.type}
                         onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         {platformConfigTypes.config_types?.map((type) => (
                           <option key={type} value={type}>
@@ -433,13 +433,13 @@ export default function PlatformConfigPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Data Type
                       </label>
                       <select
                         value={formData.data_type}
                         onChange={(e) => setFormData({ ...formData, data_type: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         {platformConfigTypes.data_types?.map((type) => (
                           <option key={type} value={type}>
@@ -451,14 +451,14 @@ export default function PlatformConfigPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Value
                     </label>
                     {formData.data_type === "BOOLEAN" ? (
                       <select
                         value={formData.value || "false"}
                         onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="true">True</option>
                         <option value="false">False</option>
@@ -475,7 +475,7 @@ export default function PlatformConfigPage() {
                           }
                         }}
                         rows={5}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500"
                         placeholder="{}"
                       />
                     ) : formData.data_type === "ARRAY" ? (
@@ -486,7 +486,7 @@ export default function PlatformConfigPage() {
                           ...formData, 
                           array_value: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="item1, item2, item3"
                       />
                     ) : (
@@ -494,27 +494,27 @@ export default function PlatformConfigPage() {
                         type={formData.metadata?.is_sensitive ? "password" : "text"}
                         value={formData.value || ''}
                         onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Description
                     </label>
                     <textarea
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="What does this configuration control?"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         UI Component
                       </label>
                       <select
@@ -523,7 +523,7 @@ export default function PlatformConfigPage() {
                           ...formData,
                           metadata: { ...formData.metadata, ui_component: e.target.value as any }
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="input">Input</option>
                         <option value="textarea">Textarea</option>
@@ -535,7 +535,7 @@ export default function PlatformConfigPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Category
                       </label>
                       <input
@@ -545,7 +545,7 @@ export default function PlatformConfigPage() {
                           ...formData,
                           metadata: { ...formData.metadata, category: e.target.value }
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="e.g., security, email"
                       />
                     </div>
@@ -560,9 +560,9 @@ export default function PlatformConfigPage() {
                           ...formData,
                           metadata: { ...formData.metadata, is_sensitive: e.target.checked }
                         })}
-                        className="w-4 h-4 text-blue-600 rounded"
+                        className="w-4 h-4 text-primary rounded"
                       />
-                      <span className="text-sm text-gray-700">Sensitive (encrypt)</span>
+                      <span className="text-sm text-muted-foreground">Sensitive (encrypt)</span>
                     </label>
 
                     <label className="flex items-center gap-2">
@@ -570,9 +570,9 @@ export default function PlatformConfigPage() {
                         type="checkbox"
                         checked={formData.requires_restart || false}
                         onChange={(e) => setFormData({ ...formData, requires_restart: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 rounded"
+                        className="w-4 h-4 text-primary rounded"
                       />
-                      <span className="text-sm text-gray-700">Requires Restart</span>
+                      <span className="text-sm text-muted-foreground">Requires Restart</span>
                     </label>
 
                     <label className="flex items-center gap-2">
@@ -580,16 +580,16 @@ export default function PlatformConfigPage() {
                         type="checkbox"
                         checked={formData.is_active !== false}
                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                        className="w-4 h-4 text-blue-600 rounded"
+                        className="w-4 h-4 text-primary rounded"
                       />
-                      <span className="text-sm text-gray-700">Active</span>
+                      <span className="text-sm text-muted-foreground">Active</span>
                     </label>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <div className="flex gap-3 pt-4 border-t border-border">
                     <button
                       type="submit"
-                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                      className="flex-1 flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary"
                     >
                       <Save className="w-4 h-4" />
                       {editingConfig ? "Update Configuration" : "Create Configuration"}
@@ -597,7 +597,7 @@ export default function PlatformConfigPage() {
                     <button
                       type="button"
                       onClick={() => setShowForm(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
                     >
                       Cancel
                     </button>

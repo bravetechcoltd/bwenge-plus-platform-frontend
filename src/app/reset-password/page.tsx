@@ -8,39 +8,13 @@ import { useDispatch, useSelector } from "react-redux"
 import { changePasswordWithOTP, requestPasswordChange, clearError } from "@/lib/features/auth/auth-slice"
 import type { AppDispatch, RootState } from "@/lib/store"
 import {
-  Lock,
-  Eye,
-  EyeOff,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  ArrowLeft,
-  ArrowRight,
-  KeyRound,
-  RefreshCw,
-  ShieldCheck,
+  Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle,
+  ArrowLeft, ArrowRight, Home, RefreshCw, ShieldCheck,
 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
-function FloatingParticles() {
-  const particles = Array.from({ length: 15 }, (_, i) => ({
-    id: i, x: Math.random() * 100, y: Math.random() * 100,
-    size: Math.random() * 2.5 + 1, duration: Math.random() * 10 + 14, delay: Math.random() * 5,
-  }))
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div key={p.id} className="absolute rounded-full bg-white/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
-          animate={{ y: [-10, -50], opacity: [0, 0.8, 0.8, 0] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
-        />
-      ))}
-    </div>
-  )
-}
-
+/* ── Password strength ── */
 function getStrength(pw: string) {
   let s = 0
   if (pw.length >= 8) s++
@@ -51,6 +25,57 @@ function getStrength(pw: string) {
 }
 const sColor = ["#ef4444", "#f59e0b", "#eab308", "#22c55e"]
 const sLabel = ["Weak", "Fair", "Good", "Strong"]
+
+/* ── Right panel tips ── */
+const tips = [
+  { title: "At least 8 characters", desc: "Keep it long for better security" },
+  { title: "Mix letters & numbers", desc: "Add uppercase, lowercase, digits" },
+  { title: "Use a special character", desc: "!, @, #, $ make passwords stronger" },
+]
+
+/* ── Simple Input ── */
+function Input({
+  id, name, type = "text", value, onChange, placeholder, required, disabled, rightEl, className = "",
+}: {
+  id?: string; name?: string; type?: string; value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string; required?: boolean; disabled?: boolean
+  rightEl?: React.ReactNode; className?: string
+}) {
+  return (
+    <div className="relative">
+      <input
+        id={id} name={name} type={type} value={value}
+        onChange={onChange} placeholder={placeholder}
+        required={required} disabled={disabled}
+        className={`w-full ${rightEl ? "pr-9" : "pr-3.5"} pl-3.5 py-2.5
+          text-sm bg-white/80 dark:bg-white/5
+          border border-border rounded-lg outline-none
+          transition-colors duration-150 focus:border-primary
+          text-foreground placeholder:text-muted-foreground/60
+          disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      />
+      {rightEl && <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">{rightEl}</div>}
+    </div>
+  )
+}
+
+/* ── Logo ── */
+function Logo() {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+        <svg viewBox="0 0 40 40" className="w-3.5 h-3.5" fill="none">
+          <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
+          <polygon points="20,3 8,10 20,14 32,10" fill="white" />
+          <rect x="10" y="14" width="9" height="16" rx="1.5" fill="white" />
+          <rect x="21" y="14" width="9" height="16" rx="1.5" fill="white" />
+        </svg>
+      </div>
+      <span className="text-sm font-bold text-foreground tracking-tight">BwengePlus</span>
+    </div>
+  )
+}
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -103,16 +128,12 @@ function ResetPasswordForm() {
     if (!canSubmit) return
     setLocalError("")
     try {
-      await dispatch(changePasswordWithOTP({
-        email: emailParam,
-        otp: otp.join(""),
-        new_password: newPassword,
-      })).unwrap()
+      await dispatch(changePasswordWithOTP({ email: emailParam, otp: otp.join(""), new_password: newPassword })).unwrap()
       setSuccess(true)
       toast.success("Password changed successfully!")
       setTimeout(() => router.push("/login"), 2500)
     } catch (err: any) {
-      setLocalError(err || "Invalid code or something went wrong. Please try again.")
+      setLocalError(err || "Invalid code or something went wrong.")
       setOtp(["", "", "", "", "", ""])
       otpRefs.current[0]?.focus()
     }
@@ -125,258 +146,280 @@ function ResetPasswordForm() {
       await dispatch(requestPasswordChange(emailParam)).unwrap()
       toast.success("New code sent!")
       setCooldown(60)
-    } catch {
-      toast.error("Failed to resend code")
-    } finally {
-      setIsResending(false)
-    }
+    } catch { toast.error("Failed to resend code") }
+    finally { setIsResending(false) }
   }
 
+  /* ── Success screen ── */
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary" />
-        <FloatingParticles />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-[340px] relative z-10"
-        >
-          <div className="bg-white rounded-xl shadow-2xl p-8 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.15 }}
-              className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4"
-            >
-              <ShieldCheck className="w-9 h-9 text-green-500" />
-            </motion.div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Password Changed!</h2>
-            <p className="text-sm text-gray-500 mb-1">Your password has been updated successfully.</p>
-            <p className="text-xs text-gray-400 mb-4">Redirecting to login…</p>
-            <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div className="h-full bg-primary rounded-full"
-                initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 2.5 }}
-              />
-            </div>
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <Logo />
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
           </div>
-        </motion.div>
+          <div className="flex-1 flex items-center justify-center px-8 py-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35 }}
+              className="w-full max-w-[300px] space-y-4 text-center"
+            >
+              <div className="flex justify-center">
+                <motion.div
+                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  transition={{ type: "spring", delay: 0.15 }}
+                  className="w-12 h-12 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center"
+                >
+                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Success</p>
+                <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Password changed!</h1>
+                <p className="text-[11px] text-muted-foreground">Your password has been updated. Redirecting…</p>
+              </div>
+              <div className="h-1 bg-border rounded-full overflow-hidden">
+                <motion.div className="h-full bg-primary rounded-full"
+                  initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 2.5 }} />
+              </div>
+            </motion.div>
+          </div>
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+            </p>
+          </div>
+        </div>
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col items-center justify-center px-12">
+          <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">All done.</h2>
+          <p className="text-[13px] text-white/70 mt-3">Redirecting you to sign in…</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden bg-primary">
-      {/* ═══════════ LEFT — Form ═══════════ */}
-      <div className="w-full lg:w-[50%] flex items-center justify-center p-4 sm:p-5 relative z-20">
-        <Link
-          href="/forgot-password"
-          className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-xs font-medium transition-all hover:scale-105 group z-30 shadow-sm"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-          <span>Back</span>
-        </Link>
+    <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="w-full max-w-[390px]"
-        >
-          <div className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/70 overflow-hidden">
+      {/* ══ LEFT — Form column ══ */}
+      <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
 
-            {/* Header */}
-            <div className="pt-5 pb-3 px-6 flex flex-col items-center border-b border-gray-100/80">
-              <div className="w-12 h-12 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center mb-2">
-                <KeyRound className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">Reset Password</h1>
-              <p className="text-[11px] text-gray-400 mt-0.5 text-center">
-                Code sent to <span className="font-semibold text-primary">{emailParam || "your email"}</span>
+        {/* Top nav */}
+        <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+          <Logo />
+          <Link href="/forgot-password" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </Link>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 flex items-center justify-center px-8 py-3 overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-[300px] space-y-3"
+          >
+            <div className="space-y-0.5">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Reset Password</p>
+              <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Enter new password.</h1>
+              <p className="text-[11px] text-muted-foreground">
+                Code sent to <span className="font-semibold text-foreground">{emailParam || "your email"}</span>
               </p>
             </div>
 
-            {/* Body */}
-            <div className="px-5 py-4 space-y-3.5">
+            {/* Error */}
+            <AnimatePresence>
+              {(localError || error) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="border-l-[3px] border-destructive bg-destructive/5 pl-3 pr-3 py-2 rounded-r"
+                >
+                  <p className="text-[11px] text-destructive leading-snug">{localError || error}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-              {/* Error */}
+            <form onSubmit={handleSubmit} className="space-y-2.5">
+
+{/* OTP - Compact & Smart */}
+<div>
+  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground mb-1.5">Verification Code</p>
+  <div className="flex gap-1.5 justify-center" onPaste={handlePaste}>
+    {otp.map((digit, i) => (
+      <input
+        key={i}
+        ref={(el) => (otpRefs.current[i] = el)}
+        type="text"
+        inputMode="numeric"
+        maxLength={1}
+        value={digit}
+        onChange={(e) => handleOtpChange(i, e.target.value)}
+        onKeyDown={(e) => handleOtpKeyDown(i, e)}
+        disabled={isLoading}
+        className={`w-11 h-11 rounded-lg text-center text-sm font-semibold border rounded-lg transition-all outline-none ${
+          digit 
+            ? "border-primary bg-primary/5 text-primary" 
+            : "border-border bg-white/80 dark:bg-white/5 text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20"
+        }`}
+      />
+    ))}
+  </div>
+  <div className="flex justify-end mt-1">
+    <button
+      type="button"
+      onClick={handleResend}
+      disabled={isResending || cooldown > 0}
+      className="text-[9px] text-muted-foreground hover:text-foreground disabled:opacity-50 flex items-center gap-1 transition-colors"
+    >
+      {isResending ? (
+        <><Loader2 className="w-2.5 h-2.5 animate-spin" /><span>Sending…</span></>
+      ) : cooldown > 0 ? (
+        `Resend in ${cooldown}s`
+      ) : (
+        <><RefreshCw className="w-2.5 h-2.5" /><span>Resend code</span></>
+      )}
+    </button>
+  </div>
+</div>
+
+              {/* New password */}
+              <Input
+                id="newPassword" name="newPassword"
+                type={showPw ? "text" : "password"}
+                value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password (min 8 characters)"
+                required disabled={isLoading}
+                rightEl={
+                  <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
+                    className="text-muted-foreground hover:text-foreground transition-colors">
+                    {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                }
+              />
+
+              {/* Strength */}
               <AnimatePresence>
-                {(localError || error) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-1.5"
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-600 font-medium">{localError || error}</p>
+                {newPassword && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-1">
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="h-0.5 flex-1 rounded-full transition-all duration-300"
+                          style={{ backgroundColor: i < strength ? sColor[strength - 1] : "var(--border)" }} />
+                      ))}
+                    </div>
+                    <p className="text-[9px] font-black uppercase tracking-widest"
+                      style={{ color: strength > 0 ? sColor[strength - 1] : "var(--muted-foreground)" }}>
+                      {strength > 0 ? sLabel[strength - 1] : "Too weak"}
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* OTP */}
-              <div>
-                <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-2.5 text-center">
-                  Verification Code
-                </p>
-                <div className="flex justify-center gap-1.5" onPaste={handlePaste}>
-                  {otp.map((digit, i) => (
-                    <motion.input
-                      key={i}
-                      ref={(el) => (otpRefs.current[i] = el)}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      className={`w-10 h-11 text-center text-xl font-bold border-2 rounded-xl transition-all outline-none ${
-                        digit ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary focus:bg-white"
-                      }`}
-                      whileFocus={{ scale: 1.05 }}
-                      disabled={isLoading}
-                    />
-                  ))}
-                </div>
-                {/* Resend */}
-                <div className="text-center mt-2">
-                  <button
-                    onClick={handleResend}
-                    disabled={isResending || cooldown > 0}
-                    className="text-[11px] text-gray-400 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 mx-auto transition-colors"
-                  >
-                    {isResending ? (
-                      <><Loader2 className="w-3 h-3 animate-spin" />Sending…</>
-                    ) : cooldown > 0 ? (
-                      `Resend in ${cooldown}s`
-                    ) : (
-                      <><RefreshCw className="w-3 h-3" />Resend code</>
-                    )}
+              {/* Confirm password */}
+              <Input
+                id="confirmPassword" name="confirmPassword"
+                type={showConfirm ? "text" : "password"}
+                value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                required disabled={isLoading}
+                className={confirmPassword && !pwMatch ? "border-red-300 dark:border-red-800 focus:border-red-400" : ""}
+                rightEl={
+                  <button type="button" tabIndex={-1} onClick={() => setShowConfirm(!showConfirm)}
+                    className="text-muted-foreground hover:text-foreground transition-colors">
+                    {showConfirm ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
-                </div>
-              </div>
+                }
+              />
 
-              {/* New password */}
-              <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <div className="w-7 h-7 rounded-lg bg-gray-100 group-focus-within:bg-primary/10 flex items-center justify-center transition-colors">
-                    <Lock className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  </div>
-                </div>
-                <input
-                  type={showPw ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="New password (min 8 chars)"
-                  required
-                  disabled={isLoading}
-                  className="w-full pl-12 pr-10 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none"
-                />
-                <button type="button" onClick={() => setShowPw(!showPw)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all">
-                  {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-
-              {/* Strength bar */}
-              {newPassword && (
-                <div className="space-y-1 -mt-2">
-                  <div className="flex gap-1">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-1 flex-1 rounded-full transition-all duration-300"
-                        style={{ backgroundColor: i < strength ? sColor[strength - 1] : "#e5e7eb" }} />
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-medium" style={{ color: strength > 0 ? sColor[strength - 1] : "#6b7280" }}>
-                    {strength > 0 ? sLabel[strength - 1] : "Too weak"}
-                  </p>
-                </div>
-              )}
-
-              {/* Confirm */}
-              <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                    confirmPassword ? (pwMatch ? "bg-green-50" : "bg-red-50") : "bg-gray-100 group-focus-within:bg-primary/10"
-                  }`}>
-                    {confirmPassword ? (
-                      pwMatch ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                    ) : (
-                      <Lock className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                    )}
-                  </div>
-                </div>
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                  required
-                  disabled={isLoading}
-                  className={`w-full pl-12 pr-10 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder:text-gray-400 outline-none ${
-                    confirmPassword && !pwMatch ? "border-red-300" : "border-gray-200"
-                  }`}
-                />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-primary transition-all">
-                  {showConfirm ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-
-              {/* Submit */}
-              <motion.button
-                onClick={handleSubmit}
-                disabled={isLoading || !canSubmit}
-                whileHover={{ scale: isLoading || !canSubmit ? 1 : 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group shadow-sm"
-              >
-                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none" />
-                {isLoading ? (
-                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Resetting…</span></>
-                ) : (
-                  <><ShieldCheck className="w-3.5 h-3.5" /><span>Reset Password</span></>
+              <AnimatePresence>
+                {confirmPassword && !pwMatch && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="text-[10px] text-red-500">Passwords do not match</motion.p>
                 )}
-              </motion.button>
+              </AnimatePresence>
 
-              <p className="text-center text-xs text-gray-400">
-                Remember your password?{" "}
-                <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
-              </p>
-            </div>
-          </div>
-        </motion.div>
+              <button
+                type="submit" disabled={isLoading || !canSubmit}
+                className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                  hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                  flex items-center justify-center gap-2"
+              >
+                {isLoading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Resetting…</span></>
+                  : <><ShieldCheck className="w-4 h-4" /><span>Reset Password</span></>}
+              </button>
+            </form>
+
+            <p className="text-center text-[11px] text-muted-foreground">
+              Remember your password?{" "}
+              <Link href="/login" className="text-foreground font-semibold hover:underline underline-offset-2 transition-colors">
+                Sign in →
+              </Link>
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+          <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+            © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+          </p>
+        </div>
       </div>
 
-      {/* ═══════════ RIGHT — Branding ═══════════ */}
-      <div className="hidden lg:flex w-full lg:w-[50%] relative overflow-hidden flex-col items-center justify-center bg-primary">
-        <FloatingParticles />
-        <div className="absolute inset-0 bg-primary" />
-        <div className="absolute right-[-15%] top-[5%] w-[65%] h-[75%] rounded-full bg-white/5" />
-        <div className="absolute left-[-10%] bottom-[-10%] w-[55%] h-[55%] rounded-full bg-white/5" />
+      {/* ══ RIGHT — Primary editorial panel ══ */}
+      <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col">
+        <div className="flex items-center justify-between px-12 h-11 border-b border-white/10 flex-shrink-0">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Password Reset</span>
+          <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">Rwanda · Education</span>
+        </div>
 
-        <div className="relative z-10 flex flex-col items-center px-10 py-8 gap-4 max-w-md text-center">
-          <h2 className="text-3xl font-bold text-white">
-            Almost there!<br />
-            <span className="text-blue-200 text-2xl">Enter your new password.</span>
-          </h2>
-          <p className="text-white/70 text-sm leading-relaxed max-w-xs">
-            Choose a strong password that you haven't used before.
-          </p>
+        <div className="flex-1 flex flex-col justify-center px-12 py-6 gap-7">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.45, ease: "easeOut" }}
+          >
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-3">Almost there</p>
+            <div className="space-y-0.5">
+              <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Choose.</h2>
+              <h2 className="text-[38px] font-bold text-white/70 leading-[1.0] tracking-tight">Strong.</h2>
+              <h2 className="text-[38px] font-bold text-white/40 leading-[1.0] tracking-tight">Secure.</h2>
+            </div>
+            <p className="text-[13px] text-white/70 mt-3 leading-relaxed max-w-xs">
+              Choose a strong password that you haven't used before to keep your account safe.
+            </p>
+          </motion.div>
 
-          <div className="w-full mt-2 space-y-2">
-            {[
-              ["At least 8 characters", "Keep it long for better security"],
-              ["Mix letters & numbers", "Add uppercase, lowercase, digits"],
-              ["Use a special character", "!, @, #, $ make passwords stronger"],
-            ].map(([title, sub]) => (
-              <div key={title} className="flex items-start gap-3 bg-white/10 rounded-xl p-3">
-                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <div className="text-left">
-                  <p className="text-white text-sm font-semibold">{title}</p>
-                  <p className="text-white/60 text-xs">{sub}</p>
+          <div className="w-10 h-px bg-white/20" />
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.22, duration: 0.45 }}
+          >
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-1">Password tips</p>
+            <div className="space-y-0">
+              {tips.map((t, i) => (
+                <div key={i} className="flex items-start gap-4 py-3 border-b border-white/10 group">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-[13px] font-bold text-white">{t.title}</p>
+                    <p className="text-[11px] text-white/60 leading-snug">{t.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="px-12 py-2 border-t border-white/10 flex-shrink-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0">Security</p>
+          <p className="text-[13px] font-semibold text-white">OTP expires after 15 minutes</p>
         </div>
       </div>
     </div>
@@ -385,8 +428,8 @@ function ResetPasswordForm() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center">
-      <div className="bg-white rounded-xl p-8"><Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" /></div>
+    <div className="h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
     </div>
   )
 }

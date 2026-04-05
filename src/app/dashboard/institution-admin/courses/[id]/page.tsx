@@ -40,14 +40,14 @@ function RichContent({ html, className = "" }: { html: string; className?: strin
   if (isHtml) {
     return (
       <div
-        className={`rich-text-content prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-p:text-gray-700 prose-headings:font-bold prose-headings:text-gray-900 prose-ul:my-1.5 prose-ul:pl-4 prose-ol:my-1.5 prose-ol:pl-4 prose-li:my-0.5 prose-strong:font-semibold prose-strong:text-gray-900 overflow-hidden break-words whitespace-normal w-full max-w-full ${className}`}
+        className={`rich-text-content prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-p:text-muted-foreground prose-headings:font-bold prose-headings:text-foreground prose-ul:my-1.5 prose-ul:pl-4 prose-ol:my-1.5 prose-ol:pl-4 prose-li:my-0.5 prose-strong:font-semibold prose-strong:text-foreground overflow-hidden break-words whitespace-normal w-full max-w-full ${className}`}
         style={{ wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word', maxWidth: '100%' }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     )
   }
   return (
-    <p className={`text-sm text-gray-700 leading-relaxed break-words whitespace-pre-wrap w-full max-w-full ${className}`}
+    <p className={`text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-wrap w-full max-w-full ${className}`}
       style={{ wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
       {html}
     </p>
@@ -92,7 +92,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           setStudents(studentsArray)
         }
       } catch (error) {
-        console.error("Failed to fetch students:", error)
       }
     }
 
@@ -105,9 +104,9 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
 
   const getContentTypeIcon = (lesson: Lesson) => {
     const videoUrl = (lesson as any).video_url || lesson.video_url
-    if (videoUrl) return <Video className="w-4 h-4 text-blue-500" />
-    if (lesson.assessments && lesson.assessments.length > 0) return <Trophy className="w-4 h-4 text-yellow-500" />
-    return <Image className="w-4 h-4 text-gray-500" />
+    if (videoUrl) return <Video className="w-4 h-4 text-primary" />
+    if (lesson.assessments && lesson.assessments.length > 0) return <Trophy className="w-4 h-4 text-warning" />
+    return <Image className="w-4 h-4 text-muted-foreground" />
   }
 
   const formatDuration = (minutes: number) => {
@@ -146,7 +145,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
         mutate()
       }
     } catch (error) {
-      console.error("Failed to update course:", error)
       throw error
     }
   }
@@ -169,7 +167,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
         router.push("/dashboard/system-admin/courses")
       }
     } catch (error) {
-      console.error("Failed to delete course:", error)
     } finally {
       setIsDeleting(false)
       setIsDeleteOpen(false)
@@ -180,11 +177,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-8" />
+          <div className="h-8 bg-secondary dark:bg-secondary rounded w-1/3 mb-4" />
+          <div className="h-4 bg-secondary dark:bg-secondary rounded w-2/3 mb-8" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div key={i} className="h-24 bg-secondary dark:bg-secondary rounded" />
             ))}
           </div>
         </div>
@@ -231,7 +228,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
             </Button>
             <div className="flex gap-2">
               {isPublished ? (
-                <Badge className="bg-green-500 hover:bg-green-600">
+                <Badge className="bg-success/100 hover:bg-success">
                   <Zap className="w-3 h-3 mr-1" />
                   Published
                 </Badge>
@@ -239,13 +236,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                 <Badge variant="secondary">Draft</Badge>
               )}
               {rating >= 4.8 && (
-                <Badge className="bg-yellow-500 hover:bg-yellow-600">
+                <Badge className="bg-warning/100 hover:bg-warning">
                   <Trophy className="w-3 h-3 mr-1" />
                   Top Rated
                 </Badge>
               )}
               {enrollmentCount > 200 && (
-                <Badge className="bg-purple-500 hover:bg-purple-600">
+                <Badge className="bg-primary/100 hover:bg-primary">
                   <Award className="w-3 h-3 mr-1" />
                   Popular
                 </Badge>
@@ -285,7 +282,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               <span>{enrollmentCount} students</span>
             </div>
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <Star className="w-4 h-4 fill-yellow-400 text-warning" />
               <span>{rating.toFixed(1)} rating</span>
             </div>
             <div className="flex items-center gap-1">
@@ -387,7 +384,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                                     {isPreview && (
                                       <Badge
                                         variant="outline"
-                                        className="text-xs h-5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                                        className="text-xs h-5 bg-primary/10 dark:bg-primary/20/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30"
                                       >
                                         <Eye className="w-3 h-3 mr-1" />
                                         Preview
@@ -489,7 +486,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                     <div className="font-medium">Course Status</div>
                     <div className="text-sm text-muted-foreground">Control whether students can enroll</div>
                   </div>
-                  <Badge className={isPublished ? "bg-green-500" : "bg-gray-500"}>
+                  <Badge className={isPublished ? "bg-success/100" : "bg-muted"}>
                     {isPublished ? "Published" : "Draft"}
                   </Badge>
                 </div>
@@ -556,7 +553,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
                 Cancel
               </Button>
-              <Button className="bg-red-600 text-white hover:bg-red-700" onClick={confirmDelete} disabled={isDeleting}>
+              <Button className="bg-destructive text-white hover:bg-destructive" onClick={confirmDelete} disabled={isDeleting}>
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             </div>

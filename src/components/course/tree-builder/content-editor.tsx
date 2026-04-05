@@ -104,9 +104,9 @@ function VideoUploadSection({ lesson, onUpdate, onVideoFileSelect, selectedVideo
 
   return (
     <div className="space-y-3">
-      <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-md">
-        <Clock className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-amber-700">
+      <div className="flex items-start gap-2 p-2.5 bg-warning/10 border border-warning/30 rounded-md">
+        <Clock className="w-3.5 h-3.5 text-warning mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-warning">
           <span className="font-medium">Progress tracking enabled:</span> Students must watch at
           least 90% of this video before marking it complete. Skipping ahead is restricted.
         </p>
@@ -123,27 +123,27 @@ function VideoUploadSection({ lesson, onUpdate, onVideoFileSelect, selectedVideo
             value={lesson.video_url && lesson.video_url.startsWith("blob:") ? "" : lesson.video_url || ""}
             onChange={(e) => { onUpdate({ video_url: e.target.value }); if (selectedVideoFile) onVideoFileSelect?.(null) }}
             placeholder="https://youtube.com/watch?v=... or any video URL"
-            className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900"
+            className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground"
           />
-          <p className="text-xs text-gray-500 mt-1">Paste a direct video URL, YouTube, or Vimeo link</p>
+          <p className="text-xs text-muted-foreground mt-1">Paste a direct video URL, YouTube, or Vimeo link</p>
         </TabsContent>
 
         <TabsContent value="upload" className="mt-2">
           {selectedVideoFile ? (
-            <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Play className="w-4 h-4 text-blue-600" />
+            <div className="flex items-start gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+              <div className="w-9 h-9 bg-primary/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Play className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{selectedVideoFile.name}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{formatFileSize(selectedVideoFile.size)} • Ready to upload on save</p>
+                <p className="text-sm font-medium text-foreground truncate">{selectedVideoFile.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{formatFileSize(selectedVideoFile.size)} • Ready to upload on save</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Check className="w-3 h-3 text-green-500" />
-                  <span className="text-xs text-green-600">File selected</span>
+                  <Check className="w-3 h-3 text-success" />
+                  <span className="text-xs text-success">File selected</span>
                 </div>
               </div>
               <button type="button" onClick={handleRemoveFile}
-                className="p-1 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors">
+                className="p-1 rounded-full hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -154,21 +154,21 @@ function VideoUploadSection({ lesson, onUpdate, onVideoFileSelect, selectedVideo
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
-                dragOver ? "border-[#0158B7] bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                dragOver ? "border-[#0158B7] bg-primary/10" : "border-border hover:border-primary/40 hover:bg-muted/50"
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <Upload className="w-5 h-5 text-gray-500" />
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Upload className="w-5 h-5 text-muted-foreground" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-700">Drop video here or <span className="text-[#0158B7]">browse</span></p>
-                <p className="text-xs text-gray-400 mt-1">MP4, MOV, AVI, MKV, WebM and all video formats • Up to 4 GB</p>
+                <p className="text-sm font-medium text-muted-foreground">Drop video here or <span className="text-[#0158B7]">browse</span></p>
+                <p className="text-xs text-muted-foreground mt-1">MP4, MOV, AVI, MKV, WebM and all video formats • Up to 4 GB</p>
               </div>
               <input ref={fileInputRef} type="file" accept={ACCEPTED_VIDEO_EXTENSIONS} onChange={handleFileInput} className="hidden" />
             </div>
           )}
           {fileError && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-red-600">
+            <div className="flex items-center gap-2 mt-2 text-xs text-destructive">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />{fileError}
             </div>
           )}
@@ -236,13 +236,13 @@ function ThumbnailUploadSection({ lesson, onUpdate, onThumbnailFileSelect, selec
             value={lesson.thumbnail_url && lesson.thumbnail_url.startsWith("blob:") ? "" : lesson.thumbnail_url || ""}
             onChange={(e) => { onUpdate({ thumbnail_url: e.target.value }); if (selectedThumbnailFile) onThumbnailFileSelect?.(null) }}
             placeholder="https://example.com/image.jpg"
-            className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900"
+            className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground"
           />
           {previewUrl && !selectedThumbnailFile && (
-            <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+            <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
               <img src={previewUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
               <button type="button" onClick={handleRemove}
-                className="absolute top-1 right-1 p-1 bg-white/80 rounded-full hover:bg-red-100 text-gray-500 hover:text-red-600 transition-colors">
+                className="absolute top-1 right-1 p-1 bg-card/80 rounded-full hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -251,12 +251,12 @@ function ThumbnailUploadSection({ lesson, onUpdate, onThumbnailFileSelect, selec
 
         <TabsContent value="upload" className="mt-2">
           {selectedThumbnailFile && previewUrl ? (
-            <div className="relative w-full h-36 rounded-lg overflow-hidden border border-blue-200">
+            <div className="relative w-full h-36 rounded-lg overflow-hidden border border-primary/30">
               <img src={previewUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
               <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 flex items-center justify-between">
                 <span className="text-xs text-white truncate">{selectedThumbnailFile.name}</span>
                 <button type="button" onClick={handleRemove}
-                  className="ml-2 p-0.5 rounded-full hover:bg-red-500/80 text-white transition-colors flex-shrink-0">
+                  className="ml-2 p-0.5 rounded-full hover:bg-destructive/100/80 text-white transition-colors flex-shrink-0">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -268,21 +268,21 @@ function ThumbnailUploadSection({ lesson, onUpdate, onThumbnailFileSelect, selec
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`flex flex-col items-center justify-center gap-2 p-5 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
-                dragOver ? "border-[#0158B7] bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                dragOver ? "border-[#0158B7] bg-primary/10" : "border-border hover:border-primary/40 hover:bg-muted/50"
               }`}
             >
-              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-                <ImageIcon2 className="w-4 h-4 text-gray-500" />
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+                <ImageIcon2 className="w-4 h-4 text-muted-foreground" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-700">Drop image here or <span className="text-[#0158B7]">browse</span></p>
-                <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP, GIF • Up to 10 MB</p>
+                <p className="text-sm font-medium text-muted-foreground">Drop image here or <span className="text-[#0158B7]">browse</span></p>
+                <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG, WEBP, GIF • Up to 10 MB</p>
               </div>
               <input ref={fileInputRef} type="file" accept={ACCEPTED_IMAGE_EXTENSIONS} onChange={handleFileInput} className="hidden" />
             </div>
           )}
           {fileError && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-red-600">
+            <div className="flex items-center gap-2 mt-2 text-xs text-destructive">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />{fileError}
             </div>
           )}
@@ -339,24 +339,24 @@ function LessonMaterialsSection({ lesson, onUpdate, onMaterialFilesChange, pendi
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-muted-foreground">
         Upload downloadable materials — PDFs, slides, code files, zip archives, etc. Up to {MAX_MATERIALS_COUNT} files, 100 MB each.
       </p>
 
       {existingMaterials.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-gray-600">Uploaded ({existingMaterials.length})</p>
+          <p className="text-xs font-medium text-muted-foreground">Uploaded ({existingMaterials.length})</p>
           {existingMaterials.map((mat, i) => (
-            <div key={i} className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-lg">
+            <div key={i} className="flex items-center gap-2 p-2.5 bg-success/10 border border-success/30 rounded-lg">
               <span className="text-base flex-shrink-0">{getIcon(mat.original_name || mat.title)}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-800 truncate">{mat.title || mat.original_name}</p>
-                {mat.size_bytes && <p className="text-xs text-gray-500">{formatFileSize(mat.size_bytes)}</p>}
+                <p className="text-xs font-medium text-foreground truncate">{mat.title || mat.original_name}</p>
+                {mat.size_bytes && <p className="text-xs text-muted-foreground">{formatFileSize(mat.size_bytes)}</p>}
               </div>
               <a href={mat.url} target="_blank" rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline flex-shrink-0 px-1">View</a>
+                className="text-xs text-primary hover:underline flex-shrink-0 px-1">View</a>
               <button type="button" onClick={() => removeExisting(i)}
-                className="p-1 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0">
+                className="p-1 rounded-full hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -366,16 +366,16 @@ function LessonMaterialsSection({ lesson, onUpdate, onMaterialFilesChange, pendi
 
       {pendingMaterialFiles.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-gray-600">Pending upload ({pendingMaterialFiles.length})</p>
+          <p className="text-xs font-medium text-muted-foreground">Pending upload ({pendingMaterialFiles.length})</p>
           {pendingMaterialFiles.map((file, i) => (
-            <div key={i} className="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+            <div key={i} className="flex items-center gap-2 p-2.5 bg-primary/10 border border-primary/30 rounded-lg">
               <span className="text-base flex-shrink-0">{getIcon(file.name)}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-800 truncate">{file.name}</p>
-                <p className="text-xs text-gray-500">{formatFileSize(file.size)} • Will upload on save</p>
+                <p className="text-xs font-medium text-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)} • Will upload on save</p>
               </div>
               <button type="button" onClick={() => removePending(i)}
-                className="p-1 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0">
+                className="p-1 rounded-full hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -390,22 +390,22 @@ function LessonMaterialsSection({ lesson, onUpdate, onMaterialFilesChange, pendi
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`flex flex-col items-center justify-center gap-2 p-5 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
-            dragOver ? "border-[#0158B7] bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+            dragOver ? "border-[#0158B7] bg-primary/10" : "border-border hover:border-primary/40 hover:bg-muted/50"
           }`}
         >
-          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-            <Paperclip className="w-4 h-4 text-gray-500" />
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+            <Paperclip className="w-4 h-4 text-muted-foreground" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-700">Drop files here or <span className="text-[#0158B7]">browse</span></p>
-            <p className="text-xs text-gray-400 mt-0.5">PDF, DOCX, XLSX, PPT, ZIP, MP3, images, code • Up to 100 MB each</p>
+            <p className="text-sm font-medium text-muted-foreground">Drop files here or <span className="text-[#0158B7]">browse</span></p>
+            <p className="text-xs text-muted-foreground mt-0.5">PDF, DOCX, XLSX, PPT, ZIP, MP3, images, code • Up to 100 MB each</p>
           </div>
           <input ref={fileInputRef} type="file" accept={ACCEPTED_MATERIAL_EXTENSIONS} multiple onChange={handleFileInput} className="hidden" />
         </div>
       )}
 
       {fileError && (
-        <div className="flex items-center gap-2 text-xs text-red-600">
+        <div className="flex items-center gap-2 text-xs text-destructive">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />{fileError}
         </div>
       )}
@@ -457,19 +457,19 @@ export function ContentEditor({
   if (item.type === "module") {
     const module = currentData as Module
     return (
-      <Card className="h-full overflow-y-auto border border-gray-200 bg-white shadow-sm">
-        <CardHeader className="border-b border-gray-200 bg-gray-50">
+      <Card className="h-full overflow-y-auto border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/50">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <BookOpen className="w-5 h-5 text-[#0158B7]" />
                 {module.title || "Untitled Module"}
               </CardTitle>
-              <CardDescription className="text-gray-600">Edit module details</CardDescription>
+              <CardDescription className="text-muted-foreground">Edit module details</CardDescription>
             </div>
             <Button variant="ghost" size="sm"
               onClick={() => (deleteConfirm ? onDelete() : setDeleteConfirm(true))}
-              className={`${deleteConfirm ? "text-red-600 bg-red-50 hover:bg-red-100" : "text-red-600 hover:bg-red-50"} border border-red-300`}>
+              className={`${deleteConfirm ? "text-destructive bg-destructive/10 hover:bg-destructive/15" : "text-destructive hover:bg-destructive/10"} border border-destructive/40`}>
               <Trash2 className="w-4 h-4 mr-2" />
               {deleteConfirm ? "Confirm Delete" : "Delete"}
             </Button>
@@ -477,34 +477,34 @@ export function ContentEditor({
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="module-title" className="text-gray-900 font-medium">Module Title</Label>
+            <Label htmlFor="module-title" className="text-foreground font-medium">Module Title</Label>
             <Input id="module-title" value={module.title}
               onChange={(e) => { setCurrentData({ ...module, title: e.target.value }); onUpdate({ title: e.target.value }) }}
               placeholder="e.g., Introduction to React"
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="module-description" className="text-gray-900 font-medium">Description</Label>
+            <Label htmlFor="module-description" className="text-foreground font-medium">Description</Label>
             <Textarea id="module-description" value={module.description || ""}
               onChange={(e) => { setCurrentData({ ...module, description: e.target.value }); onUpdate({ description: e.target.value }) }}
               placeholder="Describe what students will learn in this module..."
               rows={4}
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="module-duration" className="text-gray-900 font-medium">Estimated Duration (hours)</Label>
+            <Label htmlFor="module-duration" className="text-foreground font-medium">Estimated Duration (hours)</Label>
             <Input id="module-duration" type="number" value={module.estimated_duration_hours || 0}
               onChange={(e) => { setCurrentData({ ...module, estimated_duration_hours: Number(e.target.value) }); onUpdate({ estimated_duration_hours: Number(e.target.value) }) }}
               placeholder="Estimated duration in hours"
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
             <div className="flex gap-3">
               <AlertCircle className="w-5 h-5 text-[#0158B7] flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-muted-foreground">
                 <p className="font-medium mb-1">Module Statistics</p>
                 <p>
                   {module.lessons?.length || 0} lessons •{" "}
@@ -529,19 +529,19 @@ export function ContentEditor({
     const currentMaterialFiles = materialFiles?.get(item.id) || []
 
     return (
-      <Card className="h-full overflow-y-auto border border-gray-200 bg-white shadow-sm">
-        <CardHeader className="border-b border-gray-200 bg-gray-50">
+      <Card className="h-full overflow-y-auto border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/50">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <FileText className="w-5 h-5 text-[#0158B7]" />
                 {lesson.title || "Untitled Lesson"}
               </CardTitle>
-              <CardDescription className="text-gray-600">{module?.title}</CardDescription>
+              <CardDescription className="text-muted-foreground">{module?.title}</CardDescription>
             </div>
             <Button variant="ghost" size="sm"
               onClick={() => (deleteConfirm ? onDelete() : setDeleteConfirm(true))}
-              className={`${deleteConfirm ? "text-red-600 bg-red-50 hover:bg-red-100" : "text-red-600 hover:bg-red-50"} border border-red-300`}>
+              className={`${deleteConfirm ? "text-destructive bg-destructive/10 hover:bg-destructive/15" : "text-destructive hover:bg-destructive/10"} border border-destructive/40`}>
               <Trash2 className="w-4 h-4 mr-2" />
               {deleteConfirm ? "Confirm Delete" : "Delete"}
             </Button>
@@ -549,18 +549,18 @@ export function ContentEditor({
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="lesson-title" className="text-gray-900 font-medium">Lesson Title</Label>
+            <Label htmlFor="lesson-title" className="text-foreground font-medium">Lesson Title</Label>
             <Input id="lesson-title" value={lesson.title}
               onChange={(e) => { setCurrentData({ ...lesson, title: e.target.value }); onUpdate({ title: e.target.value }) }}
               placeholder="e.g., React Hooks Basics"
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
           <Tabs defaultValue="content" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-gray-100 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-4 bg-muted p-1 rounded-lg">
               {["content", "media", "settings", "resources"].map((tab) => (
                 <TabsTrigger key={tab} value={tab}
-                  className="data-[state=active]:bg-white data-[state=active]:text-[#0158B7] data-[state=active]:font-medium data-[state=active]:shadow-sm text-gray-600 text-xs capitalize">
+                  className="data-[state=active]:bg-card data-[state=active]:text-[#0158B7] data-[state=active]:font-medium data-[state=active]:shadow-sm text-muted-foreground text-xs capitalize">
                   {tab}
                 </TabsTrigger>
               ))}
@@ -569,18 +569,18 @@ export function ContentEditor({
             {/* CONTENT */}
             <TabsContent value="content" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="lesson-type" className="text-gray-900 font-medium">Lesson Type</Label>
+                <Label htmlFor="lesson-type" className="text-foreground font-medium">Lesson Type</Label>
                 <div className="flex items-center gap-2">
                   <div className="flex-shrink-0">
-                    {lesson.type === "VIDEO" && <Video className="w-4 h-4 text-gray-500" />}
-                    {lesson.type === "TEXT" && <FileText className="w-4 h-4 text-gray-500" />}
-                    {lesson.type === "QUIZ" && <CheckSquare className="w-4 h-4 text-gray-500" />}
-                    {lesson.type === "ASSIGNMENT" && <Briefcase className="w-4 h-4 text-gray-500" />}
-                    {lesson.type === "RESOURCE" && <FileDown className="w-4 h-4 text-gray-500" />}
+                    {lesson.type === "VIDEO" && <Video className="w-4 h-4 text-muted-foreground" />}
+                    {lesson.type === "TEXT" && <FileText className="w-4 h-4 text-muted-foreground" />}
+                    {lesson.type === "QUIZ" && <CheckSquare className="w-4 h-4 text-muted-foreground" />}
+                    {lesson.type === "ASSIGNMENT" && <Briefcase className="w-4 h-4 text-muted-foreground" />}
+                    {lesson.type === "RESOURCE" && <FileDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
                   <select id="lesson-type" value={lesson.type || "VIDEO"}
                     onChange={(e) => { setCurrentData({ ...lesson, type: e.target.value }); onUpdate({ type: e.target.value }) }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-white text-gray-900">
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-card text-foreground">
                     <option value="VIDEO">Video Lesson</option>
                     <option value="TEXT">Text Lesson</option>
                     <option value="QUIZ">Quiz Lesson</option>
@@ -591,11 +591,11 @@ export function ContentEditor({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-gray-900 font-medium">Lesson Content</Label>
+                <Label className="text-foreground font-medium">Lesson Content</Label>
                 <RichTextEditor
                   value={lesson.content || ""}
                   onChange={(value) => { setCurrentData({ ...lesson, content: value }); onUpdate({ content: value }) }}
-                  className="min-h-[300px] border-gray-300 rounded-lg overflow-hidden"
+                  className="min-h-[300px] border-border rounded-lg overflow-hidden"
                 />
               </div>
             </TabsContent>
@@ -604,7 +604,7 @@ export function ContentEditor({
             <TabsContent value="media" className="space-y-6 mt-4">
               {(lesson.type === "VIDEO" || !lesson.type) && (
                 <div className="space-y-2">
-                  <Label className="text-gray-900 font-medium flex items-center gap-2">
+                  <Label className="text-foreground font-medium flex items-center gap-2">
                     <Film className="w-4 h-4 text-[#0158B7]" /> Video Source
                   </Label>
                   <VideoUploadSection
@@ -617,9 +617,9 @@ export function ContentEditor({
               )}
 
               <div className="space-y-2">
-                <Label className="text-gray-900 font-medium flex items-center gap-2">
+                <Label className="text-foreground font-medium flex items-center gap-2">
                   <ImageIcon2 className="w-4 h-4 text-[#0158B7]" /> Lesson Thumbnail
-                  <span className="text-xs font-normal text-gray-500">(cover image shown to students)</span>
+                  <span className="text-xs font-normal text-muted-foreground">(cover image shown to students)</span>
                 </Label>
                 <ThumbnailUploadSection
                   lesson={lesson}
@@ -630,9 +630,9 @@ export function ContentEditor({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-gray-900 font-medium flex items-center gap-2">
+                <Label className="text-foreground font-medium flex items-center gap-2">
                   <FolderOpen className="w-4 h-4 text-[#0158B7]" /> Course Materials
-                  <span className="text-xs font-normal text-gray-500">(downloadable files for students)</span>
+                  <span className="text-xs font-normal text-muted-foreground">(downloadable files for students)</span>
                 </Label>
                 <LessonMaterialsSection
                   lesson={lesson}
@@ -647,31 +647,31 @@ export function ContentEditor({
             <TabsContent value="settings" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="lesson-duration" className="text-gray-900 font-medium">Duration (minutes)</Label>
+                  <Label htmlFor="lesson-duration" className="text-foreground font-medium">Duration (minutes)</Label>
                   <Input id="lesson-duration" type="number" value={lesson.duration_minutes || 0}
                     onChange={(e) => { setCurrentData({ ...lesson, duration_minutes: Number(e.target.value) }); onUpdate({ duration_minutes: Number(e.target.value) }) }}
                     placeholder="15"
-                    className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                    className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/50">
                   <div className="space-y-0.5">
-                    <Label htmlFor="preview-lesson" className="flex items-center gap-2 text-gray-900 font-medium cursor-pointer">
+                    <Label htmlFor="preview-lesson" className="flex items-center gap-2 text-foreground font-medium cursor-pointer">
                       <Eye className="w-4 h-4 text-[#0158B7]" /> Preview Lesson
                     </Label>
-                    <p className="text-sm text-gray-600">Allow students to preview this lesson</p>
+                    <p className="text-sm text-muted-foreground">Allow students to preview this lesson</p>
                   </div>
                   <Switch id="preview-lesson" checked={lesson.is_preview || false}
                     onCheckedChange={(c) => { setCurrentData({ ...lesson, is_preview: c }); onUpdate({ is_preview: c }) }}
                     className="data-[state=checked]:bg-[#0158B7]" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/50">
                   <div className="space-y-0.5">
-                    <Label htmlFor="publish-lesson" className="flex items-center gap-2 text-gray-900 font-medium cursor-pointer">
+                    <Label htmlFor="publish-lesson" className="flex items-center gap-2 text-foreground font-medium cursor-pointer">
                       <Zap className="w-4 h-4 text-[#0158B7]" /> Published
                     </Label>
-                    <p className="text-sm text-gray-600">Make this lesson available to students</p>
+                    <p className="text-sm text-muted-foreground">Make this lesson available to students</p>
                   </div>
                   <Switch id="publish-lesson" checked={lesson.is_published !== false}
                     onCheckedChange={(c) => { setCurrentData({ ...lesson, is_published: c }); onUpdate({ is_published: c }) }}
@@ -684,16 +684,16 @@ export function ContentEditor({
             <TabsContent value="resources" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div>
-                  <Label className="text-base font-medium text-gray-900">External Resource Links</Label>
-                  <p className="text-sm text-gray-600 mt-1">Add external links and references (different from uploaded materials in the Media tab)</p>
+                  <Label className="text-base font-medium text-foreground">External Resource Links</Label>
+                  <p className="text-sm text-muted-foreground mt-1">Add external links and references (different from uploaded materials in the Media tab)</p>
                 </div>
 
                 <div className="space-y-3">
                   {(lesson.resources || []).map((resource, index) => (
-                    <Card key={index} className="p-4 border border-gray-200 bg-white">
+                    <Card key={index} className="p-4 border border-border bg-card">
                       <div className="space-y-3">
                         <div className="space-y-2">
-                          <Label htmlFor={`resource-title-${index}`} className="text-sm text-gray-900 font-medium">Resource Title</Label>
+                          <Label htmlFor={`resource-title-${index}`} className="text-sm text-foreground font-medium">Resource Title</Label>
                           <Input id={`resource-title-${index}`} value={resource.title}
                             onChange={(e) => {
                               const r = [...(lesson.resources || [])]
@@ -701,10 +701,10 @@ export function ContentEditor({
                               setCurrentData({ ...lesson, resources: r }); onUpdate({ resources: r })
                             }}
                             placeholder="e.g., Sample Code, PDF Guide"
-                            className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                            className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor={`resource-url-${index}`} className="text-sm text-gray-900 font-medium">Resource URL</Label>
+                          <Label htmlFor={`resource-url-${index}`} className="text-sm text-foreground font-medium">Resource URL</Label>
                           <Input id={`resource-url-${index}`} value={resource.url}
                             onChange={(e) => {
                               const r = [...(lesson.resources || [])]
@@ -712,10 +712,10 @@ export function ContentEditor({
                               setCurrentData({ ...lesson, resources: r }); onUpdate({ resources: r })
                             }}
                             placeholder="https://example.com/resource"
-                            className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                            className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor={`resource-type-${index}`} className="text-sm text-gray-900 font-medium">Resource Type</Label>
+                          <Label htmlFor={`resource-type-${index}`} className="text-sm text-foreground font-medium">Resource Type</Label>
                           <Input id={`resource-type-${index}`} value={resource.type || "link"}
                             onChange={(e) => {
                               const r = [...(lesson.resources || [])]
@@ -723,14 +723,14 @@ export function ContentEditor({
                               setCurrentData({ ...lesson, resources: r }); onUpdate({ resources: r })
                             }}
                             placeholder="pdf, link, code, etc."
-                            className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                            className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                         </div>
                         <Button variant="ghost" size="sm"
                           onClick={() => {
                             const r = lesson.resources?.filter((_, i) => i !== index) || []
                             setCurrentData({ ...lesson, resources: r }); onUpdate({ resources: r })
                           }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full border border-red-200">
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full border border-destructive/30">
                           <Trash2 className="w-4 h-4 mr-2" /> Remove Resource
                         </Button>
                       </div>
@@ -743,7 +743,7 @@ export function ContentEditor({
                     const r = [...(lesson.resources || []), { title: "", url: "", type: "link" }]
                     setCurrentData({ ...lesson, resources: r }); onUpdate({ resources: r })
                   }}
-                  className="w-full bg-transparent border-gray-300 text-gray-700 hover:bg-gray-50">
+                  className="w-full bg-transparent border-border text-muted-foreground hover:bg-muted/50">
                   <Plus className="w-4 h-4 mr-2" /> Add Resource Link
                 </Button>
               </div>
@@ -785,21 +785,21 @@ export function ContentEditor({
     }
 
     return (
-      <Card className="h-full overflow-y-auto border border-gray-200 bg-white shadow-sm">
-        <CardHeader className="border-b border-gray-200 bg-gray-50">
+      <Card className="h-full overflow-y-auto border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/50">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Trophy className="w-5 h-5 text-[#0158B7]" />
                 {assessment.title || "Untitled Assessment"}
               </CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardDescription className="text-muted-foreground">
                 {module?.title} {lesson ? `• ${lesson.title}` : ""}
               </CardDescription>
             </div>
             <Button variant="ghost" size="sm"
               onClick={() => (deleteConfirm ? onDelete() : setDeleteConfirm(true))}
-              className={`${deleteConfirm ? "text-red-600 bg-red-50 hover:bg-red-100" : "text-red-600 hover:bg-red-50"} border border-red-300`}>
+              className={`${deleteConfirm ? "text-destructive bg-destructive/10 hover:bg-destructive/15" : "text-destructive hover:bg-destructive/10"} border border-destructive/40`}>
               <Trash2 className="w-4 h-4 mr-2" />
               {deleteConfirm ? "Confirm Delete" : "Delete"}
             </Button>
@@ -807,27 +807,27 @@ export function ContentEditor({
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="assessment-title" className="text-gray-900 font-medium">Assessment Title</Label>
+            <Label htmlFor="assessment-title" className="text-foreground font-medium">Assessment Title</Label>
             <Input id="assessment-title" value={assessment.title}
               onChange={(e) => { setCurrentData({ ...assessment, title: e.target.value }); onUpdate({ title: e.target.value }) }}
               placeholder="e.g., Module 1 Quiz"
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assessment-description" className="text-gray-900 font-medium">Description</Label>
+            <Label htmlFor="assessment-description" className="text-foreground font-medium">Description</Label>
             <Textarea id="assessment-description" value={assessment.description || ""}
               onChange={(e) => { setCurrentData({ ...assessment, description: e.target.value }); onUpdate({ description: e.target.value }) }}
               placeholder="Assessment description and instructions" rows={3}
-              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="assessment-type" className="text-gray-900 font-medium">Assessment Type</Label>
+              <Label htmlFor="assessment-type" className="text-foreground font-medium">Assessment Type</Label>
               <select id="assessment-type" value={assessment.type || "QUIZ"}
                 onChange={(e) => { setCurrentData({ ...assessment, type: e.target.value }); onUpdate({ type: e.target.value }) }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-white text-gray-900">
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-card text-foreground">
                 <option value="QUIZ">Quiz</option>
                 <option value="EXAM">Exam</option>
                 <option value="ASSIGNMENT">Assignment</option>
@@ -835,35 +835,35 @@ export function ContentEditor({
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="passing-score" className="text-gray-900 font-medium">Passing Score (%)</Label>
+              <Label htmlFor="passing-score" className="text-foreground font-medium">Passing Score (%)</Label>
               <Input id="passing-score" type="number" min="0" max="100" value={assessment.passing_score || 70}
                 onChange={(e) => { setCurrentData({ ...assessment, passing_score: Number(e.target.value) }); onUpdate({ passing_score: Number(e.target.value) }) }}
-                className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="time-limit" className="text-gray-900 font-medium">Time Limit (minutes)</Label>
+              <Label htmlFor="time-limit" className="text-foreground font-medium">Time Limit (minutes)</Label>
               <Input id="time-limit" type="number" min="0" value={assessment.time_limit_minutes || ""}
                 onChange={(e) => { setCurrentData({ ...assessment, time_limit_minutes: Number(e.target.value) || null }); onUpdate({ time_limit_minutes: Number(e.target.value) || null }) }}
                 placeholder="No time limit"
-                className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="max-attempts" className="text-gray-900 font-medium">Max Attempts</Label>
+              <Label htmlFor="max-attempts" className="text-foreground font-medium">Max Attempts</Label>
               <Input id="max-attempts" type="number" min="1" value={assessment.max_attempts || 3}
                 onChange={(e) => { setCurrentData({ ...assessment, max_attempts: Number(e.target.value) }); onUpdate({ max_attempts: Number(e.target.value) }) }}
-                className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/50">
             <div className="space-y-0.5">
-              <Label htmlFor="publish-assessment" className="flex items-center gap-2 text-gray-900 font-medium cursor-pointer">
+              <Label htmlFor="publish-assessment" className="flex items-center gap-2 text-foreground font-medium cursor-pointer">
                 <Zap className="w-4 h-4 text-[#0158B7]" /> Published
               </Label>
-              <p className="text-sm text-gray-600">Make this assessment available to students</p>
+              <p className="text-sm text-muted-foreground">Make this assessment available to students</p>
             </div>
             <Switch id="publish-assessment" checked={assessment.is_published !== false}
               onCheckedChange={(c) => { setCurrentData({ ...assessment, is_published: c }); onUpdate({ is_published: c }) }}
@@ -871,9 +871,9 @@ export function ContentEditor({
           </div>
 
           {/* Questions */}
-          <div className="border-t border-gray-200 pt-6">
+          <div className="border-t border-border pt-6">
             <div className="flex items-center justify-between mb-4">
-              <Label className="text-lg font-medium text-gray-900">Questions</Label>
+              <Label className="text-lg font-medium text-foreground">Questions</Label>
               <Button size="sm" onClick={addQuestion} className="bg-[#0158B7] hover:bg-[#014A9C] text-white">
                 <Plus className="w-4 h-4 mr-2" /> Add Question
               </Button>
@@ -881,35 +881,35 @@ export function ContentEditor({
 
             <div className="space-y-4">
               {(assessment.questions || []).map((question, index) => (
-                <Card key={question.id || index} className="p-4 border border-gray-200 bg-white">
+                <Card key={question.id || index} className="p-4 border border-border bg-card">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Hash className="w-4 h-4 text-[#0158B7]" />
-                      <span className="font-medium text-gray-900">Question {index + 1}</span>
+                      <span className="font-medium text-foreground">Question {index + 1}</span>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => deleteQuestion(index)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200">
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 border border-destructive/30">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor={`question-text-${index}`} className="text-gray-900 font-medium">Question Text</Label>
+                      <Label htmlFor={`question-text-${index}`} className="text-foreground font-medium">Question Text</Label>
                       <Textarea id={`question-text-${index}`} value={question.question}
                         onChange={(e) => updateQuestion(index, { question: e.target.value })}
                         placeholder="Enter your question here" rows={2}
-                        className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                        className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`question-type-${index}`} className="text-gray-900 font-medium">Question Type</Label>
+                      <Label htmlFor={`question-type-${index}`} className="text-foreground font-medium">Question Type</Label>
                       <div className="flex items-center gap-2">
                         <div className="flex-shrink-0">
-                          {question.type === "MULTIPLE_CHOICE" && <ListPlus className="w-4 h-4 text-gray-500" />}
-                          {question.type === "TRUE_FALSE" && <Check className="w-4 h-4 text-gray-500" />}
-                          {question.type === "SHORT_ANSWER" && <Type className="w-4 h-4 text-gray-500" />}
-                          {question.type === "ESSAY" && <FileText className="w-4 h-4 text-gray-500" />}
+                          {question.type === "MULTIPLE_CHOICE" && <ListPlus className="w-4 h-4 text-muted-foreground" />}
+                          {question.type === "TRUE_FALSE" && <Check className="w-4 h-4 text-muted-foreground" />}
+                          {question.type === "SHORT_ANSWER" && <Type className="w-4 h-4 text-muted-foreground" />}
+                          {question.type === "ESSAY" && <FileText className="w-4 h-4 text-muted-foreground" />}
                         </div>
                         <select id={`question-type-${index}`} value={question.type || "MULTIPLE_CHOICE"}
                           onChange={(e) => {
@@ -919,7 +919,7 @@ export function ContentEditor({
                             else { u.options = []; u.correct_answer = "" }
                             updateQuestion(index, u)
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-white text-gray-900">
+                          className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 bg-card text-foreground">
                           <option value="MULTIPLE_CHOICE">Multiple Choice</option>
                           <option value="TRUE_FALSE">True/False</option>
                           <option value="SHORT_ANSWER">Short Answer</option>
@@ -930,18 +930,18 @@ export function ContentEditor({
 
                     {(question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") && (
                       <div className="space-y-2">
-                        <Label className="text-gray-900 font-medium">Options</Label>
+                        <Label className="text-foreground font-medium">Options</Label>
                         {(question.options || []).map((option, oi) => (
                           <div key={oi} className="flex gap-2 items-center">
                             <Input value={option}
                               onChange={(e) => { const o = [...(question.options || [])]; o[oi] = e.target.value; updateQuestion(index, { options: o }) }}
                               placeholder={`Option ${oi + 1}`}
-                              className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                              className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                             <button type="button" onClick={() => updateQuestion(index, { correct_answer: option })}
                               className={`px-3 py-2 rounded text-sm font-medium min-w-[80px] transition-colors ${
                                 question.correct_answer === option
                                   ? "bg-[#0158B7] text-white border border-[#0158B7]"
-                                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                                  : "border border-border text-muted-foreground hover:bg-muted/50"
                               }`}>
                               {question.correct_answer === option ? "Correct ✓" : "Set Correct"}
                             </button>
@@ -952,19 +952,19 @@ export function ContentEditor({
 
                     {(question.type === "SHORT_ANSWER" || question.type === "ESSAY") && (
                       <div className="space-y-2">
-                        <Label className="text-gray-900 font-medium">Correct Answer</Label>
+                        <Label className="text-foreground font-medium">Correct Answer</Label>
                         <Textarea value={question.correct_answer || ""}
                           onChange={(e) => updateQuestion(index, { correct_answer: e.target.value })}
                           placeholder="Enter the correct answer" rows={2}
-                          className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                          className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                       </div>
                     )}
 
                     <div className="space-y-2">
-                      <Label className="text-gray-900 font-medium">Points</Label>
+                      <Label className="text-foreground font-medium">Points</Label>
                       <Input type="number" min="0" value={question.points || 1}
                         onChange={(e) => updateQuestion(index, { points: Number(e.target.value) })}
-                        className="border-gray-300 focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-gray-900" />
+                        className="border-border focus:border-[#0158B7] focus:ring-2 focus:ring-[#0158B7]/20 focus:ring-offset-0 text-foreground" />
                     </div>
                   </div>
                 </Card>

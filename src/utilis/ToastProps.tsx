@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react-refresh/only-export-components */
 import { ToastContainerProps, ToastOptions, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,15 +16,15 @@ const ToastProps: ToastContainerProps = {
 };
 
 const customToastOptionError: ToastOptions = {
-  className: 'bg-white-400 text-black p-4 rounded shadow-lg text-sm',
+  className: 'bg-card-400 text-black p-4 rounded shadow-lg text-sm',
 };
 
 const customToastOptionSuccess: ToastOptions = {
-  className: 'bg-white-400 text-gree p-4 rounded shadow-lg text-sm',
+  className: 'bg-card-400 text-gree p-4 rounded shadow-lg text-sm',
 };
 
 const customToastOptionInfo: ToastOptions = {
-  className: 'bg-blue-400 text-white p-4 rounded shadow-lg text-sm',
+  className: 'bg-primary text-white p-4 rounded shadow-lg text-sm',
 };
 
 export const showSuccessToast = (message: string, options?: ToastOptions) => {

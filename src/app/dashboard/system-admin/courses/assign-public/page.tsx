@@ -118,7 +118,7 @@ export default function AssignPublicCoursesPage() {
       ).unwrap();
 
       toast.success(
-        `Course "${selectedCourse.title}" assigned to institution successfully!`
+        `Course "${selectedCourse.title}" has been copied to the institution successfully! The original public course remains available.`
       );
       setShowAssignModal(false);
       setSelectedCourse(null);
@@ -133,42 +133,42 @@ export default function AssignPublicCoursesPage() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      PUBLISHED: "bg-green-100 text-green-700",
-      DRAFT: "bg-yellow-100 text-yellow-700",
-      ARCHIVED: "bg-gray-100 text-gray-700",
+      PUBLISHED: "bg-success/15 text-success",
+      DRAFT: "bg-warning/15 text-warning",
+      ARCHIVED: "bg-muted text-muted-foreground",
     };
     return styles[status] || styles.DRAFT;
   };
 
   const getTypeBadge = (type: string) =>
     type === "MOOC"
-      ? "bg-blue-100 text-blue-700"
-      : "bg-purple-100 text-purple-700";
+      ? "bg-primary/15 text-primary"
+      : "bg-primary/15 text-primary";
 
   const selectClass =
-    "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none";
+    "w-full px-4 py-2 border border-border rounded-lg text-sm bg-card text-foreground focus:ring-2 focus:ring-blue-500 focus:outline-none";
 
   const selectedInstitution = institutions.find(
     (i) => i.id === selectedInstitutionId
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted/50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 Assign Public Courses to Institutions
               </h1>
-              <p className="text-gray-500 mt-2">
-                Select public courses and assign them to institutions. These courses will become institution courses.
+              <p className="text-muted-foreground mt-2">
+                Select public courses and copy them to institutions. The original public course is kept intact — a full copy (including all modules, lessons, assessments and quizzes) is created for the institution.
               </p>
             </div>
             <button
               onClick={() => router.push("/dashboard/system-admin/courses")}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
             >
               <X className="w-4 h-4" />
               Back to Courses
@@ -183,39 +183,39 @@ export default function AssignPublicCoursesPage() {
               label: "Available Public Courses",
               value: publicCoursesPagination.total,
               icon: BookOpen,
-              iconClass: "text-blue-600",
-              iconBg: "bg-blue-100",
+              iconClass: "text-primary",
+              iconBg: "bg-primary/15",
             },
             {
               label: "Published",
               value: publicCoursesForAssignment.filter((c) => c.status === "PUBLISHED").length,
               icon: CheckCircle,
-              iconClass: "text-green-600",
-              iconBg: "bg-green-100",
+              iconClass: "text-success",
+              iconBg: "bg-success/15",
             },
             {
               label: "Drafts",
               value: publicCoursesForAssignment.filter((c) => c.status === "DRAFT").length,
               icon: Clock,
-              iconClass: "text-yellow-600",
-              iconBg: "bg-yellow-100",
+              iconClass: "text-warning",
+              iconBg: "bg-warning/15",
             },
             {
               label: "Active Institutions",
               value: institutions.filter((i) => i.is_active).length,
               icon: Building2,
-              iconClass: "text-purple-600",
-              iconBg: "bg-purple-100",
+              iconClass: "text-primary",
+              iconBg: "bg-primary/15",
             },
           ].map((s) => (
             <div
               key={s.label}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+              className="bg-card rounded-xl p-6 shadow-sm border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">{s.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{s.value}</p>
+                  <p className="text-sm text-muted-foreground">{s.label}</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{s.value}</p>
                 </div>
                 <div className={`w-12 h-12 ${s.iconBg} rounded-lg flex items-center justify-center`}>
                   <s.icon className={`w-6 h-6 ${s.iconClass}`} />
@@ -226,44 +226,44 @@ export default function AssignPublicCoursesPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="Search courses by title, description, or tags..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
             <button
               onClick={handleSearch}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition-colors"
             >
               Search
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700"
+              className="px-6 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-2 text-muted-foreground"
             >
               <Filter className="w-5 h-5" />
               Filters
             </button>
             <button
               onClick={() => fetchCourses(publicCoursesPagination.page)}
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+              className="px-6 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
           </div>
 
           {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-6 pt-6 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Course Type
                 </label>
                 <select
@@ -279,7 +279,7 @@ export default function AssignPublicCoursesPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Status
                 </label>
                 <select
@@ -298,13 +298,13 @@ export default function AssignPublicCoursesPage() {
               <div className="md:col-span-2 flex gap-3 justify-end">
                 <button
                   onClick={handleClearFilters}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+                  className="px-6 py-2 border border-border rounded-lg hover:bg-muted/50 text-muted-foreground"
                 >
                   Clear Filters
                 </button>
                 <button
                   onClick={handleApplyFilters}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary"
                 >
                   Apply Filters
                 </button>
@@ -314,22 +314,22 @@ export default function AssignPublicCoursesPage() {
         </div>
 
         {/* Courses Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
           {isLoadingPublicCourses ? (
             <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent" />
-              <p className="mt-4 text-gray-500">Loading public courses...</p>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+              <p className="mt-4 text-muted-foreground">Loading public courses...</p>
             </div>
           ) : publicCoursesForAssignment.length === 0 ? (
             <div className="p-12 text-center">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No public courses available</p>
-              <p className="text-gray-400 text-sm mt-2">
-                All public courses have been assigned to institutions.
+              <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">No public courses available</p>
+              <p className="text-muted-foreground text-sm mt-2">
+                No public courses are currently available for assignment.
               </p>
               <button
                 onClick={() => router.push("/dashboard/system-admin/courses/create")}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary"
               >
                 Create New Course
               </button>
@@ -337,31 +337,31 @@ export default function AssignPublicCoursesPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1200px]">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-muted/50 border-b border-border">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-80">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider w-80">
                       Course
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Stats
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Rating
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-card divide-y divide-gray-100">
                   {publicCoursesForAssignment.map((course) => (
-                    <tr key={course.id} className="hover:bg-blue-50 transition-colors">
+                    <tr key={course.id} className="hover:bg-primary/10 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {course.thumbnail_url ? (
@@ -371,17 +371,17 @@ export default function AssignPublicCoursesPage() {
                               className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <BookOpen className="w-5 h-5 text-gray-400" />
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                              <BookOpen className="w-5 h-5 text-muted-foreground" />
                             </div>
                           )}
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-900 truncate" title={course.title}>
+                            <p className="text-sm font-medium text-foreground truncate" title={course.title}>
                               {course.title}
                             </p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                               <span className="inline-flex items-center gap-1">
-                                <Globe className="w-3 h-3 text-green-600" />
+                                <Globe className="w-3 h-3 text-success" />
                                 Public Course
                               </span>
                               {course.course_category && (
@@ -413,23 +413,23 @@ export default function AssignPublicCoursesPage() {
                       </td>
 
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3 text-blue-500" />
+                            <Users className="w-3 h-3 text-primary" />
                             <span className="font-medium">
                               {parseNumber(course.enrollment_count)}
                             </span>
                           </div>
-                          <span className="text-gray-300">•</span>
+                          <span className="text-muted-foreground">•</span>
                           <div className="flex items-center gap-1">
-                            <PlayCircle className="w-3 h-3 text-green-500" />
+                            <PlayCircle className="w-3 h-3 text-success" />
                             <span className="font-medium">
                               {parseNumber(course.total_lessons)}
                             </span>
                           </div>
-                          <span className="text-gray-300">•</span>
+                          <span className="text-muted-foreground">•</span>
                           <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-blue-500" />
+                            <Clock className="w-3 h-3 text-primary" />
                             <span className="font-medium">
                               {Math.ceil(parseNumber(course.duration_minutes) / 60)}h
                             </span>
@@ -439,11 +439,11 @@ export default function AssignPublicCoursesPage() {
 
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
-                          <span className="text-sm font-semibold text-gray-700">
+                          <Star className="w-3.5 h-3.5 text-warning fill-current" />
+                          <span className="text-sm font-semibold text-muted-foreground">
                             {parseNumber(course.average_rating).toFixed(1)}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-muted-foreground">
                             ({parseNumber(course.total_reviews)})
                           </span>
                         </div>
@@ -452,10 +452,10 @@ export default function AssignPublicCoursesPage() {
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => handleAssignClick(course)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2 mx-auto"
+                          className="px-4 py-2 bg-success text-white rounded-lg hover:bg-success transition-colors text-sm font-medium flex items-center gap-2 mx-auto"
                         >
                           <Building2 className="w-4 h-4" />
-                          Assign to Institution
+                          Copy to Institution
                         </button>
                       </td>
                     </tr>
@@ -469,7 +469,7 @@ export default function AssignPublicCoursesPage() {
         {/* Pagination */}
         {publicCoursesPagination.totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               Showing {(publicCoursesPagination.page - 1) * publicCoursesPagination.limit + 1} to{" "}
               {Math.min(
                 publicCoursesPagination.page * publicCoursesPagination.limit,
@@ -481,7 +481,7 @@ export default function AssignPublicCoursesPage() {
               <button
                 onClick={() => fetchCourses(publicCoursesPagination.page - 1)}
                 disabled={publicCoursesPagination.page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-border rounded-lg hover:bg-muted/50 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -491,8 +491,8 @@ export default function AssignPublicCoursesPage() {
                   onClick={() => fetchCourses(i + 1)}
                   className={`px-4 py-2 rounded-lg ${
                     publicCoursesPagination.page === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-300 hover:bg-gray-50 text-gray-700"
+                      ? "bg-primary text-white"
+                      : "border border-border hover:bg-muted/50 text-muted-foreground"
                   }`}
                 >
                   {i + 1}
@@ -501,7 +501,7 @@ export default function AssignPublicCoursesPage() {
               <button
                 onClick={() => fetchCourses(publicCoursesPagination.page + 1)}
                 disabled={publicCoursesPagination.page === publicCoursesPagination.totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-border rounded-lg hover:bg-muted/50 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -513,21 +513,21 @@ export default function AssignPublicCoursesPage() {
       {/* Assign Modal */}
       {showAssignModal && selectedCourse && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-card rounded-xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Assign Course to Institution</h2>
+              <h2 className="text-xl font-bold text-foreground">Copy Course to Institution</h2>
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1 hover:bg-muted rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             <div className="space-y-4">
               {/* Course Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Course to Assign</p>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground mb-1">Course to Copy</p>
                 <div className="flex items-center gap-3">
                   {selectedCourse.thumbnail_url ? (
                     <img
@@ -536,21 +536,21 @@ export default function AssignPublicCoursesPage() {
                       className="w-12 h-12 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-gray-400" />
+                    <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-muted-foreground" />
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-gray-900">{selectedCourse.title}</p>
-                    <p className="text-sm text-gray-500">{selectedCourse.course_type}</p>
+                    <p className="font-semibold text-foreground">{selectedCourse.title}</p>
+                    <p className="text-sm text-muted-foreground">{selectedCourse.course_type}</p>
                   </div>
                 </div>
               </div>
 
               {/* Institution Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Institution <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Select Institution <span className="text-destructive">*</span>
                 </label>
                 <select
                   value={selectedInstitutionId}
@@ -568,19 +568,18 @@ export default function AssignPublicCoursesPage() {
                     ))}
                 </select>
                 {selectedInstitutionId && selectedInstitution && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Assigning to: {selectedInstitution.name}
                   </p>
                 )}
               </div>
 
-              {/* Warning */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              {/* Info */}
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                  <p className="text-xs text-yellow-700">
-                    Once assigned, this course will become an institution course and will count toward 
-                    the institution's course statistics. The course will no longer appear as a public course.
+                  <AlertCircle className="w-4 h-4 text-primary mt-0.5" />
+                  <p className="text-xs text-primary">
+                    A complete copy of this course (all modules, lessons, assessments and quizzes) will be created for the selected institution. The original public course remains unchanged and continues to be available to everyone.
                   </p>
                 </div>
               </div>
@@ -589,7 +588,7 @@ export default function AssignPublicCoursesPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+                className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
                 disabled={isAssigning}
               >
                 Cancel
@@ -597,7 +596,7 @@ export default function AssignPublicCoursesPage() {
               <button
                 onClick={handleConfirmAssign}
                 disabled={!selectedInstitutionId || isAssigning}
-                className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-success text-white px-4 py-2 rounded-lg hover:bg-success transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isAssigning ? (
                   <>
@@ -607,7 +606,7 @@ export default function AssignPublicCoursesPage() {
                 ) : (
                   <>
                     <Building2 className="w-4 h-4" />
-                    Confirm Assignment
+                    Confirm Copy
                   </>
                 )}
               </button>

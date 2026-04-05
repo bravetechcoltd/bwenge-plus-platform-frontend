@@ -86,14 +86,14 @@ export function CourseSpacePanel({
     <div className="h-full flex flex-col items-center justify-center p-8">
       <div className="text-center space-y-5 max-w-md">
         <div className="bg-gradient-to-br from-violet-100 to-green-100 dark:from-violet-900/30 dark:to-green-900/30 rounded-full p-5 mx-auto w-fit">
-          <Users className="h-9 w-9 text-violet-600 dark:text-violet-400" />
+          <Users className="h-9 w-9 text-primary dark:text-primary" />
         </div>
 
         <div className="space-y-2">
           <h3 className={`font-semibold ${isFullscreen ? "text-xl" : "text-lg"}`}>
             No Course Space Yet
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
             {user!.bwenge_role === "LEARNER"
               ? "This course doesn't have a space yet. Ask your instructor to create one for collaborative learning."
               : `Create a space for students to collaborate, ask questions, and share ideas about ${course.title}`}
@@ -131,7 +131,7 @@ export function CourseSpacePanel({
   )
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-950">
+    <div className="w-full h-full flex flex-col bg-card dark:bg-background">
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as "messages" | "space")}
@@ -139,7 +139,7 @@ export function CourseSpacePanel({
       >
         {/* ── Tab bar ─────────────────────────────────────────────────────── */}
         <div
-          className="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-green-300/20"
+          className="flex-shrink-0 border-b border-border dark:border-border bg-muted/50/60 dark:bg-green-300/20"
           onClick={stopProp}
         >
           <TabsList className="bg-transparent rounded-none p-0 h-auto w-full grid grid-cols-2 gap-0">
@@ -148,13 +148,13 @@ export function CourseSpacePanel({
               onClick={stopProp}
               className="
                 rounded-none border-b-2 border-transparent px-4 py-3
-                text-sm font-medium text-gray-500 dark:text-gray-400
+                text-sm font-medium text-muted-foreground dark:text-muted-foreground
                 transition-all duration-150
-                data-[state=active]:border-green-500
-                data-[state=active]:text-green-600 dark:data-[state=active]:text-white
-                data-[state=active]:bg-white dark:data-[state=active]:bg-primary/40
-                hover:text-gray-800 dark:hover:text-gray-200
-                hover:bg-white/60 dark:hover:bg-primary/30
+                data-[state=active]:border-success
+                data-[state=active]:text-success dark:data-[state=active]:text-white
+                data-[state=active]:bg-card dark:data-[state=active]:bg-primary/40
+                hover:text-foreground dark:hover:text-foreground
+                hover:bg-card/60 dark:hover:bg-primary/30
               "
             >
               <Mail className="h-4 w-4 mr-2 inline-block" />
@@ -165,13 +165,13 @@ export function CourseSpacePanel({
               onClick={stopProp}
               className="
                 rounded-none border-b-2 border-transparent px-4 py-3
-                text-sm font-medium text-gray-500 dark:text-gray-400
+                text-sm font-medium text-muted-foreground dark:text-muted-foreground
                 transition-all duration-150
-                data-[state=active]:border-green-500
-                data-[state=active]:text-green-600 dark:data-[state=active]:text-white
-                data-[state=active]:bg-white dark:data-[state=active]:bg-primary/40
-                hover:text-gray-800 dark:hover:text-gray-200
-                hover:bg-white/60 dark:hover:bg-primary/30
+                data-[state=active]:border-success
+                data-[state=active]:text-success dark:data-[state=active]:text-white
+                data-[state=active]:bg-card dark:data-[state=active]:bg-primary/40
+                hover:text-foreground dark:hover:text-foreground
+                hover:bg-card/60 dark:hover:bg-primary/30
               "
             >
               <MessageCircle className="h-4 w-4 mr-2 inline-block" />

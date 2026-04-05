@@ -5,8 +5,10 @@ import { InstitutionMemberRole } from "@/types";
 export interface InstitutionLimits {
   max_instructors: number;
   max_members: number;
+  total_capacity?: number;
   current_instructors: number;
   current_members: number;
+  total_current?: number;
   instructors_remaining: number;
   members_remaining: number;
   can_add_instructor: boolean;
@@ -438,7 +440,6 @@ export const addMemberToInstitution = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log("📤 Adding member...", { id, memberData });
 
       // Add timeout and better error handling
       const controller = new AbortController();
@@ -454,7 +455,6 @@ export const addMemberToInstitution = createAsyncThunk(
 
       clearTimeout(timeoutId);
 
-      console.log("✅ Member added:", response.data);
 
       if (response.data.success) {
         return {
@@ -466,7 +466,6 @@ export const addMemberToInstitution = createAsyncThunk(
       return rejectWithValue(response.data.message || "Failed to add member");
 
     } catch (error: any) {
-      console.error("❌ Add member error:", error);
 
       let errorMessage = "Failed to add member";
 
@@ -1051,7 +1050,6 @@ const institutionSlice = createSlice({
         state.isLoading = false;
         state.error = null;
 
-        console.log("🔄 Processing add member fulfilled:", action.payload);
 
         const { member, user, institutionId } = action.payload;
 
@@ -1068,7 +1066,6 @@ const institutionSlice = createSlice({
           );
 
           if (!memberExists) {
-            console.log("➕ Adding new member to state:", { member, user });
 
             // Create properly formatted member object
             const newMemberObj = {
@@ -1124,16 +1121,13 @@ const institutionSlice = createSlice({
               }
             }
 
-            console.log("✅ Member added successfully. Total members:", state.selectedInstitution.members.length);
           } else {
-            console.log("⚠️ Member already exists in state");
           }
         }
       })
       .addCase(addMemberToInstitution.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-        console.error("❌ Failed to add member:", action.payload);
       })
 
       // Remove Member

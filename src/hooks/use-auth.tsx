@@ -45,7 +45,6 @@ const safeJSONParse = (value: string | undefined): any => {
     const decoded = decodeURIComponent(value)
     return JSON.parse(decoded)
   } catch (error) {
-    console.error("Failed to parse JSON:", error)
     return null
   }
 }
@@ -54,24 +53,8 @@ const safeJSONParse = (value: string | undefined): any => {
  * Store COMPLETE auth data in both cookies and localStorage
  */
 const storeAuthData = (user: User, token: string) => {
-  console.log("🔐 [storeAuthData] Storing COMPLETE authentication data...")
   
   // Log all user data for debugging
-  console.log("📋 [storeAuthData] User data to store:", {
-    id: user.id,
-    email: user.email,
-    bwenge_role: user.bwenge_role,
-    account_type: user.account_type,
-    institution: user.institution,
-    primary_institution_id: user.primary_institution_id,
-    is_institution_member: user.is_institution_member,
-    institution_ids: user.institution_ids,
-    institution_role: user.institution_role,
-    profile: user.profile,
-    total_learning_hours: user.total_learning_hours,
-    certificates_earned: user.certificates_earned,
-    bwenge_profile_completed: user.bwenge_profile_completed
-  })
 
   // 1. Store in cookies (for backend API calls)
   Cookies.set("bwenge_token", token, { expires: 7, secure: true, sameSite: 'strict' })
@@ -83,7 +66,6 @@ const storeAuthData = (user: User, token: string) => {
   
   // 3. Store institution-specific data if user has institution
   if (user.institution || user.primary_institution_id) {
-    console.log("🏛️ [storeAuthData] Storing institution-specific data")
     
     if (user.institution) {
       Cookies.set("bwenge_institution", JSON.stringify(user.institution), { expires: 7 })
@@ -101,25 +83,12 @@ const storeAuthData = (user: User, token: string) => {
     }
   }
   
-  console.log("✅ [storeAuthData] All data stored successfully:", {
-    cookies: {
-      token: "****" + token.slice(-10),
-      user: "stored",
-      institution: user.institution ? "stored" : "not stored"
-    },
-    localStorage: {
-      token: "stored",
-      user: "stored",
-      institution: user.institution ? "stored" : "not stored"
-    }
-  })
 }
 
 /**
  * Clear ALL auth data from both cookies and localStorage
  */
 const clearAuthData = () => {
-  console.log("🗑️ [clearAuthData] Clearing ALL authentication data...")
   
   // Clear all auth cookies
   Cookies.remove("bwenge_token")
@@ -142,14 +111,12 @@ const clearAuthData = () => {
     }
   })
   
-  console.log("✅ [clearAuthData] All auth data cleared")
 }
 
 /**
  * Load COMPLETE auth data from storage
  */
 const loadAuthData = () => {
-  console.log("🔍 [loadAuthData] Loading authentication data...")
   
   let loadedToken: string | null = null
   let loadedUser: User | null = null
@@ -159,20 +126,10 @@ const loadAuthData = () => {
     const cookieToken = Cookies.get("bwenge_token")
     const cookieUser = Cookies.get("bwenge_user")
     
-    console.log("🍪 [loadAuthData] Cookie check:", {
-      hasToken: !!cookieToken,
-      hasUser: !!cookieUser
-    })
     
     if (cookieToken && cookieUser) {
       const parsedUser = safeJSONParse(cookieUser)
       if (parsedUser) {
-        console.log("✅ [loadAuthData] Loaded from cookies:", {
-          userId: parsedUser.id,
-          email: parsedUser.email,
-          role: parsedUser.bwenge_role,
-          hasInstitution: !!parsedUser.institution
-        })
         
         loadedToken = cookieToken
         loadedUser = parsedUser
@@ -212,18 +169,9 @@ const loadAuthData = () => {
     const storedToken = localStorage.getItem("bwengeplus_token")
     const storedUser = localStorage.getItem("bwengeplus_user")
     
-    console.log("💾 [loadAuthData] localStorage check:", {
-      hasToken: !!storedToken,
-      hasUser: !!storedUser
-    })
     
     if (storedToken && storedUser) {
       const parsedUser = JSON.parse(storedUser)
-      console.log("✅ [loadAuthData] Loaded from localStorage:", {
-        userId: parsedUser.id,
-        email: parsedUser.email,
-        role: parsedUser.bwenge_role
-      })
       
       loadedToken = storedToken
       loadedUser = parsedUser
@@ -264,9 +212,7 @@ const loadAuthData = () => {
       return { token: loadedToken, user: parsedUser }
     }
     
-    console.log("⚠️ [loadAuthData] No authentication data found")
   } catch (error) {
-    console.error("❌ [loadAuthData] Error during loading:", error)
     clearAuthData()
   }
   
@@ -287,19 +233,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (loadedToken && loadedUser) {
       setToken(loadedToken)
       setUser(loadedUser)
-      console.log("🚀 [AuthProvider] Initialized from storage:", {
-        userId: loadedUser.id,
-        email: loadedUser.email,
-        role: loadedUser.bwenge_role,
-        institutionAdmin: loadedUser.bwenge_role === BwengeRole.INSTITUTION_ADMIN
-      })
     }
   }, [])
 
   // ==================== LOGIN FUNCTION ====================
 
   const login = async (email: string, password: string) => {
-    console.log("🔐 [login] Starting login process...")
     setIsLoading(true)
     
     try {
@@ -314,7 +253,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data: ApiResponse<{ user: User; token: string }> = await response.json()
 
       if (!response.ok || !data.success) {
-        console.log("❌ [login] Login failed:", data.message)
         return { 
           success: false, 
           message: data.message || "Login failed" 
@@ -324,25 +262,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ✅ IMPORTANT: Store COMPLETE user data from response
       const { user: userData, token: userToken } = data.data!
       
-      console.log("✅ [login] Login successful - Full user data:", {
-        id: userData.id,
-        email: userData.email,
-        bwenge_role: userData.bwenge_role,
-        account_type: userData.account_type,
-        // Institution data
-        is_institution_member: userData.is_institution_member,
-        institution_ids: userData.institution_ids,
-        institution_role: userData.institution_role,
-        primary_institution_id: userData.primary_institution_id,
-        has_institution_object: !!userData.institution,
-        // Profile data
-        profile_picture_url: userData.profile_picture_url,
-        enrolled_courses_count: userData.enrolled_courses_count,
-        completed_courses_count: userData.completed_courses_count,
-        total_learning_hours: userData.total_learning_hours,
-        certificates_earned: userData.certificates_earned,
-        bwenge_profile_completed: userData.bwenge_profile_completed
-      })
 
       // ✅ Store ALL data in both cookies and localStorage
       storeAuthData(userData, userToken)
@@ -353,24 +272,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Handle institution admins specially
       if (userData.bwenge_role === BwengeRole.INSTITUTION_ADMIN) {
-        console.log("🏛️ [login] User is an INSTITUTION_ADMIN")
         if (userData.institution) {
-          console.log("📋 Institution details:", {
-            name: userData.institution.name,
-            type: userData.institution.type,
-            id: userData.institution.id
-          })
         }
       }
 
       // Redirect based on user role
       const redirectPath = getRedirectPath(userData)
-      console.log("🔀 [login] Redirecting to:", redirectPath)
       router.push(redirectPath)
 
       return { success: true }
     } catch (error: any) {
-      console.error("❌ [login] Exception:", error)
       return { 
         success: false, 
         message: error.message || "Something went wrong. Try again." 
@@ -383,7 +294,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ==================== EMAIL VERIFICATION ====================
 
   const verifyEmail = async (email: string, otp: string) => {
-    console.log("📧 [verifyEmail] Starting email verification...")
     setIsLoading(true)
     
     try {
@@ -398,14 +308,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data: ApiResponse<{ user: User; token: string }> = await response.json()
 
       if (!response.ok || !data.success) {
-        console.log("❌ [verifyEmail] Verification failed:", data.message)
         return { 
           success: false, 
           message: data.message || "Verification failed" 
         }
       }
 
-      console.log("✅ [verifyEmail] Verification successful")
 
       // Store COMPLETE auth data
       const { user: userData, token: userToken } = data.data!
@@ -420,7 +328,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true }
     } catch (error: any) {
-      console.error("❌ [verifyEmail] Exception:", error)
       return { 
         success: false, 
         message: error.message || "Something went wrong. Try again." 
@@ -433,7 +340,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ==================== REGISTRATION ====================
 
   const register = async (registerData: RegisterData): Promise<ApiResponse> => {
-    console.log("📝 [register] Starting registration...")
     setIsLoading(true)
     
     try {
@@ -451,14 +357,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.message || "Registration failed")
       }
 
-      console.log("✅ [register] Registration successful")
 
       // Redirect to verification page
       router.push(`/verify-email?email=${registerData.email}&message=Please check your email to verify your account`)
       
       return data
     } catch (error: any) {
-      console.error("❌ [register] Exception:", error)
       return { 
         success: false, 
         message: error.message || "Registration failed" 
@@ -471,7 +375,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ==================== LOGOUT ====================
 
   const logout = async (logoutAllSystems = false) => {
-    console.log("👋 [logout] Starting logout...")
     
     try {
       // Call logout endpoint
@@ -482,9 +385,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       })
 
-      console.log("✅ [logout] Logout successful")
     } catch (error) {
-      console.error("❌ [logout] Error:", error)
       // Continue with local cleanup even if API call fails
     }
 
@@ -503,11 +404,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     if (!token) {
-      console.log("⚠️ [refreshProfile] No token available")
       return
     }
 
-    console.log("🔄 [refreshProfile] Refreshing user profile...")
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -519,12 +418,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data: ApiResponse<User> = await response.json()
 
       if (data.success && data.data) {
-        console.log("✅ [refreshProfile] Profile refreshed:", {
-          userId: data.data.id,
-          email: data.data.email,
-          bwenge_role: data.data.bwenge_role,
-          has_institution: !!data.data.institution
-        })
         
         const updatedUser = data.data
         
@@ -547,7 +440,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         storeAuthData(updatedUser, token)
       }
     } catch (error) {
-      console.error("❌ [refreshProfile] Error:", error)
     }
   }
 
@@ -555,11 +447,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = (updates: Partial<User>) => {
     if (!user) {
-      console.log("⚠️ [updateUser] No user to update")
       return
     }
 
-    console.log("📝 [updateUser] Updating user data...")
 
     const updatedUser = { ...user, ...updates }
     setUser(updatedUser)
@@ -567,7 +457,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Update storage with COMPLETE data
     storeAuthData(updatedUser, token!)
     
-    console.log("✅ [updateUser] User updated")
   }
 
   // ==================== CHECK ONGERA SESSION ====================
@@ -575,7 +464,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkOngeraSession = async (): Promise<boolean> => {
     if (!token) return false
 
-    console.log("🔍 [checkOngeraSession] Checking Ongera session...")
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/check-ongera-session`, {
@@ -587,10 +475,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data: ApiResponse<{ has_ongera_session: boolean }> = await response.json()
       const hasSession = data.success && data.data?.has_ongera_session === true
       
-      console.log("✅ [checkOngeraSession] Result:", hasSession)
       return hasSession
     } catch (error) {
-      console.error("❌ [checkOngeraSession] Error:", error)
       return false
     }
   }
@@ -633,16 +519,9 @@ export function useAuth() {
 function getRedirectPath(user: User): string {
   const { bwenge_role, account_type } = user
 
-  console.log("📍 [getRedirectPath] Determining redirect path:", {
-    bwenge_role,
-    account_type,
-    is_institution_admin: bwenge_role === BwengeRole.INSTITUTION_ADMIN,
-    institution_id: user.primary_institution_id
-  })
 
   // Special handling for institution admins
   if (bwenge_role === BwengeRole.INSTITUTION_ADMIN) {
-    console.log("🏛️ [getRedirectPath] User is an INSTITUTION_ADMIN")
     if (user.primary_institution_id) {
       return `/dashboard/institution-admin/${user.primary_institution_id}/dashboard`
     }

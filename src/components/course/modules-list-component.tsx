@@ -80,7 +80,6 @@ export function ModulesListComponent({
           setModules([])
         }
       } catch (error) {
-        console.error("Failed to fetch course:", error)
         toast.error("Failed to load course")
         setCourse(null)
         setModules([])
@@ -233,7 +232,6 @@ export function ModulesListComponent({
       }
 
     } catch (error: any) {
-      console.error("Failed to save modules:", error)
       toast.error(error.message || "Failed to save modules")
     } finally {
       setSaving(false)
@@ -259,7 +257,6 @@ export function ModulesListComponent({
         setCourse(courseData)
       }
     } catch (error) {
-      console.error("Failed to refresh course:", error)
     }
   }
 
@@ -281,8 +278,8 @@ export function ModulesListComponent({
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-8" />
+          <div className="h-8 bg-secondary dark:bg-secondary rounded w-1/3 mb-4" />
+          <div className="h-4 bg-secondary dark:bg-secondary rounded w-2/3 mb-8" />
         </div>
       </div>
     )
@@ -337,7 +334,7 @@ export function ModulesListComponent({
           <h1 className="text-3xl font-bold">Manage Course Content</h1>
           <p className="text-muted-foreground">{course.title}</p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               {course.modules?.length || 0} modules • 
               {modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0)} lessons • 
               {modules.reduce((acc, m) => acc + (m.lessons?.reduce((acc2: number, l: any) => 
@@ -347,7 +344,7 @@ export function ModulesListComponent({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={saveModules} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={saveModules} disabled={saving} className="bg-primary hover:bg-primary">
             <Save className="w-4 h-4 mr-2" />
             {saving ? "Saving..." : "Save Changes"}
           </Button>

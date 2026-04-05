@@ -17,10 +17,10 @@ export default function DashboardPage() {
   }, [isAuthenticated, user, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-card">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4F46E5] mx-auto mb-4"></div>
-        <p className="text-gray-600">Redirecting to your dashboard...</p>
+        <p className="text-muted-foreground">Redirecting to your dashboard...</p>
       </div>
     </div>
   )

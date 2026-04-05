@@ -30,16 +30,16 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
   }
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "text-green-600"
-    if (progress >= 60) return "text-blue-600"
-    if (progress >= 40) return "text-yellow-600"
-    return "text-orange-600"
+    if (progress >= 80) return "text-success"
+    if (progress >= 60) return "text-primary"
+    if (progress >= 40) return "text-warning"
+    return "text-warning"
   }
 
   return (
-    <Card className="mb-6 border border-gray-200 shadow-sm">
-      <CardHeader className="border-b border-gray-200 bg-gray-50">
-        <CardTitle className="flex items-center gap-2 text-gray-900">
+    <Card className="mb-6 border border-border shadow-sm">
+      <CardHeader className="border-b border-border bg-muted/50">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <Trophy className="w-5 h-5 text-[#0158B7]" />
           Learning Progress
         </CardTitle>
@@ -49,7 +49,7 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
           {/* Overall Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900">Overall Progress</span>
+              <span className="text-sm font-medium text-foreground">Overall Progress</span>
               <span className={`text-sm font-bold ${getProgressColor(stats.overallProgress)}`}>
                 {Math.round(stats.overallProgress)}%
               </span>
@@ -64,9 +64,9 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="flex items-center justify-center mb-2">
-                <BookOpen className="w-4 h-4 text-blue-500" />
+                <BookOpen className="w-4 h-4 text-primary" />
               </div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-foreground">
                 {stats.completedLessons}/{stats.totalLessons}
               </div>
               <div className="text-xs text-muted-foreground">Lessons</div>
@@ -74,9 +74,9 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
 
             <div className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="flex items-center justify-center mb-2">
-                <Award className="w-4 h-4 text-orange-500" />
+                <Award className="w-4 h-4 text-warning" />
               </div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-foreground">
                 {stats.completedAssessments}/{stats.totalAssessments}
               </div>
               <div className="text-xs text-muted-foreground">Assessments</div>
@@ -84,17 +84,17 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
 
             <div className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="flex items-center justify-center mb-2">
-                <Clock className="w-4 h-4 text-green-500" />
+                <Clock className="w-4 h-4 text-success" />
               </div>
-              <div className="text-lg font-bold text-gray-900">{formatTime(stats.timeSpent)}</div>
+              <div className="text-lg font-bold text-foreground">{formatTime(stats.timeSpent)}</div>
               <div className="text-xs text-muted-foreground">Time Spent</div>
             </div>
 
             <div className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="flex items-center justify-center mb-2">
-                <Target className="w-4 h-4 text-purple-500" />
+                <Target className="w-4 h-4 text-primary" />
               </div>
-              <div className="text-lg font-bold text-gray-900">{stats.averageScore}%</div>
+              <div className="text-lg font-bold text-foreground">{stats.averageScore}%</div>
               <div className="text-xs text-muted-foreground">Avg Score</div>
             </div>
           </div>
@@ -107,19 +107,19 @@ export function ProgressTracker({ stats, courseTitle }: ProgressTrackerProps) {
               </Badge>
             )}
             {stats.overallProgress >= 50 && (
-              <Badge variant="secondary" className="flex items-center gap-1 bg-green-50 text-green-700">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-success/10 text-success">
                 <Target className="w-3 h-3" />
                 Halfway there!
               </Badge>
             )}
             {stats.averageScore >= 90 && (
-              <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-50 text-yellow-700">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-warning/10 text-warning">
                 <Trophy className="w-3 h-3" />
                 High achiever
               </Badge>
             )}
             {stats.completedAssessments > 0 && stats.completedAssessments === stats.totalAssessments && (
-              <Badge variant="secondary" className="flex items-center gap-1 bg-blue-50 text-blue-700">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-primary/10 text-primary">
                 <CheckCircle className="w-3 h-3" />
                 All assessments complete
               </Badge>

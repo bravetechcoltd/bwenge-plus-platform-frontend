@@ -291,12 +291,12 @@ export default function UserFormDialog({
   
   const getPasswordStrengthColor = () => {
     switch (passwordStrength) {
-      case 0: return "bg-gray-200";
-      case 1: return "bg-red-500";
-      case 2: return "bg-orange-500";
-      case 3: return "bg-yellow-500";
-      case 4: return "bg-green-500";
-      default: return "bg-gray-200";
+      case 0: return "bg-secondary";
+      case 1: return "bg-destructive/100";
+      case 2: return "bg-warning/100";
+      case 3: return "bg-warning/100";
+      case 4: return "bg-success/100";
+      default: return "bg-secondary";
     }
   };
   
@@ -355,7 +355,7 @@ export default function UserFormDialog({
                         placeholder="John"
                       />
                       {errors.first_name && (
-                        <p className="text-sm text-red-500">{errors.first_name}</p>
+                        <p className="text-sm text-destructive">{errors.first_name}</p>
                       )}
                     </div>
                     
@@ -368,7 +368,7 @@ export default function UserFormDialog({
                         placeholder="Doe"
                       />
                       {errors.last_name && (
-                        <p className="text-sm text-red-500">{errors.last_name}</p>
+                        <p className="text-sm text-destructive">{errors.last_name}</p>
                       )}
                     </div>
                   </div>
@@ -383,7 +383,7 @@ export default function UserFormDialog({
                       placeholder="john.doe@example.com"
                     />
                     {errors.email && (
-                      <p className="text-sm text-red-500">{errors.email}</p>
+                      <p className="text-sm text-destructive">{errors.email}</p>
                     )}
                   </div>
                   
@@ -421,56 +421,56 @@ export default function UserFormDialog({
                             placeholder="••••••••"
                           />
                           {errors.password && (
-                            <p className="text-sm text-red-500">{errors.password}</p>
+                            <p className="text-sm text-destructive">{errors.password}</p>
                           )}
                           
                           {/* Password strength meter */}
                           {formData.password && (
                             <div className="mt-2">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-gray-600">
+                                <span className="text-xs text-muted-foreground">
                                   Password strength: {getPasswordStrengthText()}
                                 </span>
-                                <span className="text-xs text-gray-600">
+                                <span className="text-xs text-muted-foreground">
                                   {passwordStrength}/4
                                 </span>
                               </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div className="w-full bg-secondary rounded-full h-1.5">
                                 <div
                                   className={`h-1.5 rounded-full ${getPasswordStrengthColor()}`}
                                   style={{ width: `${(passwordStrength / 4) * 100}%` }}
                                 />
                               </div>
-                              <ul className="text-xs text-gray-500 mt-2 space-y-1">
+                              <ul className="text-xs text-muted-foreground mt-2 space-y-1">
                                 <li className="flex items-center">
                                   {formData.password.length >= 8 ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500 mr-1" />
+                                    <CheckCircle2 className="w-3 h-3 text-success mr-1" />
                                   ) : (
-                                    <AlertCircle className="w-3 h-3 text-gray-400 mr-1" />
+                                    <AlertCircle className="w-3 h-3 text-muted-foreground mr-1" />
                                   )}
                                   At least 8 characters
                                 </li>
                                 <li className="flex items-center">
                                   {/[A-Z]/.test(formData.password) ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500 mr-1" />
+                                    <CheckCircle2 className="w-3 h-3 text-success mr-1" />
                                   ) : (
-                                    <AlertCircle className="w-3 h-3 text-gray-400 mr-1" />
+                                    <AlertCircle className="w-3 h-3 text-muted-foreground mr-1" />
                                   )}
                                   One uppercase letter
                                 </li>
                                 <li className="flex items-center">
                                   {/[0-9]/.test(formData.password) ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500 mr-1" />
+                                    <CheckCircle2 className="w-3 h-3 text-success mr-1" />
                                   ) : (
-                                    <AlertCircle className="w-3 h-3 text-gray-400 mr-1" />
+                                    <AlertCircle className="w-3 h-3 text-muted-foreground mr-1" />
                                   )}
                                   One number
                                 </li>
                                 <li className="flex items-center">
                                   {/[^A-Za-z0-9]/.test(formData.password) ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500 mr-1" />
+                                    <CheckCircle2 className="w-3 h-3 text-success mr-1" />
                                   ) : (
-                                    <AlertCircle className="w-3 h-3 text-gray-400 mr-1" />
+                                    <AlertCircle className="w-3 h-3 text-muted-foreground mr-1" />
                                   )}
                                   One special character
                                 </li>
@@ -489,7 +489,7 @@ export default function UserFormDialog({
                             placeholder="••••••••"
                           />
                           {errors.confirmPassword && (
-                            <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                            <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                           )}
                         </div>
                       </div>
@@ -544,7 +544,7 @@ export default function UserFormDialog({
                       onChange={(role) => setFormData({ ...formData, institution_role: role })}
                       bwengeRole={formData.bwenge_role}
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       This will be set automatically when assigning to an institution
                     </p>
                   </div>
@@ -557,7 +557,7 @@ export default function UserFormDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                           <Label htmlFor="is_active">Active</Label>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             User can log in and access the platform
                           </p>
                         </div>
@@ -573,7 +573,7 @@ export default function UserFormDialog({
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                           <Label htmlFor="is_verified">Email Verified</Label>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             User's email address has been verified
                           </p>
                         </div>
@@ -633,7 +633,7 @@ export default function UserFormDialog({
                       </SelectContent>
                     </Select>
                     {errors.institution_id && (
-                      <p className="text-sm text-red-500">{errors.institution_id}</p>
+                      <p className="text-sm text-destructive">{errors.institution_id}</p>
                     )}
                   </div>
                   
@@ -665,7 +665,7 @@ export default function UserFormDialog({
                           </SelectContent>
                         </Select>
                         {errors.institution_role && (
-                          <p className="text-sm text-red-500">{errors.institution_role}</p>
+                          <p className="text-sm text-destructive">{errors.institution_role}</p>
                         )}
                       </div>
                       
@@ -848,7 +848,7 @@ export default function UserFormDialog({
                         <div className="flex items-center justify-between">
                           <div className="space-y-0.5">
                             <Label htmlFor="send_welcome_email">Send Welcome Email</Label>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               Send login credentials and welcome instructions to the user
                             </p>
                           </div>
@@ -871,7 +871,7 @@ export default function UserFormDialog({
                             <Label htmlFor="require_password_change">
                               Require Password Change on First Login
                             </Label>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               User must change their password after first login
                             </p>
                           </div>
@@ -895,7 +895,7 @@ export default function UserFormDialog({
                         <Button variant="outline" className="w-full justify-start">
                           Resend Verification Email
                         </Button>
-                        <Button variant="outline" className="w-full justify-start text-red-600">
+                        <Button variant="outline" className="w-full justify-start text-destructive">
                           Force Logout from All Devices
                         </Button>
                       </div>

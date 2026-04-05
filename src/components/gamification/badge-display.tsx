@@ -39,26 +39,26 @@ interface BadgeDisplayProps {
 const rarityColors = {
   common: {
     bg: "from-gray-400 to-gray-600",
-    text: "text-gray-600 dark:text-gray-400",
-    border: "border-gray-300 dark:border-gray-600",
+    text: "text-muted-foreground dark:text-muted-foreground",
+    border: "border-border dark:border-border",
     shadow: "shadow-gray-400/20",
   },
   rare: {
     bg: "from-blue-400 to-blue-600",
-    text: "text-blue-600 dark:text-blue-400",
-    border: "border-blue-300 dark:border-blue-600",
+    text: "text-primary dark:text-primary",
+    border: "border-primary/40 dark:border-primary",
     shadow: "shadow-blue-400/20",
   },
   epic: {
     bg: "from-purple-400 to-purple-600",
-    text: "text-purple-600 dark:text-purple-400",
-    border: "border-purple-300 dark:border-purple-600",
+    text: "text-primary dark:text-primary",
+    border: "border-primary/40 dark:border-primary/40",
     shadow: "shadow-purple-400/20",
   },
   legendary: {
     bg: "from-yellow-400 to-yellow-600",
-    text: "text-yellow-600 dark:text-yellow-400",
-    border: "border-yellow-300 dark:border-yellow-600",
+    text: "text-warning dark:text-warning",
+    border: "border-warning/40 dark:border-warning",
     shadow: "shadow-yellow-400/20",
   },
 }
@@ -168,17 +168,17 @@ export function BadgeDisplay({
 
       {/* New Indicator */}
       {isNew && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-destructive/100 rounded-full animate-ping" />
       )}
 
       {/* Category Icon */}
-      <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-xs shadow-md">
+      <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-card dark:bg-card rounded-full flex items-center justify-center text-xs shadow-md">
         {categoryIcons[badge.category]}
       </div>
 
       {/* Earned Checkmark */}
       {badge.earnedAt && (
-        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+        <div className="absolute -top-1 -right-1 w-5 h-5 bg-success/100 rounded-full flex items-center justify-center">
           <svg
             className="w-3 h-3 text-white"
             fill="none"
@@ -207,7 +207,7 @@ export function BadgeDisplay({
       {/* Points Indicator */}
       <div
         className={`absolute -top-2 left-1/2 transform -translate-x-1/2 
-          px-1.5 py-0.5 rounded-full bg-white dark:bg-gray-800 text-xs font-bold
+          px-1.5 py-0.5 rounded-full bg-card dark:bg-card text-xs font-bold
           ${colors.text} shadow-md flex items-center gap-1`}
       >
         <span className="text-xs">+{badge.points}</span>
@@ -226,7 +226,7 @@ export function BadgeDisplay({
           {badgeContent}
         </TooltipTrigger>
         <TooltipContent 
-          className="max-w-xs p-4 bg-white dark:bg-gray-900 border shadow-xl"
+          className="max-w-xs p-4 bg-card dark:bg-card border shadow-xl"
           side="top"
           align="center"
         >
@@ -236,27 +236,27 @@ export function BadgeDisplay({
                 <span className="text-white text-sm">{badge.icon}</span>
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 dark:text-white">{badge.name}</h4>
+                <h4 className="font-bold text-foreground dark:text-white">{badge.name}</h4>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${colors.text} bg-opacity-10 bg-current`}>
                     {badge.rarity.toUpperCase()}
                   </span>
-                  <span className="text-xs text-gray-500">+{badge.points} points</span>
+                  <span className="text-xs text-muted-foreground">+{badge.points} points</span>
                 </div>
               </div>
             </div>
             
-            <p className="text-sm text-gray-600 dark:text-gray-300">{badge.description}</p>
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">{badge.description}</p>
             
             {hasProgress && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                  <span className="text-muted-foreground dark:text-muted-foreground">Progress</span>
                   <span className="font-medium">
                     {badge.progress.current}/{badge.progress.target}
                   </span>
                 </div>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-secondary dark:bg-secondary rounded-full overflow-hidden">
                   <div 
                     className={`h-full bg-gradient-to-r ${colors.bg} transition-all duration-500`}
                     style={{ width: `${progressPercentage}%` }}
@@ -266,11 +266,11 @@ export function BadgeDisplay({
             )}
             
             {badge.earnedAt ? (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 Earned on {new Date(badge.earnedAt).toLocaleDateString()}
               </div>
             ) : (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 Complete requirements to earn this badge
               </div>
             )}
@@ -309,9 +309,9 @@ export function BadgeCollection({
   }
 
   const StatCard = ({ title, value, icon }: { title: string; value: number; icon: string }) => (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+    <div className="bg-muted/50 dark:bg-card rounded-lg p-4 text-center">
       <div className="text-2xl font-bold mb-1">{value}</div>
-      <div className="flex items-center justify-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+      <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground dark:text-muted-foreground">
         <span>{icon}</span>
         <span>{title}</span>
       </div>
@@ -321,11 +321,11 @@ export function BadgeCollection({
   if (badges.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-          <Badge className="w-8 h-8 text-gray-400" />
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted dark:bg-card flex items-center justify-center">
+          <Badge className="w-8 h-8 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium mb-2">No Badges Yet</h3>
-        <p className="text-gray-600 dark:text-gray-400">{emptyMessage}</p>
+        <p className="text-muted-foreground dark:text-muted-foreground">{emptyMessage}</p>
       </div>
     )
   }
@@ -336,7 +336,7 @@ export function BadgeCollection({
         <div>
           <h2 className="text-2xl font-bold">{title}</h2>
           {description && (
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{description}</p>
+            <p className="text-muted-foreground dark:text-muted-foreground mt-1">{description}</p>
           )}
         </div>
         
@@ -357,8 +357,8 @@ export function BadgeCollection({
       {/* Earned Badges */}
       {earnedBadges.length > 0 && (
         <div>
-          <h3 className="font-medium mb-4 text-green-600 dark:text-green-400 flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full" />
+          <h3 className="font-medium mb-4 text-success dark:text-success flex items-center gap-2">
+            <span className="w-2 h-2 bg-success/100 rounded-full" />
             Earned Badges ({earnedBadges.length})
           </h3>
           <div className={`grid ${gridCols[columns]} gap-4`}>
@@ -373,7 +373,7 @@ export function BadgeCollection({
                   {badge.name}
                 </span>
                 {showProgress && badge.earnedAt && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     {new Date(badge.earnedAt).toLocaleDateString()}
                   </span>
                 )}
@@ -386,8 +386,8 @@ export function BadgeCollection({
       {/* Unearned Badges */}
       {unearnedBadges.length > 0 && (
         <div>
-          <h3 className="font-medium mb-4 text-gray-500 flex items-center gap-2">
-            <span className="w-2 h-2 bg-gray-400 rounded-full" />
+          <h3 className="font-medium mb-4 text-muted-foreground flex items-center gap-2">
+            <span className="w-2 h-2 bg-muted rounded-full" />
             Available Badges ({unearnedBadges.length})
           </h3>
           <div className={`grid ${gridCols[columns]} gap-4`}>
@@ -402,7 +402,7 @@ export function BadgeCollection({
                   {badge.name}
                 </span>
                 {showProgress && badge.progress && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {badge.progress.current}/{badge.progress.target}
                   </div>
                 )}
@@ -431,7 +431,7 @@ export function BadgeCollection({
                     {earned}/{count}
                   </span>
                 </div>
-                <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-1.5 bg-secondary dark:bg-secondary rounded-full overflow-hidden mt-2">
                   <div
                     className={`h-full bg-gradient-to-r ${colors.bg}`}
                     style={{ width: `${count > 0 ? (earned / count) * 100 : 0}%` }}

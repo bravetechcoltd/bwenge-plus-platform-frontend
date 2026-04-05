@@ -247,12 +247,12 @@ export default function AuditLogsPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-muted/50 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Platform-wide activity trail — every action recorded
           </p>
         </div>
@@ -261,8 +261,8 @@ export default function AuditLogsPage() {
             onClick={() => setAutoRefresh((v) => !v)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
               autoRefresh
-                ? "bg-green-100 text-green-700"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                ? "bg-success/15 text-success"
+                : "bg-card border border-border text-muted-foreground hover:bg-muted/50"
             }`}
           >
             <RefreshCw size={14} className={autoRefresh ? "animate-spin" : ""} />
@@ -293,20 +293,20 @@ export default function AuditLogsPage() {
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
           >
             <div className="h-[3px]" style={{ backgroundColor: card.color }} />
             <div className="p-4 flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {card.label}
                 </p>
                 {loading ? (
                   <Skeleton className="h-7 w-20 mt-1" />
                 ) : (
-                  <p className="text-2xl font-black text-gray-900 mt-0.5">{card.value}</p>
+                  <p className="text-2xl font-black text-foreground mt-0.5">{card.value}</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">{card.sub}</p>
+                <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
               </div>
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -320,10 +320,10 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[220px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search logs…"
               value={search}
@@ -366,14 +366,14 @@ export default function AuditLogsPage() {
               type="date"
               value={startDate}
               onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-100"
+              className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-100"
             />
-            <span className="text-gray-400 text-xs">to</span>
+            <span className="text-muted-foreground text-xs">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-100"
+              className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-100"
             />
           </div>
 
@@ -384,7 +384,7 @@ export default function AuditLogsPage() {
           {(search || actionFilter !== "all" || targetTypeFilter !== "all" || startDate || endDate) && (
             <button
               onClick={handleClearFilters}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-muted-foreground"
             >
               <X size={13} /> Clear
             </button>
@@ -393,12 +393,12 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-50 flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-700">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
+          <p className="text-sm font-semibold text-muted-foreground">
             {loading ? "Loading…" : `${pagination.total.toLocaleString()} entries`}
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground">
             Page {pagination.page} of {pagination.totalPages || 1}
           </p>
         </div>
@@ -406,20 +406,20 @@ export default function AuditLogsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <tr className="border-b border-border">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Timestamp
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Action
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Actor
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Target
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Details
                 </th>
                 <th className="px-5 py-3" />
@@ -428,7 +428,7 @@ export default function AuditLogsPage() {
             <tbody>
               {loading
                 ? Array.from({ length: 10 }).map((_, i) => (
-                    <tr key={i} className="border-b border-gray-50">
+                    <tr key={i} className="border-b border-border">
                       {Array.from({ length: 6 }).map((_, j) => (
                         <td key={j} className="px-5 py-3">
                           <Skeleton className="h-4 w-full" />
@@ -441,10 +441,10 @@ export default function AuditLogsPage() {
                     return (
                       <tr
                         key={log.id}
-                        className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors"
+                        className="border-b border-border hover:bg-muted/50/40 transition-colors"
                       >
                         <td className="px-5 py-3 whitespace-nowrap">
-                          <span className="font-mono text-xs text-gray-500">
+                          <span className="font-mono text-xs text-muted-foreground">
                             {formatTime(log.createdAt)}
                           </span>
                         </td>
@@ -465,44 +465,44 @@ export default function AuditLogsPage() {
                                   {log.user.first_name?.[0]}{log.user.last_name?.[0]}
                                 </AvatarFallback>
                               </Avatar>
-                              <span className="text-xs text-gray-700 truncate max-w-[160px]">
+                              <span className="text-xs text-muted-foreground truncate max-w-[160px]">
                                 {log.user.email}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-xs text-gray-400 italic">system</span>
+                            <span className="text-xs text-muted-foreground italic">system</span>
                           )}
                         </td>
                         <td className="px-5 py-3">
                           {log.targetType ? (
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium text-gray-700 capitalize">
+                              <span className="text-xs font-medium text-muted-foreground capitalize">
                                 {log.targetType}
                               </span>
                               {log.targetId && (
-                                <span className="font-mono text-[10px] text-gray-400 truncate max-w-[100px]">
+                                <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[100px]">
                                   {log.targetId.slice(0, 8)}…
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </td>
                         <td className="px-5 py-3 max-w-[200px]">
                           {log.details ? (
-                            <span className="text-xs text-gray-500 truncate block">
+                            <span className="text-xs text-muted-foreground truncate block">
                               {log.details.slice(0, 60)}
                               {log.details.length > 60 ? "…" : ""}
                             </span>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </td>
                         <td className="px-5 py-3">
                           <button
                             onClick={() => setSelectedLog(log)}
-                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-muted-foreground transition-colors"
                           >
                             <Eye size={14} />
                           </button>
@@ -512,7 +512,7 @@ export default function AuditLogsPage() {
                   })}
               {!loading && logs.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     No audit logs found matching your criteria.
                   </td>
                 </tr>
@@ -523,8 +523,8 @@ export default function AuditLogsPage() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
+          <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
               Showing {(pagination.page - 1) * pagination.limit + 1}–
               {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
               {pagination.total.toLocaleString()}
@@ -533,7 +533,7 @@ export default function AuditLogsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -546,7 +546,7 @@ export default function AuditLogsPage() {
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                       p === page
                         ? "text-white"
-                        : "text-gray-600 hover:bg-gray-100"
+                        : "text-muted-foreground hover:bg-muted"
                     }`}
                     style={p === page ? { backgroundColor: P } : {}}
                   >
@@ -557,7 +557,7 @@ export default function AuditLogsPage() {
               <button
                 onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                 disabled={page === pagination.totalPages}
-                className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={14} />
               </button>
@@ -582,7 +582,7 @@ export default function AuditLogsPage() {
             <div className="space-y-4 mt-2">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500 font-medium uppercase">Action</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase">Action</p>
                   <span
                     className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
                     style={{ backgroundColor: getActionStyle(selectedLog.action).bg, color: getActionStyle(selectedLog.action).text }}
@@ -591,22 +591,22 @@ export default function AuditLogsPage() {
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500 font-medium uppercase">Timestamp</p>
-                  <p className="text-sm font-mono text-gray-800">{formatTime(selectedLog.createdAt)}</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase">Timestamp</p>
+                  <p className="text-sm font-mono text-foreground">{formatTime(selectedLog.createdAt)}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500 font-medium uppercase">Target Type</p>
-                  <p className="text-sm text-gray-800 capitalize">{selectedLog.targetType || "—"}</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase">Target Type</p>
+                  <p className="text-sm text-foreground capitalize">{selectedLog.targetType || "—"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-500 font-medium uppercase">Target ID</p>
-                  <p className="text-sm font-mono text-gray-600 break-all">{selectedLog.targetId || "—"}</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase">Target ID</p>
+                  <p className="text-sm font-mono text-muted-foreground break-all">{selectedLog.targetId || "—"}</p>
                 </div>
               </div>
 
               {selectedLog.user && (
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Actor</p>
+                <div className="p-3 bg-muted/50 rounded-xl">
+                  <p className="text-xs text-muted-foreground font-medium uppercase mb-2">Actor</p>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={selectedLog.user.profile_picture_url || ""} />
@@ -615,12 +615,12 @@ export default function AuditLogsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-foreground">
                         {selectedLog.user.first_name} {selectedLog.user.last_name}
                       </p>
-                      <p className="text-xs text-gray-500">{selectedLog.user.email}</p>
+                      <p className="text-xs text-muted-foreground">{selectedLog.user.email}</p>
                     </div>
-                    <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                    <span className="ml-auto text-xs bg-primary/15 text-primary px-2 py-0.5 rounded-full">
                       {selectedLog.user.bwenge_role}
                     </span>
                   </div>
@@ -629,8 +629,8 @@ export default function AuditLogsPage() {
 
               {selectedLog.details && (
                 <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase mb-2">Details</p>
-                  <pre className="p-3 bg-gray-900 text-gray-100 rounded-xl text-xs overflow-x-auto font-mono leading-relaxed">
+                  <p className="text-xs text-muted-foreground font-medium uppercase mb-2">Details</p>
+                  <pre className="p-3 bg-card text-muted-foreground rounded-xl text-xs overflow-x-auto font-mono leading-relaxed">
                     {(() => {
                       try {
                         return JSON.stringify(JSON.parse(selectedLog.details!), null, 2);
@@ -643,8 +643,8 @@ export default function AuditLogsPage() {
               )}
 
               <div>
-                <p className="text-xs text-gray-500 font-medium uppercase mb-1">Log ID</p>
-                <p className="text-xs font-mono text-gray-500">{selectedLog.id}</p>
+                <p className="text-xs text-muted-foreground font-medium uppercase mb-1">Log ID</p>
+                <p className="text-xs font-mono text-muted-foreground">{selectedLog.id}</p>
               </div>
             </div>
           )}

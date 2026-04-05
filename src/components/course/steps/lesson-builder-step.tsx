@@ -76,8 +76,8 @@ export function LessonBuilderStep({ modules, setModules, onNext, onPrevious }: L
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Create Engaging Lessons</h2>
-        <p className="text-gray-600 dark:text-gray-300">
+        <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">Create Engaging Lessons</h2>
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Build interactive content with videos, text, quizzes, and more
         </p>
         <div className="flex justify-center gap-4 mt-4">
@@ -177,9 +177,9 @@ export function LessonBuilderStep({ modules, setModules, onNext, onPrevious }: L
           ) : (
             <Card className="h-full flex items-center justify-center">
               <CardContent className="text-center">
-                <PlayCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Ready to Create Lessons?</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <PlayCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground dark:text-white mb-2">Ready to Create Lessons?</h3>
+                <p className="text-muted-foreground dark:text-muted-foreground mb-6">
                   Select a module from the left and start adding engaging lessons
                 </p>
                 {currentModule && (
@@ -202,8 +202,8 @@ export function LessonBuilderStep({ modules, setModules, onNext, onPrevious }: L
 
         <div className="text-center">
           {totalLessons > 0 && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
-              <p className="text-green-800 dark:text-green-200 text-sm">
+            <div className="bg-success/10 dark:bg-success/20/20 border border-success/30 dark:border-success/30 rounded-lg px-4 py-2">
+              <p className="text-success dark:text-success text-sm">
                 Great progress! You've created {totalLessons} lesson{totalLessons !== 1 ? "s" : ""} across{" "}
                 {modules.length} module{modules.length !== 1 ? "s" : ""}.
               </p>

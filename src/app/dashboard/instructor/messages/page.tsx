@@ -19,7 +19,6 @@ export default function InstructorMessagesPage() {
       }
 
       try {
-        console.log("👨‍🏫 Fetching instructor courses for user:", user.id)
         
         // Use the correct endpoint that matches your backend route
         const response = await fetch(
@@ -34,13 +33,11 @@ export default function InstructorMessagesPage() {
 
         if (response.ok) {
           const data = await response.json()
-          console.log("✅ Instructor courses response:", data)
           
           // Extract courses from response - backend returns { data: { courses: [...] } }
           const coursesData = data.data?.courses || data.courses || []
           setCourses(coursesData)
         } else {
-          console.error("❌ Failed to fetch instructor courses:", response.status)
           // Try fallback endpoint
           const fallbackResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/courses/instructor/${user.id}/courses`,
@@ -57,7 +54,6 @@ export default function InstructorMessagesPage() {
           }
         }
       } catch (error) {
-        console.error("❌ Error fetching instructor courses:", error)
       } finally {
         setLoading(false)
       }

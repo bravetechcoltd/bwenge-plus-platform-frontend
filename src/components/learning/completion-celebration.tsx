@@ -24,21 +24,21 @@ export function CompletionCelebration({ data, onClose, onNext }: CompletionCeleb
       return {
         title: "🎉 Course Complete!",
         subtitle: "Congratulations on finishing the entire course!",
-        icon: <Trophy className="w-16 h-16 text-yellow-500" />,
+        icon: <Trophy className="w-16 h-16 text-warning" />,
       }
     }
     if (data.isModuleComplete) {
       return {
         title: "🎯 Module Complete!",
         subtitle: "Great job! You've completed this module",
-        icon: <Target className="w-16 h-16 text-blue-500" />,
+        icon: <Target className="w-16 h-16 text-primary" />,
       }
     }
     if (data.isLessonComplete) {
       return {
         title: "✅ Lesson Complete!",
         subtitle: "Well done! Moving forward",
-        icon: <CheckCircle className="w-16 h-16 text-green-500" />,
+        icon: <CheckCircle className="w-16 h-16 text-success" />,
       }
     }
     if (data.stepType === "assessment") {
@@ -49,14 +49,14 @@ export function CompletionCelebration({ data, onClose, onNext }: CompletionCeleb
           ? `Great work! You scored ${data.score}%` 
           : `You scored ${data.score}%. Keep learning!`,
         icon: passed 
-          ? <Award className="w-16 h-16 text-purple-500" /> 
-          : <BookOpen className="w-16 h-16 text-orange-500" />,
+          ? <Award className="w-16 h-16 text-primary" /> 
+          : <BookOpen className="w-16 h-16 text-warning" />,
       }
     }
     return {
       title: "✨ Step Complete!",
       subtitle: "Keep up the momentum!",
-      icon: <Star className="w-16 h-16 text-indigo-500" />,
+      icon: <Star className="w-16 h-16 text-primary" />,
     }
   }
 
@@ -128,14 +128,14 @@ export function CompletionCelebration({ data, onClose, onNext }: CompletionCeleb
                   </div>
                 )}
                 {data.isModuleComplete && (
-                  <div className="bg-green-500/10 rounded-lg p-4">
-                    <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-1" />
+                  <div className="bg-success/100/10 rounded-lg p-4">
+                    <CheckCircle className="w-8 h-8 text-success mx-auto mb-1" />
                     <div className="text-sm text-muted-foreground">Module Done</div>
                   </div>
                 )}
                 {data.isCourseComplete && (
-                  <div className="bg-yellow-500/10 rounded-lg p-4">
-                    <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-1" />
+                  <div className="bg-warning/100/10 rounded-lg p-4">
+                    <Trophy className="w-8 h-8 text-warning mx-auto mb-1" />
                     <div className="text-sm text-muted-foreground">Course Done</div>
                   </div>
                 )}

@@ -128,11 +128,11 @@ export function CourseSpaceMessenger({
   const getStatusIcon = (status: 'sending' | 'sent' | 'error') => {
     switch (status) {
       case 'sending':
-        return <Clock className="h-3 w-3 text-gray-400 animate-pulse" />
+        return <Clock className="h-3 w-3 text-muted-foreground animate-pulse" />
       case 'sent':
-        return <Check className="h-3 w-3 text-green-500" />
+        return <Check className="h-3 w-3 text-success" />
       case 'error':
-        return <AlertCircle className="h-3 w-3 text-red-500" />
+        return <AlertCircle className="h-3 w-3 text-destructive" />
       default:
         return null
     }
@@ -149,10 +149,10 @@ export function CourseSpaceMessenger({
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <MessageCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <MessageCircle className="h-4 w-4 text-primary dark:text-primary" />
               <CardTitle className="text-sm truncate font-semibold">{spaceName}</CardTitle>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
               <Users className="h-3 w-3" />
               <span>{enrolledStudentCount} enrolled</span>
             </div>
@@ -171,9 +171,9 @@ export function CourseSpaceMessenger({
         <div className="flex-1 mb-3 overflow-y-auto scrollbar-hide">
           <div className="space-y-3">
             {isLoading && messages.length === 0 ? (
-              <div className="text-xs text-gray-500 text-center py-4">Loading messages...</div>
+              <div className="text-xs text-muted-foreground text-center py-4">Loading messages...</div>
             ) : allMessages.length === 0 ? (
-              <div className="text-xs text-gray-500 text-center py-4">
+              <div className="text-xs text-muted-foreground text-center py-4">
                 No messages yet. Be the first to start the conversation!
               </div>
             ) : (
@@ -210,10 +210,10 @@ export function CourseSpaceMessenger({
                           p-3 rounded-lg break-words shadow-sm
                           ${isCurrentUser 
                             ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md' 
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                            : 'bg-muted dark:bg-secondary text-foreground dark:text-muted-foreground'
                           }
                           ${msg.status === 'error' 
-                            ? 'border border-red-300 bg-red-100 text-red-900 dark:bg-red-900/30 dark:border-red-700' 
+                            ? 'border border-destructive/40 bg-destructive/15 text-destructive dark:bg-destructive/20/30 dark:border-red-700' 
                             : ''
                           }
                         `}>
@@ -221,7 +221,7 @@ export function CourseSpaceMessenger({
                           
                           {/* Timestamp and status */}
                           <div className={`flex items-center justify-end gap-1 mt-1 ${
-                            isCurrentUser ? 'text-blue-100' : 'text-gray-500'
+                            isCurrentUser ? 'text-primary' : 'text-muted-foreground'
                           }`}>
                             <span className="text-xs">
                               {msg.status === 'sending' 
@@ -251,7 +251,7 @@ export function CourseSpaceMessenger({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSending}
-            className="text-xs h-8 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-400"
+            className="text-xs h-8 bg-card dark:bg-secondary border-border dark:border-border focus:border-primary/50 dark:focus:border-primary/50"
           />
           <Button
             size="sm"

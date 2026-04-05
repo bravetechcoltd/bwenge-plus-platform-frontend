@@ -159,7 +159,6 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
 
       setProgressData(mockData)
     } catch (error) {
-      console.error("Failed to fetch progress data:", error)
       // Fallback to mock data
       const mockData = {
         overview: {
@@ -225,10 +224,10 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
   }
 
   const getStreakColor = (days: number) => {
-    if (days >= 30) return "text-purple-600"
-    if (days >= 14) return "text-orange-600"
-    if (days >= 7) return "text-yellow-600"
-    return "text-blue-600"
+    if (days >= 30) return "text-primary"
+    if (days >= 14) return "text-warning"
+    if (days >= 7) return "text-warning"
+    return "text-primary"
   }
 
   if (loading || !progressData) {
@@ -236,10 +235,10 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
       <div className="space-y-6 animate-pulse">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div key={i} className="h-32 bg-secondary dark:bg-secondary rounded-lg" />
           ))}
         </div>
-        <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-96 bg-secondary dark:bg-secondary rounded-lg" />
       </div>
     )
   }
@@ -270,8 +269,8 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-card border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-yellow-500/10 rounded-lg">
-              <Trophy className="w-6 h-6 text-yellow-500" />
+            <div className="p-2 bg-warning/100/10 rounded-lg">
+              <Trophy className="w-6 h-6 text-warning" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Points</p>
@@ -282,8 +281,8 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
 
         <div className="bg-card border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <BookOpen className="w-6 h-6 text-blue-500" />
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BookOpen className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Courses Completed</p>
@@ -296,8 +295,8 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
 
         <div className="bg-card border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <Clock className="w-6 h-6 text-green-500" />
+            <div className="p-2 bg-success/100/10 rounded-lg">
+              <Clock className="w-6 h-6 text-success" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Study Time</p>
@@ -308,8 +307,8 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
 
         <div className="bg-card border rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <TargetIcon className="w-6 h-6 text-purple-500" />
+            <div className="p-2 bg-primary/100/10 rounded-lg">
+              <TargetIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Average Score</p>
@@ -334,7 +333,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-500" />
+                  <Target className="w-5 h-5 text-primary" />
                   Weekly Goal
                 </CardTitle>
                 <CardDescription>Complete {progressData.overview.weeklyGoal} hours this week</CardDescription>
@@ -353,7 +352,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500" />
+                  <Star className="w-5 h-5 text-warning" />
                   Level Progress
                 </CardTitle>
                 <CardDescription>Progress to Level {progressData.overview.level + 1}</CardDescription>
@@ -367,7 +366,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-500" />
+                  <Award className="w-5 h-5 text-primary" />
                   Recent Achievements
                 </CardTitle>
               </CardHeader>
@@ -391,7 +390,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-green-500" />
+                <Calendar className="w-5 h-5 text-success" />
                 Weekly Activity
               </CardTitle>
               <CardDescription>Your learning activity this week</CardDescription>
@@ -403,7 +402,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
                     <div className="text-xs text-muted-foreground mb-2">{day.day}</div>
                     <div
                       className={`h-20 rounded-lg flex flex-col items-center justify-center text-white text-xs font-medium ${
-                        day.minutes > 0 ? "bg-gradient-to-t from-blue-500 to-blue-400" : "bg-gray-200 dark:bg-gray-700"
+                        day.minutes > 0 ? "bg-gradient-to-t from-blue-500 to-blue-400" : "bg-secondary dark:bg-secondary"
                       }`}
                       style={{
                         height: `${Math.max(20, (day.minutes / 120) * 80)}px`,
@@ -446,7 +445,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
                       </div>
                       <div className="flex items-center gap-2">
                         {course.progress === 100 ? (
-                          <Badge className="bg-green-500 hover:bg-green-600">
+                          <Badge className="bg-success/100 hover:bg-success">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Completed
                           </Badge>
@@ -513,7 +512,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
               >
                 <Card className={`relative ${achievement.isNew ? "ring-2 ring-yellow-400" : ""}`}>
                   {achievement.isNew && (
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute -top-2 -right-2 bg-destructive/100 text-white text-xs px-2 py-1 rounded-full">
                       New!
                     </div>
                   )}
@@ -573,7 +572,7 @@ export function StudentProgressDashboard({ userId }: StudentProgressDashboardPro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Rank Change</span>
-                    <span className="font-medium text-green-600">+3</span>
+                    <span className="font-medium text-success">+3</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Best Streak</span>

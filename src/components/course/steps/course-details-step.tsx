@@ -48,14 +48,14 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 bg-gray-50/60">
+    <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-muted/50/60">
         <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#0158B7]/10 flex items-center justify-center text-[#0158B7]">
           {icon}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900 leading-none">{title}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
+          <p className="text-sm font-semibold text-foreground leading-none">{title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
       </div>
       <div className="px-5 py-5 space-y-4">{children}</div>
@@ -64,7 +64,7 @@ function Section({
 }
 
 function RowDivider() {
-  return <div className="border-t border-gray-100 -mx-5 my-1" />
+  return <div className="border-t border-border -mx-5 my-1" />
 }
 
 function ToggleRow({
@@ -87,8 +87,8 @@ function ToggleRow({
       <div className="flex items-start gap-2.5 min-w-0">
         <div className="flex-shrink-0 mt-0.5 text-[#0158B7]">{icon}</div>
         <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900 leading-snug">{label}</p>
-          <p className="text-xs text-gray-400 mt-0.5 leading-snug">{description}</p>
+          <p className="text-sm font-medium text-foreground leading-snug">{label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{description}</p>
         </div>
       </div>
       <Switch
@@ -173,11 +173,11 @@ export function CourseDetailsStep({
 
   // Shared style tokens — identical to institution step for visual consistency
   const sel =
-    "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0158B7]/30 focus:border-[#0158B7] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+    "w-full px-3 py-2 border border-border rounded-lg text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-[#0158B7]/30 focus:border-[#0158B7] disabled:bg-muted/50 disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
   const inp =
-    "border-gray-200 focus:border-[#0158B7] focus:ring-[#0158B7]/30 text-gray-900 placeholder:text-gray-400 text-sm transition-colors"
-  const lbl = "text-sm font-medium text-gray-700"
-  const hint = "text-xs text-gray-400 mt-0.5"
+    "border-border focus:border-[#0158B7] focus:ring-[#0158B7]/30 text-foreground placeholder:text-muted-foreground text-sm transition-colors"
+  const lbl = "text-sm font-medium text-muted-foreground"
+  const hint = "text-xs text-muted-foreground mt-0.5"
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -185,12 +185,12 @@ export function CourseDetailsStep({
       {/* ═══════════════════════════════════════════════════════════
           OUTER CONTAINER — same slate-50 tinted background as institution step
       ════════════════════════════════════════════════════════════ */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-5">
+      <div className="bg-muted/50 border border-border rounded-2xl p-5 space-y-5">
 
         {/* Page heading */}
         <div className="text-center pb-1">
-          <h2 className="text-xl font-bold text-gray-900">Course Details</h2>
-          <p className="text-sm text-gray-400 mt-0.5">Set up the foundation of your course</p>
+          <h2 className="text-xl font-bold text-foreground">Course Details</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Set up the foundation of your course</p>
         </div>
 
         {/* ── CARD 1: Basic Information ─────────────────────────── */}
@@ -202,7 +202,7 @@ export function CourseDetailsStep({
           {/* Course Title */}
           <div className="space-y-1.5">
             <Label htmlFor="title" className={lbl}>
-              Course Title <span className="text-red-500">*</span>
+              Course Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
@@ -217,7 +217,7 @@ export function CourseDetailsStep({
           {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="description" className={lbl}>
-              Description <span className="text-red-500">*</span>
+              Description <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="description"
@@ -289,7 +289,7 @@ export function CourseDetailsStep({
               <Input
                 value={userInstitution.name}
                 disabled
-                className="bg-gray-50 border-gray-200 text-gray-500 text-sm"
+                className="bg-muted/50 border-border text-muted-foreground text-sm"
               />
               <p className={hint}>You can only create courses for your institution</p>
               <input
@@ -306,7 +306,7 @@ export function CourseDetailsStep({
           {isSystemAdmin && (
             <div className="space-y-1.5">
               <Label htmlFor="course_type" className={lbl}>
-                Course Type <span className="text-red-500">*</span>
+                Course Type <span className="text-destructive">*</span>
               </Label>
               <select
                 id="course_type"
@@ -342,7 +342,7 @@ export function CourseDetailsStep({
               <Input
                 value="SPOC — Small Private Online Course"
                 disabled
-                className="bg-gray-50 border-gray-200 text-gray-500 text-sm"
+                className="bg-muted/50 border-border text-muted-foreground text-sm"
               />
               <p className={hint}>
                 Institution admins can create both SPOC and MOOC courses for their institution
@@ -356,18 +356,18 @@ export function CourseDetailsStep({
           )}
 
           {(courseData.course_type === "SPOC" || isInstitutionAdmin) && (
-            <div className="flex items-start gap-2.5 px-3 py-2.5 bg-purple-50 border border-purple-100 rounded-lg">
-              <Lock className="w-3.5 h-3.5 text-purple-500 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-purple-700 leading-snug space-y-0.5">
+            <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
+              <Lock className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-primary leading-snug space-y-0.5">
                 <p className="font-semibold">SPOC — Private access only</p>
                 <p>Requires access codes or institution membership to enroll.</p>
                 {isInstitutionAdmin && (
-                  <p className="text-purple-500">
+                  <p className="text-primary">
                     Institution Admin: Can create SPOC and MOOC courses for your institution.
                   </p>
                 )}
                 {isSystemAdmin && (
-                  <p className="text-purple-500">
+                  <p className="text-primary">
                     System Admin: Can create SPOC courses for any institution.
                   </p>
                 )}
@@ -417,7 +417,7 @@ export function CourseDetailsStep({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="level" className={lbl}>
-                Difficulty Level <span className="text-red-500">*</span>
+                Difficulty Level <span className="text-destructive">*</span>
               </Label>
               <select
                 id="level"
@@ -435,7 +435,7 @@ export function CourseDetailsStep({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="language" className={lbl}>
-                Language <span className="text-red-500">*</span>
+                Language <span className="text-destructive">*</span>
               </Label>
               <select
                 id="language"
@@ -462,7 +462,7 @@ export function CourseDetailsStep({
             <div className="space-y-1.5">
               <Label htmlFor="price" className={lbl}>
                 <span className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                  <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
                   Price (USD)
                 </span>
               </Label>
@@ -485,7 +485,7 @@ export function CourseDetailsStep({
             <div className="space-y-1.5">
               <Label htmlFor="duration_minutes" className={lbl}>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-gray-400" />
+                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                   Duration (min)
                 </span>
               </Label>
@@ -534,20 +534,20 @@ export function CourseDetailsStep({
               </select>
               {inLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
                 </div>
               )}
             </div>
             {/* SA unique: create new category inline */}
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-xs text-gray-400 flex-shrink-0">Or create new:</span>
+              <span className="text-xs text-muted-foreground flex-shrink-0">Or create new:</span>
               <Input
                 placeholder="New category name"
                 value={courseData.category_name || ""}
                 onChange={(e) =>
                   setCourseData({ ...courseData, category_name: e.target.value })
                 }
-                className="h-8 text-xs border-gray-200 focus:border-[#0158B7] focus:ring-[#0158B7]/30 text-gray-900"
+                className="h-8 text-xs border-border focus:border-[#0158B7] focus:ring-[#0158B7]/30 text-foreground"
               />
             </div>
           </div>
@@ -568,7 +568,7 @@ export function CourseDetailsStep({
               onChange={(value) =>
                 setCourseData({ ...courseData, what_you_will_learn: value })
               }
-              className="min-h-[140px] border border-gray-200 rounded-lg overflow-hidden text-sm"
+              className="min-h-[140px] border border-border rounded-lg overflow-hidden text-sm"
             />
           </div>
 
@@ -583,7 +583,7 @@ export function CourseDetailsStep({
               onChange={(value) =>
                 setCourseData({ ...courseData, requirements: value })
               }
-              className="min-h-[110px] border border-gray-200 rounded-lg overflow-hidden text-sm"
+              className="min-h-[110px] border border-border rounded-lg overflow-hidden text-sm"
             />
           </div>
         </Section>
@@ -645,7 +645,7 @@ export function CourseDetailsStep({
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="ml-0.5 hover:text-red-500 transition-colors"
+                      className="ml-0.5 hover:text-destructive transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -757,12 +757,12 @@ export function CourseDetailsStep({
 
       {/* ── Navigation ──────────────────────────────────────── */}
       <div className="flex justify-between items-center pt-2">
-        <p className="text-xs text-gray-400">Step 1 of 3 · Course Details</p>
+        <p className="text-xs text-muted-foreground">Step 1 of 3 · Course Details</p>
         <Button
           type="submit"
           disabled={!isFormValid()}
           size="lg"
-          className="px-8 bg-[#0158B7] hover:bg-[#014A9C] text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="px-8 bg-[#0158B7] hover:bg-[#014A9C] text-white disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
         >
           Continue to Course Structure
           <ChevronRight className="w-4 h-4 ml-1" />

@@ -182,10 +182,10 @@ export default function ApiManagementPage() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      ACTIVE: "bg-green-100 text-green-700",
-      INACTIVE: "bg-gray-100 text-gray-600",
-      EXPIRED: "bg-amber-100 text-amber-700",
-      REVOKED: "bg-red-100 text-red-700",
+      ACTIVE: "bg-success/15 text-success",
+      INACTIVE: "bg-muted text-muted-foreground",
+      EXPIRED: "bg-warning/15 text-warning",
+      REVOKED: "bg-destructive/15 text-destructive",
     };
     return styles[status as keyof typeof styles] || styles.INACTIVE;
   };
@@ -196,23 +196,23 @@ export default function ApiManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted/50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-red-600 rounded-xl">
+            <div className="p-2.5 bg-destructive rounded-xl">
               <Network className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">API Management</h1>
-              <p className="text-sm text-gray-600">Create and manage API keys for external integrations</p>
+              <h1 className="text-2xl font-bold text-foreground">API Management</h1>
+              <p className="text-sm text-muted-foreground">Create and manage API keys for external integrations</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={loadData}
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="p-2 border border-border rounded-lg hover:bg-muted/50"
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
             </button>
@@ -234,7 +234,7 @@ export default function ApiManagementPage() {
                 });
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+              className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-lg hover:bg-destructive"
             >
               <Plus className="w-4 h-4" />
               New API Key
@@ -244,40 +244,40 @@ export default function ApiManagementPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total Keys</p>
-              <Key className="w-4 h-4 text-gray-400" />
+              <p className="text-sm text-muted-foreground">Total Keys</p>
+              <Key className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{apiKeys.length}</p>
+            <p className="text-2xl font-bold text-foreground">{apiKeys.length}</p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Active</p>
-              <Check className="w-4 h-4 text-green-500" />
+              <p className="text-sm text-muted-foreground">Active</p>
+              <Check className="w-4 h-4 text-success" />
             </div>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-success">
               {apiKeys.filter(k => k.status === "ACTIVE").length}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total Requests</p>
-              <Activity className="w-4 h-4 text-blue-500" />
+              <p className="text-sm text-muted-foreground">Total Requests</p>
+              <Activity className="w-4 h-4 text-primary" />
             </div>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-2xl font-bold text-primary">
               {apiKeys.reduce((sum, k) => sum + (k.total_requests || 0), 0).toLocaleString()}
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Expiring Soon</p>
-              <Clock className="w-4 h-4 text-amber-500" />
+              <p className="text-sm text-muted-foreground">Expiring Soon</p>
+              <Clock className="w-4 h-4 text-warning" />
             </div>
-            <p className="text-2xl font-bold text-amber-600">
+            <p className="text-2xl font-bold text-warning">
               {apiKeys.filter(k => {
                 if (!k.expires_at) return false;
                 const daysLeft = (new Date(k.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
@@ -288,22 +288,22 @@ export default function ApiManagementPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search API keys by name or preview..."
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                className="w-full pl-9 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+              className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
             >
               <option value="all">All Statuses</option>
               {apiPermissions.statuses?.map((status: string) => (
@@ -322,34 +322,34 @@ export default function ApiManagementPage() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6"
+              className="bg-success/10 border border-success/30 rounded-xl p-4 mb-6"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Key className="w-5 h-5 text-green-600" />
-                    <h3 className="font-semibold text-green-800">Your New API Key</h3>
+                    <Key className="w-5 h-5 text-success" />
+                    <h3 className="font-semibold text-success">Your New API Key</h3>
                   </div>
-                  <p className="text-sm text-green-700 mb-3">
+                  <p className="text-sm text-success mb-3">
                     Save this key now. For security reasons, it won't be shown again.
                   </p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 p-3 bg-white border border-green-300 rounded-lg font-mono text-sm">
+                    <code className="flex-1 p-3 bg-card border border-success/40 rounded-lg font-mono text-sm">
                       {showNewKey}
                     </code>
                     <button
                       onClick={() => handleCopyKey(showNewKey)}
-                      className="p-2 bg-white border border-green-300 rounded-lg hover:bg-green-50"
+                      className="p-2 bg-card border border-success/40 rounded-lg hover:bg-success/10"
                     >
-                      <Copy className="w-4 h-4 text-green-600" />
+                      <Copy className="w-4 h-4 text-success" />
                     </button>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowNewKey(null)}
-                  className="p-1 hover:bg-green-100 rounded"
+                  className="p-1 hover:bg-success/15 rounded"
                 >
-                  <X className="w-5 h-5 text-green-600" />
+                  <X className="w-5 h-5 text-success" />
                 </button>
               </div>
             </motion.div>
@@ -359,13 +359,13 @@ export default function ApiManagementPage() {
         {/* API Keys Grid */}
         <div className="grid grid-cols-1 gap-4">
           {isLoading ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mx-auto" />
+            <div className="bg-card rounded-xl p-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-destructive border-t-transparent mx-auto" />
             </div>
           ) : filteredKeys.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 text-center">
-              <Key className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">No API keys found</p>
+            <div className="bg-card rounded-xl p-12 text-center">
+              <Key className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">No API keys found</p>
             </div>
           ) : (
             filteredKeys.map((key) => (
@@ -373,45 +373,45 @@ export default function ApiManagementPage() {
                 key={key.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-card rounded-xl shadow-sm border border-border p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{key.name}</h3>
+                      <h3 className="font-semibold text-foreground">{key.name}</h3>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(key.status)}`}>
                         {key.status}
                       </span>
-                      <span className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded">
+                      <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
                         {key.key_preview}
                       </span>
                     </div>
 
                     {key.description && (
-                      <p className="text-sm text-gray-600 mb-3">{key.description}</p>
+                      <p className="text-sm text-muted-foreground mb-3">{key.description}</p>
                     )}
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                       <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-gray-400" />
+                        <Shield className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
                           {key.permissions?.join(', ') || 'No permissions'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-gray-400" />
+                        <Activity className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
                           {key.rate_limits?.max_requests || 1000}/{(key.rate_limits?.window_ms || 3600000) / 3600000}h
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-400" />
+                        <Clock className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
                           Last used: {formatDate(key.last_used_at)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-gray-400" />
+                        <Globe className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
                           {key.total_requests} requests
                         </span>
@@ -419,14 +419,14 @@ export default function ApiManagementPage() {
                     </div>
 
                     {(key.allowed_ips && key.allowed_ips.length > 0) && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
                         <Globe className="w-3 h-3" />
                         <span>Allowed IPs: {key.allowed_ips.join(', ')}</span>
                       </div>
                     )}
 
                     {key.expires_at && (
-                      <div className="mt-2 text-xs text-gray-500">
+                      <div className="mt-2 text-xs text-muted-foreground">
                         Expires: {formatDate(key.expires_at)}
                       </div>
                     )}
@@ -435,21 +435,21 @@ export default function ApiManagementPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowSecret(prev => ({ ...prev, [key.id]: !prev[key.id] }))}
-                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors"
                       title="Toggle Secret"
                     >
                       {showSecret[key.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                     <button
                       onClick={() => handleRegenerate(key.id)}
-                      className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                      className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
                       title="Regenerate"
                     >
                       <RotateCw className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleEdit(key)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
@@ -457,7 +457,7 @@ export default function ApiManagementPage() {
                     {key.status === "ACTIVE" ? (
                       <button
                         onClick={() => handleRevoke(key.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Revoke"
                       >
                         <Power className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function ApiManagementPage() {
                     ) : (
                       <button
                         onClick={() => handleDelete(key.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -490,53 +490,53 @@ export default function ApiManagementPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                className="relative bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               >
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Key className="w-5 h-5 text-red-600" />
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <Key className="w-5 h-5 text-destructive" />
+                    <h2 className="text-lg font-semibold text-foreground">
                       {editingKey ? "Edit API Key" : "Create New API Key"}
                     </h2>
                   </div>
                   <button
                     onClick={() => setShowForm(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg"
+                    className="p-1 hover:bg-muted rounded-lg"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
+                      Name <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                       placeholder="e.g., Production API Key"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Description
                     </label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                       placeholder="What is this key for?"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
                       Permissions
                     </label>
                     <div className="space-y-2">
@@ -553,9 +553,9 @@ export default function ApiManagementPage() {
                                 setFormData({ ...formData, permissions: current.filter(p => p !== perm.value) });
                               }
                             }}
-                            className="w-4 h-4 text-red-600 rounded"
+                            className="w-4 h-4 text-destructive rounded"
                           />
-                          <span className="text-sm text-gray-700">{perm.label}</span>
+                          <span className="text-sm text-muted-foreground">{perm.label}</span>
                         </label>
                       ))}
                     </div>
@@ -563,7 +563,7 @@ export default function ApiManagementPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Rate Limit (requests)
                       </label>
                       <input
@@ -577,13 +577,13 @@ export default function ApiManagementPage() {
                             window_ms: formData.rate_limits?.window_ms || 3600000,
                           }
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                         min="1"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         Time Window
                       </label>
                       <select
@@ -596,7 +596,7 @@ export default function ApiManagementPage() {
                             max_requests: formData.rate_limits?.max_requests || 1000,
                           }
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                       >
                         <option value={3600000}>Per Hour</option>
                         <option value={86400000}>Per Day</option>
@@ -606,7 +606,7 @@ export default function ApiManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Allowed IPs (one per line)
                     </label>
                     <textarea
@@ -616,14 +616,14 @@ export default function ApiManagementPage() {
                         allowed_ips: e.target.value.split('\n').map(s => s.trim()).filter(Boolean)
                       })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                       placeholder="192.168.1.1&#10;10.0.0.0/24"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Leave empty to allow all IPs</p>
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty to allow all IPs</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Allowed Domains (one per line)
                     </label>
                     <textarea
@@ -633,21 +633,21 @@ export default function ApiManagementPage() {
                         allowed_domains: e.target.value.split('\n').map(s => s.trim()).filter(Boolean)
                       })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                       placeholder="example.com&#10;api.example.com"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Leave empty to allow all domains</p>
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty to allow all domains</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Expiration Date (Optional)
                     </label>
                     <input
                       type="datetime-local"
                       value={formData.expires_at?.slice(0, 16) || ''}
                       onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500"
                     />
                   </div>
 
@@ -657,16 +657,16 @@ export default function ApiManagementPage() {
                         type="checkbox"
                         checked={formData.is_active !== false}
                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                        className="w-4 h-4 text-red-600 rounded"
+                        className="w-4 h-4 text-destructive rounded"
                       />
-                      <span className="text-sm text-gray-700">Active</span>
+                      <span className="text-sm text-muted-foreground">Active</span>
                     </label>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <div className="flex gap-3 pt-4 border-t border-border">
                     <button
                       type="submit"
-                      className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                      className="flex-1 flex items-center justify-center gap-2 bg-destructive text-white px-4 py-2 rounded-lg hover:bg-destructive"
                     >
                       <Save className="w-4 h-4" />
                       {editingKey ? "Update API Key" : "Create API Key"}
@@ -674,7 +674,7 @@ export default function ApiManagementPage() {
                     <button
                       type="button"
                       onClick={() => setShowForm(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="px-4 py-2 border border-border rounded-lg hover:bg-muted/50"
                     >
                       Cancel
                     </button>

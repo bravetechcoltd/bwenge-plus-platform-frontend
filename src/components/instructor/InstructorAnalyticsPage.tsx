@@ -273,7 +273,6 @@ export default function InstructorAnalyticsPage() {
         setCourses(data.data?.courses || []);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
     }
   };
 
@@ -380,7 +379,6 @@ export default function InstructorAnalyticsPage() {
 
       setAnalytics(analytics);
     } catch (error) {
-      console.error("Error fetching analytics:", error);
       toast.error("Failed to load analytics data");
     } finally {
       setLoading(false);
@@ -771,7 +769,6 @@ export default function InstructorAnalyticsPage() {
         toast.error("Failed to export analytics");
       }
     } catch (error) {
-      console.error("Error exporting analytics:", error);
       toast.error("Failed to export analytics");
     }
   };
@@ -793,11 +790,11 @@ export default function InstructorAnalyticsPage() {
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case "high":
-        return <Badge className="bg-red-100 text-red-800">High Risk</Badge>;
+        return <Badge className="bg-destructive/15 text-destructive">High Risk</Badge>;
       case "medium":
-        return <Badge className="bg-orange-100 text-orange-800">Medium Risk</Badge>;
+        return <Badge className="bg-warning/15 text-warning">Medium Risk</Badge>;
       case "low":
-        return <Badge className="bg-yellow-100 text-yellow-800">Low Risk</Badge>;
+        return <Badge className="bg-warning/15 text-warning">Low Risk</Badge>;
       default:
         return null;
     }
@@ -816,11 +813,11 @@ export default function InstructorAnalyticsPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               No Analytics Data
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               There is no analytics data available for your courses yet.
             </p>
             <Button onClick={handleRefresh}>
@@ -838,10 +835,10 @@ export default function InstructorAnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Instructor Analytics
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Track your teaching performance and student engagement
           </p>
         </div>
@@ -892,14 +889,14 @@ export default function InstructorAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Students</p>
+                <p className="text-sm text-muted-foreground">Total Students</p>
                 <p className="text-3xl font-bold">{formatNumber(analytics.overview.total_students)}</p>
-                <p className="text-xs text-green-600 mt-1">
+                <p className="text-xs text-success mt-1">
                   ↑ {formatPercent(analytics.trends.growth_rates.monthly)} monthly
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -909,14 +906,14 @@ export default function InstructorAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Students</p>
+                <p className="text-sm text-muted-foreground">Active Students</p>
                 <p className="text-3xl font-bold">{formatNumber(analytics.overview.active_students)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {((analytics.overview.active_students / analytics.overview.total_students) * 100).toFixed(1)}% of total
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Activity className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                <Activity className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -926,14 +923,14 @@ export default function InstructorAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Avg. Completion</p>
+                <p className="text-sm text-muted-foreground">Avg. Completion</p>
                 <p className="text-3xl font-bold">{analytics.overview.average_completion_rate.toFixed(1)}%</p>
-                <p className="text-xs text-purple-600 mt-1">
+                <p className="text-xs text-primary mt-1">
                   {analytics.overview.completed_students} completed
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <Target className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <Target className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -943,14 +940,14 @@ export default function InstructorAnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Avg. Rating</p>
+                <p className="text-sm text-muted-foreground">Avg. Rating</p>
                 <p className="text-3xl font-bold">{analytics.performance.average_rating.toFixed(1)}</p>
-                <p className="text-xs text-yellow-600 mt-1">
+                <p className="text-xs text-warning mt-1">
                   {analytics.performance.total_reviews} reviews
                 </p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Star className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                <Star className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -979,10 +976,10 @@ export default function InstructorAnalyticsPage() {
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.overview.total_courses}</div>
                 <div className="flex gap-2 mt-2">
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/15 text-success">
                     {analytics.overview.published_courses} Published
                   </Badge>
-                  <Badge className="bg-yellow-100 text-yellow-800">
+                  <Badge className="bg-warning/15 text-warning">
                     {analytics.overview.draft_courses} Draft
                   </Badge>
                 </div>
@@ -1062,20 +1059,20 @@ export default function InstructorAnalyticsPage() {
                 {analytics.performance.top_rated_courses.map((course, index) => (
                   <div key={course.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-gray-400 w-6">
+                      <span className="text-lg font-bold text-muted-foreground w-6">
                         #{index + 1}
                       </span>
                       <div>
                         <p className="font-medium">{course.title}</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
                                 className={`w-3 h-3 ${
                                   i < Math.floor(course.average_rating)
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-gray-300"
+                                    ? "fill-yellow-400 text-warning"
+                                    : "text-muted-foreground"
                                 }`}
                               />
                             ))}
@@ -1084,7 +1081,7 @@ export default function InstructorAnalyticsPage() {
                         </div>
                       </div>
                     </div>
-                    <Badge className="bg-blue-100 text-blue-800">
+                    <Badge className="bg-primary/15 text-primary">
                       {course.average_rating.toFixed(1)} ★
                     </Badge>
                   </div>
@@ -1187,22 +1184,22 @@ export default function InstructorAnalyticsPage() {
                   </thead>
                   <tbody>
                     {analytics.students.top_students.map((student) => (
-                      <tr key={student.id} className="border-b hover:bg-gray-50">
+                      <tr key={student.id} className="border-b hover:bg-muted/50">
                         <td className="p-3">
                           <div>
                             <p className="font-medium">{student.name}</p>
-                            <p className="text-sm text-gray-500">{student.email}</p>
+                            <p className="text-sm text-muted-foreground">{student.email}</p>
                           </div>
                         </td>
                         <td className="p-3">{student.courses_enrolled}</td>
                         <td className="p-3">{student.courses_completed}</td>
                         <td className="p-3">
-                          <Badge className="bg-green-100 text-green-800">
+                          <Badge className="bg-success/15 text-success">
                             {student.average_score.toFixed(1)}%
                           </Badge>
                         </td>
                         <td className="p-3">{formatTime(student.total_time_spent_minutes)}</td>
-                        <td className="p-3 text-sm text-gray-500">
+                        <td className="p-3 text-sm text-muted-foreground">
                           {formatDistance(new Date(student.last_active), new Date(), { addSuffix: true })}
                         </td>
                       </tr>
@@ -1217,7 +1214,7 @@ export default function InstructorAnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-orange-500" />
+                <AlertCircle className="w-5 h-5 text-warning" />
                 At-Risk Students
               </CardTitle>
               <CardDescription>
@@ -1232,21 +1229,21 @@ export default function InstructorAnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <div>
                           <p className="font-medium">{student.name}</p>
-                          <p className="text-sm text-gray-500">{student.email}</p>
+                          <p className="text-sm text-muted-foreground">{student.email}</p>
                         </div>
                         {getRiskBadge(student.risk_level)}
                       </div>
                       <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
                         <div>
-                          <span className="text-gray-500">Course:</span>{" "}
+                          <span className="text-muted-foreground">Course:</span>{" "}
                           <span className="font-medium">{student.course_title}</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Progress:</span>{" "}
+                          <span className="text-muted-foreground">Progress:</span>{" "}
                           <span className="font-medium">{student.progress_percentage}%</span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Inactive:</span>{" "}
+                          <span className="text-muted-foreground">Inactive:</span>{" "}
                           <span className="font-medium">{student.days_inactive} days</span>
                         </div>
                       </div>
@@ -1274,7 +1271,7 @@ export default function InstructorAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.engagement.daily_active_users}</div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {((analytics.engagement.daily_active_users / analytics.overview.active_students) * 100).toFixed(1)}% of active
                 </p>
               </CardContent>
@@ -1342,7 +1339,7 @@ export default function InstructorAnalyticsPage() {
                 <div className="text-3xl font-bold">
                   {formatTime(analytics.engagement.average_time_spent_minutes)}
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Total: {formatTime(analytics.engagement.total_time_spent_hours * 60)}
                 </p>
               </CardContent>
@@ -1359,11 +1356,11 @@ export default function InstructorAnalyticsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-2xl font-bold">{analytics.engagement.lessons_completed}</div>
-                    <p className="text-sm text-gray-500">Lessons</p>
+                    <p className="text-sm text-muted-foreground">Lessons</p>
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{analytics.engagement.assessments_completed}</div>
-                    <p className="text-sm text-gray-500">Assessments</p>
+                    <p className="text-sm text-muted-foreground">Assessments</p>
                   </div>
                 </div>
               </CardContent>
@@ -1378,25 +1375,25 @@ export default function InstructorAnalyticsPage() {
             <Card>
               <CardContent className="pt-6 text-center">
                 <div className="text-2xl font-bold">{analytics.content.total_modules}</div>
-                <p className="text-sm text-gray-500">Modules</p>
+                <p className="text-sm text-muted-foreground">Modules</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center">
                 <div className="text-2xl font-bold">{analytics.content.total_lessons}</div>
-                <p className="text-sm text-gray-500">Lessons</p>
+                <p className="text-sm text-muted-foreground">Lessons</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center">
                 <div className="text-2xl font-bold">{analytics.content.total_videos}</div>
-                <p className="text-sm text-gray-500">Videos</p>
+                <p className="text-sm text-muted-foreground">Videos</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6 text-center">
                 <div className="text-2xl font-bold">{analytics.content.total_assessments}</div>
-                <p className="text-sm text-gray-500">Assessments</p>
+                <p className="text-sm text-muted-foreground">Assessments</p>
               </CardContent>
             </Card>
           </div>
@@ -1449,15 +1446,15 @@ export default function InstructorAnalyticsPage() {
                   <div key={item.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {item.type === "VIDEO" ? (
-                        <Video className="w-4 h-4 text-blue-500" />
+                        <Video className="w-4 h-4 text-primary" />
                       ) : item.type === "QUIZ" ? (
-                        <FileText className="w-4 h-4 text-green-500" />
+                        <FileText className="w-4 h-4 text-success" />
                       ) : (
-                        <FileText className="w-4 h-4 text-gray-500" />
+                        <FileText className="w-4 h-4 text-muted-foreground" />
                       )}
                       <div>
                         <p className="font-medium">{item.title}</p>
-                        <p className="text-xs text-gray-500">{item.type}</p>
+                        <p className="text-xs text-muted-foreground">{item.type}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -1606,7 +1603,7 @@ export default function InstructorAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${
-                  analytics.trends.growth_rates.daily >= 0 ? 'text-green-600' : 'text-red-600'
+                  analytics.trends.growth_rates.daily >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   {analytics.trends.growth_rates.daily >= 0 ? '+' : ''}
                   {(analytics.trends.growth_rates.daily * 100).toFixed(1)}%
@@ -1619,7 +1616,7 @@ export default function InstructorAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${
-                  analytics.trends.growth_rates.weekly >= 0 ? 'text-green-600' : 'text-red-600'
+                  analytics.trends.growth_rates.weekly >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   {analytics.trends.growth_rates.weekly >= 0 ? '+' : ''}
                   {(analytics.trends.growth_rates.weekly * 100).toFixed(1)}%
@@ -1632,7 +1629,7 @@ export default function InstructorAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${
-                  analytics.trends.growth_rates.monthly >= 0 ? 'text-green-600' : 'text-red-600'
+                  analytics.trends.growth_rates.monthly >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   {analytics.trends.growth_rates.monthly >= 0 ? '+' : ''}
                   {(analytics.trends.growth_rates.monthly * 100).toFixed(1)}%
@@ -1645,7 +1642,7 @@ export default function InstructorAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${
-                  analytics.trends.growth_rates.yearly >= 0 ? 'text-green-600' : 'text-red-600'
+                  analytics.trends.growth_rates.yearly >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   {analytics.trends.growth_rates.yearly >= 0 ? '+' : ''}
                   {(analytics.trends.growth_rates.yearly * 100).toFixed(1)}%

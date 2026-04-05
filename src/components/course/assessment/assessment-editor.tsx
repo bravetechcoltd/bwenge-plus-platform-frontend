@@ -118,7 +118,7 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+              <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
               <Badge variant="outline" className="text-xs">
                 Question {index + 1}
               </Badge>
@@ -135,7 +135,7 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
               variant="ghost"
               size="sm"
               onClick={() => deleteQuestion(index)}
-              className="text-red-500 hover:text-red-700"
+              className="text-destructive hover:text-destructive"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -143,8 +143,8 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
         </CardHeader>
         <CardContent className="space-y-4">
           {validationErrors[index] && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <div className="p-3 bg-destructive/10 dark:bg-destructive/20/20 border border-destructive/30 dark:border-destructive/30 rounded-lg">
+              <div className="flex items-center gap-2 text-destructive dark:text-destructive">
                 <AlertCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">{validationErrors[index]}</span>
               </div>
@@ -223,7 +223,7 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
                       variant="ghost"
                       size="sm"
                       onClick={() => removeOption(optionIndex)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-destructive hover:text-destructive"
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -315,11 +315,11 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
 
               {assessment.questions?.map((question, index) => renderQuestionEditor(question, index))}
 
-              <Card className="border-dashed border-2 border-gray-300 hover:border-primary-400 transition-colors">
+              <Card className="border-dashed border-2 border-border hover:border-primary-400 transition-colors">
                 <CardContent className="p-6 text-center">
-                  <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">Add Question</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-medium text-foreground dark:text-white mb-2">Add Question</h3>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-4">
                     Create a new question for this assessment
                   </p>
                   <Button onClick={addQuestion}>
@@ -411,23 +411,23 @@ export function AssessmentEditor({ assessment, onUpdate }: AssessmentEditorProps
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary-600">{assessment.questions?.length || 0}</div>
-                    <div className="text-sm text-gray-600">Questions</div>
+                    <div className="text-sm text-muted-foreground">Questions</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-success">
                       {assessment.questions?.reduce((acc, q) => acc + q.points, 0) || 0}
                     </div>
-                    <div className="text-sm text-gray-600">Total Points</div>
+                    <div className="text-sm text-muted-foreground">Total Points</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{assessment.passing_score || 70}%</div>
-                    <div className="text-sm text-gray-600">Passing Score</div>
+                    <div className="text-2xl font-bold text-primary">{assessment.passing_score || 70}%</div>
+                    <div className="text-sm text-muted-foreground">Passing Score</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-2xl font-bold text-warning">
                       {assessment.time_limit_minutes ? `${assessment.time_limit_minutes}m` : "∞"}
                     </div>
-                    <div className="text-sm text-gray-600">Time Limit</div>
+                    <div className="text-sm text-muted-foreground">Time Limit</div>
                   </div>
                 </div>
               </CardContent>

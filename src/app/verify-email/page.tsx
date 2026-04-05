@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 "use client"
 
 import React, { useState, useEffect, useRef, useMemo, Suspense } from "react"
@@ -8,36 +7,34 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
 import { clearError, clearVerificationState } from "@/lib/features/auth/auth-slice"
 import type { AppDispatch, RootState } from "@/lib/store"
-import {
-  Mail,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react"
+import { Mail, Loader2, CheckCircle, AlertCircle, ArrowLeft, RefreshCw, ShieldCheck, Home } from "lucide-react"
 import Link from "next/link"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
-function FloatingParticles() {
-  const particles = useMemo(() => Array.from({ length: 15 }, (_, i) => ({
-    id: i, x: Math.random() * 100, y: Math.random() * 100,
-    size: Math.random() * 2.5 + 1, duration: Math.random() * 10 + 14, delay: Math.random() * 5,
-  })), [])
+/* ── Logo ── */
+function Logo() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div key={p.id} className="absolute rounded-full bg-white/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
-          animate={{ y: [-10, -50], opacity: [0, 0.8, 0.8, 0] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: "easeInOut" }}
-        />
-      ))}
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+        <svg viewBox="0 0 40 40" className="w-3.5 h-3.5" fill="none">
+          <ellipse cx="20" cy="10" rx="12" ry="4" fill="white" />
+          <polygon points="20,3 8,10 20,14 32,10" fill="white" />
+          <rect x="10" y="14" width="9" height="16" rx="1.5" fill="white" />
+          <rect x="21" y="14" width="9" height="16" rx="1.5" fill="white" />
+        </svg>
+      </div>
+      <span className="text-sm font-bold text-foreground tracking-tight">BwengePlus</span>
     </div>
   )
 }
+
+/* ── Right panel info ── */
+const verifySteps = [
+  { num: "01", title: "Check your inbox", desc: "Look for an email from BwengePlus" },
+  { num: "02", title: "Enter the code", desc: "Type all 6 digits in the boxes" },
+  { num: "03", title: "Start learning", desc: "Your account activates immediately" },
+]
 
 function VerifyEmailForm() {
   const router = useRouter()
@@ -47,10 +44,9 @@ function VerifyEmailForm() {
 
   const emailParam = searchParams.get("email") || ""
   const redirectParam = searchParams.get("redirect") || ""
-  // Decode the redirect target; fall back to /login
   const redirectTarget = redirectParam ? decodeURIComponent(redirectParam) : "/login"
-  // Detect if this came from a join/invite flow
   const isJoinFlow = redirectTarget.includes("/join")
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -70,28 +66,20 @@ function VerifyEmailForm() {
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return
-    const next = [...otp]
-    next[index] = value
-    setOtp(next)
+    const next = [...otp]; next[index] = value; setOtp(next)
     setLocalError("")
     if (value && index < 5) otpRefs.current[index + 1]?.focus()
-    // Auto-submit when all filled
-    if (value && index === 5 && next.every(Boolean)) {
-      handleVerify(next.join(""))
-    }
+    if (value && index === 5 && next.every(Boolean)) handleVerify(next.join(""))
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
-    }
+    if (e.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus()
   }
 
   const handlePaste = (e: React.ClipboardEvent) => {
     const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
     if (text.length === 6) {
-      const digits = text.split("")
-      setOtp(digits)
+      const digits = text.split(""); setOtp(digits)
       otpRefs.current[5]?.focus()
       handleVerify(text)
     }
@@ -100,29 +88,19 @@ function VerifyEmailForm() {
   const handleVerify = async (code?: string) => {
     const otpString = code || otp.join("")
     if (otpString.length !== 6) { setLocalError("Please enter all 6 digits"); return }
-    setIsVerifying(true)
-    setLocalError("")
+    setIsVerifying(true); setLocalError("")
     try {
       const res = await api.post("/auth/verify-email", { email: emailParam, otp: otpString })
       if (res.data.success) {
-        // Clear requiresVerification from Redux FIRST so login page won't bounce back
-        dispatch(clearVerificationState())
-        dispatch(clearError())
+        dispatch(clearVerificationState()); dispatch(clearError())
         setVerified(true)
-        toast.success(
-          isJoinFlow
-            ? "Email verified! Continuing to join your institution…"
-            : "Email verified! Welcome to BwengePlus 🎉"
-        )
+        toast.success(isJoinFlow ? "Email verified! Continuing to join your institution…" : "Email verified! Welcome to BwengePlus 🎉")
         setTimeout(() => router.push(redirectTarget), 2200)
       }
     } catch (err: any) {
       setLocalError(err.response?.data?.message || "Invalid or expired code. Please try again.")
-      setOtp(["", "", "", "", "", ""])
-      otpRefs.current[0]?.focus()
-    } finally {
-      setIsVerifying(false)
-    }
+      setOtp(["", "", "", "", "", ""]); otpRefs.current[0]?.focus()
+    } finally { setIsVerifying(false) }
   }
 
   const handleResend = async () => {
@@ -130,175 +108,230 @@ function VerifyEmailForm() {
     setIsResending(true)
     try {
       await api.post("/auth/resend-verification", { email: emailParam })
-      toast.success("New verification code sent!")
-      setCooldown(60)
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to resend code")
-    } finally {
-      setIsResending(false)
-    }
+      toast.success("New verification code sent!"); setCooldown(60)
+    } catch (err: any) { toast.error(err.response?.data?.message || "Failed to resend code") }
+    finally { setIsResending(false) }
   }
 
+  /* ── Verified success screen ── */
   if (verified) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary p-4">
-        <FloatingParticles />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative z-10"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", delay: 0.2 }}
-            className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4"
-          >
-            <CheckCircle className="w-9 h-9 text-green-500" />
-          </motion.div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Email Verified!</h2>
-          <p className="text-sm text-gray-500 mb-1">Your account is now active.</p>
-          <p className="text-xs text-gray-400">
-            {isJoinFlow ? "Returning to join your institution…" : "Redirecting to sign in…"}
-          </p>
-          <div className="mt-4 h-1 bg-gray-100 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 2.5 }}
-            />
+      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
+          <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+            <Logo />
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-3 h-3" /> Home
+            </Link>
           </div>
-        </motion.div>
+          <div className="flex-1 flex items-center justify-center px-8 py-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35 }}
+              className="w-full max-w-[300px] space-y-4 text-center"
+            >
+              <div className="flex justify-center">
+                <motion.div
+                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  transition={{ type: "spring", delay: 0.2 }}
+                  className="w-12 h-12 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center"
+                >
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Verified</p>
+                <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Email verified!</h1>
+                <p className="text-[11px] text-muted-foreground">
+                  {isJoinFlow ? "Returning to join your institution…" : "Redirecting to sign in…"}
+                </p>
+              </div>
+              <div className="h-1 bg-border rounded-full overflow-hidden">
+                <motion.div className="h-full bg-primary rounded-full"
+                  initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 2.5 }} />
+              </div>
+            </motion.div>
+          </div>
+          <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+            <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+              © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+            </p>
+          </div>
+        </div>
+        <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col items-center justify-center px-12">
+          <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Welcome</h2>
+          <h2 className="text-[38px] font-bold text-white/70 leading-[1.0] tracking-tight">aboard.</h2>
+          <p className="text-[13px] text-white/70 mt-3">Your account is now active.</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary p-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-primary" />
-      <div className="absolute right-[-15%] top-[5%] w-[60%] h-[70%] rounded-full bg-white/5" />
-      <div className="absolute left-[-10%] bottom-[-10%] w-[50%] h-[50%] rounded-full bg-white/5" />
-      <FloatingParticles />
+    <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="w-full max-w-[380px] relative z-10"
-      >
-        <div className="bg-white/98 backdrop-blur-2xl rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/70 overflow-hidden">
+      {/* ══ LEFT — Form column ══ */}
+      <div className="w-full lg:w-[45%] h-full flex flex-col bg-background border-r border-border/40">
 
-          {/* Header */}
-          <div className="pt-5 pb-3 px-6 flex flex-col items-center border-b border-gray-100/80">
-            <div className="w-12 h-12 rounded-full bg-primary border-4 border-white shadow-lg flex items-center justify-center mb-2">
-              <ShieldCheck className="w-6 h-6 text-white" />
+        {/* Top nav */}
+        <div className="flex items-center justify-between px-6 h-11 border-b border-border/40 flex-shrink-0">
+          <Logo />
+          <Link
+            href={isJoinFlow ? redirectTarget : "/register"}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" /> {isJoinFlow ? "Back to invitation" : "Back to register"}
+          </Link>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 flex items-center justify-center px-8 py-3">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-[300px] space-y-3"
+          >
+            <div className="space-y-0.5">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">Email Verification</p>
+              <h1 className="text-[22px] font-bold text-foreground leading-none tracking-tight">Verify your email.</h1>
+              <p className="text-[11px] text-muted-foreground">
+                Enter the 6-digit code sent to{" "}
+                <span className="font-semibold text-foreground">{emailParam || "your email"}</span>
+              </p>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Verify Your Email</h1>
-            <p className="text-[11px] text-gray-400 mt-0.5 text-center">
-              Enter the 6-digit code sent to{" "}
-              <span className="font-semibold text-primary">{emailParam || "your email"}</span>
-            </p>
-          </div>
-
-          {/* Body */}
-          <div className="px-5 py-5 space-y-4">
 
             {/* Error */}
             <AnimatePresence>
               {localError && (
                 <motion.div
-                  initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-1.5"
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="border-l-[3px] border-destructive bg-destructive/5 pl-3 pr-3 py-2 rounded-r"
                 >
-                  <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-600 font-medium">{localError}</p>
+                  <p className="text-[11px] text-destructive leading-snug">{localError}</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* OTP inputs */}
             <div>
-              <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3 text-center">
-                Verification Code
-              </p>
-              <div className="flex justify-center gap-2" onPaste={handlePaste}>
+              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground mb-2">Verification Code</p>
+              <div className="flex gap-1.5" onPaste={handlePaste}>
                 {otp.map((digit, i) => (
-                  <motion.input
+                  <input
                     key={i}
                     ref={(el) => (otpRefs.current[i] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
+                    type="text" inputMode="numeric" maxLength={1} value={digit}
                     onChange={(e) => handleOtpChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
-                    className={`w-11 h-12 text-center text-xl font-bold border-2 rounded-xl transition-all outline-none ${
-                      digit
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary focus:bg-white"
-                    }`}
-                    whileFocus={{ scale: 1.05 }}
                     disabled={isVerifying}
+                    className={`flex-1 h-10 text-center text-base font-bold border-2 rounded-lg transition-all outline-none ${
+                      digit ? "border-primary bg-primary/5 text-primary" : "border-border bg-white/80 dark:bg-white/5 text-foreground focus:border-primary"
+                    } disabled:opacity-50`}
                   />
                 ))}
               </div>
             </div>
 
             {/* Verify button */}
-            <motion.button
+            <button
               onClick={() => handleVerify()}
               disabled={isVerifying || otp.some((d) => !d)}
-              whileHover={{ scale: isVerifying || otp.some((d) => !d) ? 1 : 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              className="w-full bg-primary text-white py-2.5 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+              className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
+                hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+                flex items-center justify-center gap-2"
             >
-              {isVerifying ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /><span>Verifying…</span></>
-              ) : (
-                <><CheckCircle className="w-3.5 h-3.5" /><span>Verify Email</span></>
-              )}
-            </motion.button>
+              {isVerifying
+                ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Verifying…</span></>
+                : <><CheckCircle className="w-4 h-4" /><span>Verify Email</span></>}
+            </button>
 
             {/* Resend */}
-            <div className="text-center">
-              <p className="text-xs text-gray-400 mb-1.5">Didn't receive the code?</p>
+            <div className="text-center space-y-1">
+              <p className="text-[11px] text-muted-foreground">Didn't receive the code?</p>
               <button
                 onClick={handleResend}
                 disabled={isResending || cooldown > 0}
-                className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 mx-auto"
+                className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors
+                  disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 mx-auto"
               >
-                {isResending ? (
-                  <><Loader2 className="w-3 h-3 animate-spin" />Sending…</>
-                ) : cooldown > 0 ? (
-                  `Resend in ${cooldown}s`
-                ) : (
-                  <><RefreshCw className="w-3 h-3" />Resend code</>
-                )}
+                {isResending ? <><Loader2 className="w-3 h-3 animate-spin" />Sending…</>
+                  : cooldown > 0 ? `Resend in ${cooldown}s`
+                    : <><RefreshCw className="w-3 h-3" />Resend code</>}
               </button>
             </div>
-
-            {/* Back link */}
-            <Link
-              href={isJoinFlow ? redirectTarget : "/register"}
-              className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors pt-1"
-            >
-              <ArrowLeft className="w-3 h-3" />
-              {isJoinFlow ? "Back to invitation" : "Back to registration"}
-            </Link>
-          </div>
+          </motion.div>
         </div>
-      </motion.div>
+
+        <div className="px-6 h-8 border-t border-border/40 flex items-center flex-shrink-0">
+          <p className="text-[9px] text-muted-foreground/40 tracking-widest uppercase font-medium">
+            © {new Date().getFullYear()} BwengePlus · Institution-grade learning
+          </p>
+        </div>
+      </div>
+
+      {/* ══ RIGHT — Primary editorial panel ══ */}
+      <div className="hidden lg:flex w-full lg:w-[55%] h-full bg-primary flex-col">
+        <div className="flex items-center justify-between px-12 h-11 border-b border-white/10 flex-shrink-0">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Email Verification</span>
+          <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">Rwanda · Education</span>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center px-12 py-6 gap-7">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.45, ease: "easeOut" }}
+          >
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-3">One last step</p>
+            <div className="space-y-0.5">
+              <h2 className="text-[38px] font-bold text-white leading-[1.0] tracking-tight">Confirm.</h2>
+              <h2 className="text-[38px] font-bold text-white/70 leading-[1.0] tracking-tight">Your.</h2>
+              <h2 className="text-[38px] font-bold text-white/40 leading-[1.0] tracking-tight">Identity.</h2>
+            </div>
+            <p className="text-[13px] text-white/70 mt-3 leading-relaxed max-w-xs">
+              Check your inbox for the 6-digit code. It only takes a moment.
+            </p>
+          </motion.div>
+
+          <div className="w-10 h-px bg-white/20" />
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.22, duration: 0.45 }}
+          >
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60 mb-3">How to verify</p>
+            <div className="space-y-0">
+              {verifySteps.map((s) => (
+                <div key={s.num} className="flex items-start gap-4 py-3 border-b border-white/10 group">
+                  <span className="text-[26px] font-black leading-none text-white/20 flex-shrink-0 w-9 text-right group-hover:text-white/40 transition-colors duration-200 font-mono tabular-nums">
+                    {s.num}
+                  </span>
+                  <div className="pt-0.5 space-y-0.5">
+                    <p className="text-[13px] font-bold text-white group-hover:text-white transition-colors duration-200">{s.title}</p>
+                    <p className="text-[11px] text-white/60 leading-snug">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="px-12 py-4 border-t border-white/10 flex-shrink-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">Code validity</p>
+          <p className="text-[13px] font-semibold text-white">Expires after 15 minutes</p>
+        </div>
+      </div>
     </div>
   )
 }
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center">
-      <div className="bg-white rounded-xl p-8">
-        <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
-      </div>
+    <div className="h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
     </div>
   )
 }

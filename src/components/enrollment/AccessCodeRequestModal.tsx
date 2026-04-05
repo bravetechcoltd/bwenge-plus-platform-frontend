@@ -75,7 +75,6 @@ export default function AccessCodeRequestModal({
         toast.error(data.message || "Failed to submit request")
       }
     } catch (error) {
-      console.error("Error submitting access code request:", error)
       toast.error("Failed to submit request. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -109,21 +108,21 @@ export default function AccessCodeRequestModal({
 
         {isSuccess ? (
           <div className="py-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-muted-foreground mb-2">
               Your request has been submitted successfully.
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Please check your email for the access code. This may take a few minutes.
             </p>
           </div>
         ) : (
           <>
             <div className="space-y-4 py-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                <p className="text-sm text-primary">
                   <span className="font-semibold">Note:</span> Your request will be sent to the{" "}
                   <span className="font-medium">{adminType}</span>. You'll receive an email with your access code once approved.
                 </p>
@@ -140,7 +139,7 @@ export default function AccessCodeRequestModal({
                   disabled={isSubmitting}
                   className="resize-none"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Include any relevant information about why you need access.
                 </p>
               </div>

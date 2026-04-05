@@ -37,7 +37,6 @@ export default function Auth(userRole: string, config?: Partial<SSOConfig>): Pro
     )
 
     if (!popup) {
-      console.error("Failed to open SSO popup - check popup blockers")
       resolve(false)
       return
     }
@@ -46,7 +45,6 @@ export default function Auth(userRole: string, config?: Partial<SSOConfig>): Pro
     const messageListener = (event: MessageEvent) => {
       // Validate origin
       if (event.origin !== ssoConfig.targetUrl) {
-        console.warn("Received message from untrusted origin:", event.origin)
         return
       }
 
@@ -69,19 +67,16 @@ export default function Auth(userRole: string, config?: Partial<SSOConfig>): Pro
           }
         } 
         else if (data.type === 'SSO_ERROR') {
-          console.error("SSO authentication failed:", data.message)
           popup.close()
           window.removeEventListener("message", messageListener)
           resolve(false)
         }
         else if (data.type === 'SSO_CANCELLED') {
-          console.log("SSO authentication cancelled by user")
           popup.close()
           window.removeEventListener("message", messageListener)
           resolve(false)
         }
       } catch (error) {
-        console.error("Error processing SSO message:", error)
         popup.close()
         window.removeEventListener("message", messageListener)
         resolve(false)
@@ -96,7 +91,6 @@ export default function Auth(userRole: string, config?: Partial<SSOConfig>): Pro
       if (popup.closed) {
         clearInterval(checkPopupClosed)
         window.removeEventListener("message", messageListener)
-        console.log("SSO popup closed by user")
         resolve(false)
       }
     }, 1000)
@@ -133,7 +127,6 @@ async function handleSSOToken(ssoToken: string): Promise<void> {
       window.location.reload()
     }
   } catch (error) {
-    console.error('SSO token handling error:', error)
     throw error
   }
 }
@@ -155,7 +148,6 @@ export async function checkOngeraSession(): Promise<boolean> {
     const data = await response.json()
     return data.success && data.data?.has_ongera_session === true
   } catch (error) {
-    console.error('Failed to check Ongera session:', error)
     return false
   }
 }
@@ -170,7 +162,6 @@ export async function logoutAllSystems(): Promise<void> {
       credentials: 'include',
     })
   } catch (error) {
-    console.error('Logout all systems error:', error)
     // Still proceed with client-side cleanup
   }
 }

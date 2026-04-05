@@ -210,9 +210,9 @@ export default function ContentCreatorsPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -223,10 +223,10 @@ export default function ContentCreatorsPage() {
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Users2 className="w-7 h-7 text-blue-600" /> Content Creators
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+            <Users2 className="w-7 h-7 text-primary" /> Content Creators
           </h1>
-          <p className="text-gray-500 mt-1">Manage content creators who build course materials</p>
+          <p className="text-muted-foreground mt-1">Manage content creators who build course materials</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchCreators} disabled={isLoading}>
@@ -244,10 +244,10 @@ export default function ContentCreatorsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Creators", value: stats.total, icon: Users2, color: "text-blue-600 bg-blue-50" },
-          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-green-600 bg-green-50" },
-          { label: "Courses Created", value: stats.total_courses, icon: BookOpen, color: "text-purple-600 bg-purple-50" },
-          { label: "Published", value: stats.published, icon: CheckCircle2, color: "text-amber-600 bg-amber-50" },
+          { label: "Total Creators", value: stats.total, icon: Users2, color: "text-primary bg-primary/10" },
+          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-success bg-success/10" },
+          { label: "Courses Created", value: stats.total_courses, icon: BookOpen, color: "text-primary bg-primary/10" },
+          { label: "Published", value: stats.published, icon: CheckCircle2, color: "text-warning bg-warning/10" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -256,7 +256,7 @@ export default function ContentCreatorsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{value}</p>
-                <p className="text-sm text-gray-500">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -269,7 +269,7 @@ export default function ContentCreatorsPage() {
           <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input placeholder="Search content creators..." value={search}
                   onChange={e => { setSearch(e.target.value); setPage(1); }} className="pl-9" />
               </div>
@@ -282,7 +282,7 @@ export default function ContentCreatorsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-sm text-gray-500">{totalCount} content creators</p>
+            <p className="text-sm text-muted-foreground">{totalCount} content creators</p>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -290,9 +290,9 @@ export default function ContentCreatorsPage() {
             <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : creators.length === 0 ? (
             <div className="text-center py-16">
-              <Users2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No content creators yet</p>
-              <p className="text-sm text-gray-400 mt-1">Promote existing members or invite new content creators.</p>
+              <Users2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No content creators yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Promote existing members or invite new content creators.</p>
               <div className="flex items-center justify-center gap-2 mt-4">
                 <Button variant="outline" onClick={() => setPromoteOpen(true)}>
                   <ArrowUpCircle className="w-4 h-4 mr-2" /> Promote Member
@@ -307,7 +307,7 @@ export default function ContentCreatorsPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50">
+                    <TableRow className="bg-muted/50">
                       <TableHead className="pl-6">Content Creator</TableHead>
                       <TableHead>Courses</TableHead>
                       <TableHead>Published</TableHead>
@@ -319,41 +319,41 @@ export default function ContentCreatorsPage() {
                   </TableHeader>
                   <TableBody>
                     {creators.map(creator => (
-                      <TableRow key={creator.member_id} className="hover:bg-gray-50">
+                      <TableRow key={creator.member_id} className="hover:bg-muted/50">
                         <TableCell className="pl-6">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-9 h-9">
                               <AvatarImage src={creator.user.profile_picture_url} />
-                              <AvatarFallback className="text-xs font-semibold bg-blue-50 text-blue-700">
+                              <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
                                 {creator.user.first_name?.[0]}{creator.user.last_name?.[0]}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-semibold text-sm">{creator.user.first_name} {creator.user.last_name}</p>
-                              <p className="text-xs text-gray-500">{creator.user.email}</p>
+                              <p className="text-xs text-muted-foreground">{creator.user.email}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                             <BookOpen className="w-3 h-3 mr-1" />{creator.courses_count ?? 0}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                             {creator.published_courses ?? 0} published
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {creator.is_active
-                            ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
-                            : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
+                            ? <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
+                            : <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
                           }
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-sm text-muted-foreground">
                           {creator.user.last_login ? new Date(creator.user.last_login).toLocaleDateString() : "Never"}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{new Date(creator.joined_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{new Date(creator.joined_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right pr-6">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -365,7 +365,7 @@ export default function ContentCreatorsPage() {
                                 <Eye className="w-4 h-4 mr-2" /> View Profile
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => setRemoveTarget(creator)}>
+                              <DropdownMenuItem className="text-destructive" onClick={() => setRemoveTarget(creator)}>
                                 <Trash2 className="w-4 h-4 mr-2" /> Remove
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -377,7 +377,7 @@ export default function ContentCreatorsPage() {
                 </Table>
               </div>
               <div className="flex items-center justify-between px-6 py-4 border-t">
-                <p className="text-sm text-gray-500">Page {page} of {totalPages} · {totalCount} total</p>
+                <p className="text-sm text-muted-foreground">Page {page} of {totalPages} · {totalCount} total</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}><ChevronLeft className="w-4 h-4" /></Button>
                   <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}><ChevronRight className="w-4 h-4" /></Button>
@@ -397,14 +397,14 @@ export default function ContentCreatorsPage() {
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
                   <AvatarImage src={viewCreator.user.profile_picture_url} />
-                  <AvatarFallback className="text-lg bg-blue-50 text-blue-700">
+                  <AvatarFallback className="text-lg bg-primary/10 text-primary">
                     {viewCreator.user.first_name?.[0]}{viewCreator.user.last_name?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-bold text-lg">{viewCreator.user.first_name} {viewCreator.user.last_name}</h3>
-                  <p className="text-sm text-gray-500">{viewCreator.user.email}</p>
-                  <Badge className="bg-blue-100 text-blue-700 mt-1 text-xs">Content Creator</Badge>
+                  <p className="text-sm text-muted-foreground">{viewCreator.user.email}</p>
+                  <Badge className="bg-primary/15 text-primary mt-1 text-xs">Content Creator</Badge>
                 </div>
               </div>
               <Separator />
@@ -418,15 +418,15 @@ export default function ContentCreatorsPage() {
                   ["Status", viewCreator.is_active ? "Active" : "Inactive"],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <Label className="text-gray-400 text-xs">{label}</Label>
+                    <Label className="text-muted-foreground text-xs">{label}</Label>
                     <p className="font-medium mt-0.5">{value}</p>
                   </div>
                 ))}
               </div>
               {viewCreator.user.bio && (
                 <div>
-                  <Label className="text-gray-400 text-xs">Bio</Label>
-                  <p className="text-sm text-gray-700 mt-0.5">{viewCreator.user.bio}</p>
+                  <Label className="text-muted-foreground text-xs">Bio</Label>
+                  <p className="text-sm text-muted-foreground mt-0.5">{viewCreator.user.bio}</p>
                 </div>
               )}
             </div>
@@ -443,7 +443,7 @@ export default function ContentCreatorsPage() {
             <DialogDescription>Change an existing member's role to Content Creator.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <Label>Member Email <span className="text-red-500">*</span></Label>
+            <Label>Member Email <span className="text-destructive">*</span></Label>
             <Input type="email" value={promoteEmail} onChange={e => setPromoteEmail(e.target.value)} placeholder="member@example.com" />
           </div>
           <DialogFooter>
@@ -466,7 +466,7 @@ export default function ContentCreatorsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>First Name <span className="text-red-500">*</span></Label>
+                <Label>First Name <span className="text-destructive">*</span></Label>
                 <Input value={inviteForm.first_name} onChange={e => setInviteForm(f => ({ ...f, first_name: e.target.value }))} placeholder="Jane" />
               </div>
               <div className="space-y-1.5">
@@ -475,7 +475,7 @@ export default function ContentCreatorsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Email <span className="text-red-500">*</span></Label>
+              <Label>Email <span className="text-destructive">*</span></Label>
               <Input type="email" value={inviteForm.email} onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))} placeholder="creator@example.com" />
             </div>
             <div className="space-y-1.5">

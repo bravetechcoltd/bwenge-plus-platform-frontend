@@ -19,7 +19,6 @@ export default function StudentMessagesPage() {
       }
 
       try {
-        console.log("📚 Fetching enrolled courses for user:", user.id)
         
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/enrollments/user-enrollments`,
@@ -39,7 +38,6 @@ export default function StudentMessagesPage() {
 
         if (response.ok) {
           const data = await response.json()
-          console.log("✅ Enrolled courses response:", data)
           
           // Extract courses from enrollments and normalize instructor data
           const courses = data.data?.map((enrollment: any) => ({
@@ -58,10 +56,8 @@ export default function StudentMessagesPage() {
           })) || []
           setEnrolledCourses(courses)
         } else {
-          console.error("❌ Failed to fetch enrolled courses:", response.status)
         }
       } catch (error) {
-        console.error("❌ Error fetching enrolled courses:", error)
       } finally {
         setLoading(false)
       }

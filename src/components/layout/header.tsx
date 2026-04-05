@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 import { GoogleLogin } from "@react-oauth/google"
+import { useTheme } from "next-themes"
 
 interface HeaderProps {
   user?: {
@@ -69,7 +70,6 @@ const safeGetLocalStorageJSON = <T,>(key: string, defaultValue: T): T => {
 }
 
 const getActualUser = () => {
-  console.log("🔍 [UTIL] Getting actual user from all sources...")
   
   // 1. Try cookies
   let cookieUser: any = null
@@ -77,9 +77,7 @@ const getActualUser = () => {
   if (userCookie) {
     try {
       cookieUser = JSON.parse(userCookie)
-      console.log("✅ [UTIL] Found user in cookies:", cookieUser?.bwenge_role)
     } catch (e) {
-      console.error("❌ [UTIL] Failed to parse cookie user:", e)
     }
   }
   
@@ -89,16 +87,13 @@ const getActualUser = () => {
   if (localUserStr) {
     try {
       localStorageUser = JSON.parse(localUserStr)
-      console.log("✅ [UTIL] Found user in localStorage:", localStorageUser?.bwenge_role)
     } catch (e) {
-      console.error("❌ [UTIL] Failed to parse localStorage user:", e)
     }
   }
   
   // 3. Try cross-system context
   const crossSystemContext: any = safeGetLocalStorageJSON("cross_system_context", null)
   if (crossSystemContext) {
-    console.log("✅ [UTIL] Found cross-system context:", crossSystemContext)
   }
   
   return {
@@ -114,26 +109,21 @@ const determineActualRole = (reduxUser: any): string => {
   // Priority: Redux > Cookies > localStorage > cross-system context
   
   if (reduxUser?.bwenge_role) {
-    console.log("🎯 [UTIL] Using Redux role:", reduxUser.bwenge_role)
     return reduxUser.bwenge_role
   }
   
   if (cookieUser?.bwenge_role) {
-    console.log("🎯 [UTIL] Using cookie role:", cookieUser.bwenge_role)
     return cookieUser.bwenge_role
   }
   
   if (localStorageUser?.bwenge_role) {
-    console.log("🎯 [UTIL] Using localStorage role:", localStorageUser.bwenge_role)
     return localStorageUser.bwenge_role
   }
   
   if (crossSystemContext?.bwenge_role) {
-    console.log("🎯 [UTIL] Using cross-system context role:", crossSystemContext.bwenge_role)
     return crossSystemContext.bwenge_role
   }
   
-  console.log("⚠️ [UTIL] No role found, defaulting to LEARNER")
   return "LEARNER"
 }
 
@@ -169,20 +159,13 @@ function GoogleLoginButton() {
     setIsLoggingIn(true)
 
     try {
-      console.log('🔐 [GoogleLogin] Starting Google authentication...')
 
       const result = await dispatch(loginWithGoogle(credentialResponse.credential)).unwrap()
 
-      console.log('✅ [GoogleLogin] Authentication successful:', {
-        userId: result.user.id,
-        email: result.user.email,
-        role: result.user.bwenge_role
-      })
 
       toast.success(`Welcome ${result.user.first_name}! Login successful`)
 
       const dashboardPath = getRoleDashboardPath(result.user.bwenge_role)
-      console.log('🔀 [GoogleLogin] Redirecting to:', dashboardPath)
 
       // Full page reload to ensure all state is initialized
       setTimeout(() => {
@@ -190,7 +173,6 @@ function GoogleLoginButton() {
       }, 500)
 
     } catch (error: any) {
-      console.error('❌ [GoogleLogin] Authentication failed:', error)
       toast.error(error || 'Google login failed. Please try again.')
     } finally {
       setIsLoggingIn(false)
@@ -198,15 +180,14 @@ function GoogleLoginButton() {
   }
 
   const handleGoogleError = () => {
-    console.error('❌ [GoogleLogin] Google OAuth error')
     toast.error('Google login failed. Please try again.')
   }
 
   return (
     <div className="relative w-full">
       {isLoggingIn && (
-        <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-lg z-10">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+        <div className="absolute inset-0 bg-background/90 flex items-center justify-center rounded-lg z-10">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
         </div>
       )}
 
@@ -245,13 +226,17 @@ export function Header({ user }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const { user: reduxUser, isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
     const [actualRole, setActualRole] = useState<string>("LEARNER")
     const [actualUser, setActualUser] = useState<any>(null)
     const [validationDone, setValidationDone] = useState(false)
-  
+
   const dispatch = useDispatch<AppDispatch>()
   const router = useRouter()
+
+  useEffect(() => { setMounted(true) }, [])
 
 
   const handleLogout = async () => {
@@ -274,7 +259,6 @@ export function Header({ user }: HeaderProps) {
   }
 
   useEffect(() => {
-    console.log("🔍 [NAV] Validating user from all sources...")
     
     // Get from all sources
     const { cookieUser, localStorageUser, crossSystemContext } = getActualUser()
@@ -299,11 +283,8 @@ export function Header({ user }: HeaderProps) {
         last_name: crossSystemContext.last_name || "",
         id: crossSystemContext.id || "recovered"
       } as any
-      console.log("🔄 [NAV] Recovered user from cross-system context")
     }
     
-    console.log("✅ [NAV] Determined role:", determinedRole)
-    console.log("✅ [NAV] Determined user:", determinedUser?.bwenge_role)
     
     setActualUser(determinedUser)
     setActualRole(determinedRole)
@@ -345,11 +326,9 @@ export function Header({ user }: HeaderProps) {
 
 
   return (
-    <header
-      className='fixed top-0 w-full z-50 transition-all duration-300 bg-white border-b border-gray-200'
-    >
+    <header className='fixed top-0 w-full z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border'>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div
@@ -357,24 +336,32 @@ export function Header({ user }: HeaderProps) {
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <GraduationCap className="w-5 h-5 text-white" />
+              <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </motion.div>
             <div>
-              <div className="font-bold text-lg text-gray-900 transition-colors">
-                BwengePlus
-              </div>
-              <div className="text-xs text-gray-500">Never Stop Learning</div>
+              <div className="font-bold text-base text-foreground leading-tight">BwengePlus</div>
+              <div className="text-[10px] text-muted-foreground leading-tight">Never Stop Learning</div>
             </div>
           </Link>
 
-
-
           {/* User Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="Toggle theme"
+            >
+              {mounted && theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </button>
+
             {!isAuthenticated ? (
               // NOT AUTHENTICATED - Show Login Buttons
-              <div className="hidden md:flex items-center gap-3">
-                {/* Google Login Button */}
+              <div className="hidden md:flex items-center gap-2">
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -384,8 +371,7 @@ export function Header({ user }: HeaderProps) {
                   <GoogleLoginButton />
                 </motion.div>
 
-                {/* Divider */}
-                <div className="h-8 w-px bg-gray-300"></div>
+                <div className="h-6 w-px bg-border"></div>
 
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
@@ -394,7 +380,7 @@ export function Header({ user }: HeaderProps) {
                 >
                   <Link
                     href="/login"
-                    className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors"
                   >
                     Sign In
                   </Link>
@@ -407,7 +393,7 @@ export function Header({ user }: HeaderProps) {
                 >
                   <Link
                     href="/register"
-                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg bg-primary/80 transition-all shadow-sm hover:shadow-md"
+                    className="px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-all shadow-sm"
                   >
                     Join Free
                   </Link>
@@ -419,100 +405,95 @@ export function Header({ user }: HeaderProps) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="hidden md:flex items-center gap-3"
+                className="hidden md:flex items-center gap-2"
               >
-                {/* Dynamic Dashboard Button */}
                 <Link
                   href={dashboardPath}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   {isLearner ? "My Learning" : "Dashboard"}
                 </Link>
 
-                {/* User Avatar Dropdown - THIS IS THE MAIN AVATAR DISPLAY */}
+                {/* User Avatar Dropdown */}
                 <div className="relative">
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       setShowUserMenu(!showUserMenu)
                     }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-accent transition-colors"
                   >
                     <div className="relative">
                       {actualUser?.profile_picture_url ? (
-                        // If profile picture exists, show it
                         <img
                           src={actualUser.profile_picture_url}
                           alt={actualUser.first_name}
-                          className="w-8 h-8 rounded-full object-cover border-2 border-blue-600"
+                          className="w-7 h-7 rounded-full object-cover border border-border"
                         />
                       ) : (
-                        // BEAUTIFUL PLACEHOLDER - Shows first character with role-based gradient
                         <div className={`
-                          w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
-                          flex items-center justify-center text-white font-semibold text-sm
-                          shadow-md border-2 border-white ring-2 ring-blue-600/30
+                          w-7 h-7 rounded-full bg-gradient-to-br ${getAvatarGradient()}
+                          flex items-center justify-center text-white font-semibold text-xs
+                          shadow-sm
                         `}>
                           {getUserInitials()}
                         </div>
                       )}
-                      {/* Online status indicator */}
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
+                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-success/100 rounded-full border border-background" />
                     </div>
                     <div className="text-left hidden lg:block">
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="text-xs font-semibold text-foreground leading-tight">
                         {actualUser?.first_name} {actualUser?.last_name}
                       </div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <RoleIcon className="w-3 h-3" />
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-0.5 leading-tight">
+                        <RoleIcon className="w-2.5 h-2.5" />
                         {roleDisplayName}
                       </div>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Dropdown Menu */}
                   <AnimatePresence>
                     {showUserMenu && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-1.5 w-60 bg-popover rounded-xl shadow-lg border border-border py-1.5 z-50"
                       >
                         {/* User Info Header */}
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <div className="flex items-center gap-3">
+                        <div className="px-3 py-2.5 border-b border-border">
+                          <div className="flex items-center gap-2.5">
                             {actualUser?.profile_picture_url ? (
                               <img
                                 src={actualUser.profile_picture_url}
                                 alt={actualUser.first_name}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-blue-600"
+                                className="w-9 h-9 rounded-full object-cover border border-border"
                               />
                             ) : (
-                              // BEAUTIFUL PLACEHOLDER for dropdown
                               <div className={`
-                                w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
-                                flex items-center justify-center text-white font-semibold text-lg
-                                shadow-lg border-2 border-white ring-2 ring-blue-600/30
+                                w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient()}
+                                flex items-center justify-center text-white font-semibold text-sm
+                                shadow-sm
                               `}>
                                 {getUserInitials()}
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-gray-900 truncate">
+                              <div className="text-sm font-semibold text-foreground truncate">
                                 {actualUser?.first_name} {actualUser?.last_name}
                               </div>
-                              <div className="text-xs text-gray-500 truncate">
+                              <div className="text-xs text-muted-foreground truncate">
                                 {actualUser?.email}
                               </div>
                             </div>
                           </div>
-                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded-full">
-                            <RoleIcon className="w-3 h-3 text-blue-600" />
-                            <span className="text-xs font-medium text-blue-700">
+                          <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-accent rounded-full">
+                            <RoleIcon className="w-3 h-3 text-accent-foreground" />
+                            <span className="text-xs font-medium text-accent-foreground">
                               {roleDisplayName}
                             </span>
                           </div>
@@ -522,62 +503,60 @@ export function Header({ user }: HeaderProps) {
                         <div className="py-1">
                           <Link
                             href={dashboardPath}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-2.5 px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <LayoutDashboard className="w-4 h-4" />
+                            <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
                             {isLearner ? "My Learning" : "Dashboard"}
                           </Link>
 
                           <Link
                             href={`/dashboard/${actualRole.toLowerCase()}/profile`}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-2.5 px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <User className="w-4 h-4" />
+                            <User className="w-4 h-4 text-muted-foreground" />
                             Profile
                           </Link>
 
                           <Link
                             href={`/dashboard/${actualRole.toLowerCase()}/settings`}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-2.5 px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <Settings className="w-4 h-4" />
+                            <Settings className="w-4 h-4 text-muted-foreground" />
                             Settings
                           </Link>
 
-                          {/* Institution link for admins */}
                           {actualRole === 'INSTITUTION_ADMIN' && (
                             <Link
                               href={`/dashboard/institution-admin/institution/profile?institution=${actualUser?.primary_institution_id}`}
-                              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              className="flex items-center gap-2.5 px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                               onClick={() => setShowUserMenu(false)}
                             >
-                              <Building2 className="w-4 h-4" />
+                              <Building2 className="w-4 h-4 text-muted-foreground" />
                               Institution
                             </Link>
                           )}
 
-                          {/* Help link */}
                           <Link
                             href="/help"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-2.5 px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <HelpCircle className="w-4 h-4" />
+                            <HelpCircle className="w-4 h-4 text-muted-foreground" />
                             Help
                           </Link>
                         </div>
 
                         {/* Logout */}
-                        <div className="border-t border-gray-100 py-1">
+                        <div className="border-t border-border pt-1">
                           <button
                             onClick={() => {
                               setShowUserMenu(false)
                               handleLogout()
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -593,7 +572,7 @@ export function Header({ user }: HeaderProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -607,40 +586,36 @@ export function Header({ user }: HeaderProps) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden border-t border-gray-200 py-3 overflow-hidden"
+              transition={{ duration: 0.25 }}
+              className="md:hidden border-t border-border py-3 overflow-hidden"
             >
-              <nav className="space-y-2">
-
-
-                <div className="pt-2 border-t border-gray-200 space-y-2">
+              <nav className="space-y-1">
+                <div className="space-y-1">
                   {!isAuthenticated ? (
                     <>
-                      {/* Google Login Button for Mobile */}
-                      <div className="px-3">
+                      <div className="px-2">
                         <GoogleLoginButton />
                       </div>
 
-                      {/* Divider with OR */}
                       <div className="relative py-2">
                         <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-200"></div>
+                          <div className="w-full border-t border-border"></div>
                         </div>
                         <div className="relative flex justify-center text-xs">
-                          <span className="px-2 bg-white text-gray-500">OR</span>
+                          <span className="px-2 bg-background text-muted-foreground">OR</span>
                         </div>
                       </div>
 
                       <Link
                         href="/login"
-                        className="block px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="block px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Sign In with Email
                       </Link>
                       <Link
                         href="/register"
-                        className="block px-3 py-2 bg-primary text-white text-sm font-medium rounded-lg bg-primary/80 text-center transition-colors"
+                        className="block px-3 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg text-center hover:bg-primary/90 transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Join Free
@@ -649,75 +624,71 @@ export function Header({ user }: HeaderProps) {
                   ) : (
                     <>
                       {/* Mobile User Info */}
-                      <div className="px-3 py-2 bg-blue-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="px-3 py-2.5 bg-accent rounded-lg mx-1">
+                        <div className="flex items-center gap-2.5 mb-2">
                           {actualUser?.profile_picture_url ? (
                             <img
                               src={actualUser.profile_picture_url}
                               alt={actualUser.first_name}
-                              className="w-10 h-10 rounded-full object-cover border-2 border-blue-600"
+                              className="w-9 h-9 rounded-full object-cover border border-border"
                             />
                           ) : (
-                            // BEAUTIFUL PLACEHOLDER for mobile
                             <div className={`
-                              w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
-                              flex items-center justify-center text-white font-semibold text-lg
-                              shadow-lg border-2 border-white
+                              w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient()}
+                              flex items-center justify-center text-white font-semibold text-sm shadow-sm
                             `}>
                               {getUserInitials()}
                             </div>
                           )}
                           <div>
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-sm font-semibold text-foreground">
                               {actualUser?.first_name} {actualUser?.last_name}
                             </div>
-                            <div className="text-xs text-gray-500">{actualUser?.email}</div>
+                            <div className="text-xs text-muted-foreground">{actualUser?.email}</div>
                           </div>
                         </div>
-                        <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 bg-white rounded-full">
-                          <RoleIcon className="w-3 h-3 text-blue-600" />
-                          <span className="text-xs font-medium text-blue-700">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-background rounded-full">
+                          <RoleIcon className="w-3 h-3 text-primary" />
+                          <span className="text-xs font-medium text-foreground">
                             {roleDisplayName}
                           </span>
                         </div>
                       </div>
 
-                      {/* Mobile Navigation Links */}
                       <Link
                         href={dashboardPath}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <LayoutDashboard className="w-4 h-4" />
+                        <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
                         {isLearner ? "My Learning" : "Dashboard"}
                       </Link>
 
                       <Link
                         href={`/dashboard/${actualRole.toLowerCase()}/profile`}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <User className="w-4 h-4" />
+                        <User className="w-4 h-4 text-muted-foreground" />
                         Profile
                       </Link>
 
                       <Link
                         href={`/dashboard/${actualRole.toLowerCase()}/settings`}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <Settings className="w-4 h-4" />
+                        <Settings className="w-4 h-4 text-muted-foreground" />
                         Settings
                       </Link>
 
-                      {/* Institution link for admins */}
                       {actualRole === 'INSTITUTION_ADMIN' && (
                         <Link
                           href={`/dashboard/institution-admin/institution/profile?institution=${actualUser?.primary_institution_id}`}
-                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Building2 className="w-4 h-4" />
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
                           Institution
                         </Link>
                       )}
@@ -727,7 +698,7 @@ export function Header({ user }: HeaderProps) {
                           setIsMobileMenuOpen(false)
                           handleLogout()
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out

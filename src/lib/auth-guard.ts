@@ -33,7 +33,6 @@ export function decodeToken(token: string): DecodedToken | null {
 
     return decoded
   } catch (error) {
-    console.error("Token decode error:", error)
     return null
   }
 }

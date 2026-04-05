@@ -152,7 +152,6 @@ export default function BulkEnrollmentPage() {
         setStats(prev => ({ ...prev, total_courses: data.data?.courses?.length || 0 }));
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
       toast.error("Failed to load courses");
     }
   };
@@ -213,7 +212,6 @@ export default function BulkEnrollmentPage() {
         setStats(prev => ({ ...prev, active_enrollments: activeData.pagination?.total || 0 }));
       }
     } catch (error) {
-      console.error("Error fetching stats:", error);
     }
   };
 
@@ -237,7 +235,6 @@ export default function BulkEnrollmentPage() {
         toast.error("Failed to load students");
       }
     } catch (error) {
-      console.error("Error fetching students:", error);
       toast.error("Failed to load students");
     } finally {
       setLoading(false);
@@ -368,7 +365,6 @@ export default function BulkEnrollmentPage() {
         toast.error(data.message || "Failed to enroll students");
       }
     } catch (error) {
-      console.error("Error in bulk enrollment:", error);
       toast.error("Failed to process bulk enrollment");
     } finally {
       setProcessingEnrollment(false);
@@ -411,7 +407,6 @@ export default function BulkEnrollmentPage() {
         toast.error(data.message || "Failed to generate access codes");
       }
     } catch (error) {
-      console.error("Error generating access codes:", error);
       toast.error("Failed to generate access codes");
     }
   };
@@ -456,8 +451,8 @@ export default function BulkEnrollmentPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bulk Enrollment</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Bulk Enrollment</h1>
+          <p className="text-muted-foreground">
             Enroll multiple students in courses at once
           </p>
         </div>
@@ -479,11 +474,11 @@ export default function BulkEnrollmentPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Courses</p>
+                <p className="text-sm text-muted-foreground">Total Courses</p>
                 <p className="text-2xl font-bold">{stats.total_courses}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -493,11 +488,11 @@ export default function BulkEnrollmentPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Students</p>
+                <p className="text-sm text-muted-foreground">Total Students</p>
                 <p className="text-2xl font-bold">{stats.total_students}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -507,11 +502,11 @@ export default function BulkEnrollmentPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Enrollments</p>
+                <p className="text-sm text-muted-foreground">Active Enrollments</p>
                 <p className="text-2xl font-bold">{stats.active_enrollments}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -521,11 +516,11 @@ export default function BulkEnrollmentPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Pending Approvals</p>
+                <p className="text-sm text-muted-foreground">Pending Approvals</p>
                 <p className="text-2xl font-bold">{stats.pending_enrollments}</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -590,7 +585,7 @@ export default function BulkEnrollmentPage() {
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Generate Access Codes
-                      <Badge className="ml-2 bg-purple-100 text-purple-800">
+                      <Badge className="ml-2 bg-primary/15 text-primary">
                         {selectedCourseData.access_codes?.length || 0} available
                       </Badge>
                     </Button>
@@ -598,12 +593,12 @@ export default function BulkEnrollmentPage() {
                 )}
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                   {file ? file.name : "Upload your file"}
                 </h3>
-                <p className="text-gray-500 mb-4">
+                <p className="text-muted-foreground mb-4">
                   {file 
                     ? `${(file.size / 1024).toFixed(2)} KB • Ready to upload`
                     : "Drag and drop or click to browse (CSV, XLSX, XLS)"}
@@ -622,7 +617,7 @@ export default function BulkEnrollmentPage() {
                       size="icon"
                       onClick={() => setFile(null)}
                     >
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                      <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   )}
                 </div>
@@ -636,14 +631,14 @@ export default function BulkEnrollmentPage() {
               </div>
 
               {file && selectedCourse && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-800 mb-2">File Preview</h4>
-                  <div className="space-y-1 text-sm text-blue-700">
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                  <h4 className="font-semibold text-primary mb-2">File Preview</h4>
+                  <div className="space-y-1 text-sm text-primary">
                     <p>• File: {file.name}</p>
                     <p>• Size: {(file.size / 1024).toFixed(2)} KB</p>
                     <p>• Course: {selectedCourseData?.title}</p>
                     {selectedCourseData?.course_type === "SPOC" && (
-                      <p className="text-purple-700">
+                      <p className="text-primary">
                         • Access codes will be assigned automatically
                       </p>
                     )}
@@ -715,19 +710,19 @@ export default function BulkEnrollmentPage() {
                   value={emailsText}
                   onChange={(e) => setEmailsText(e.target.value)}
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Enter one email address per line
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">Summary</h4>
-                <div className="space-y-1 text-sm text-blue-700">
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                <h4 className="font-semibold text-primary mb-2">Summary</h4>
+                <div className="space-y-1 text-sm text-primary">
                   <p>• Course: {selectedCourseData?.title || "Not selected"}</p>
                   <p>• Emails entered: {emailsText.split('\n').filter(e => e.trim()).length}</p>
                   <p>• Valid emails: {emailsText.split('\n').filter(e => e.includes('@')).length}</p>
                   {selectedCourseData?.course_type === "SPOC" && (
-                    <p className="text-purple-700">
+                    <p className="text-primary">
                       • Access codes: {selectedCourseData.access_codes?.length || 0} available
                     </p>
                   )}
@@ -770,7 +765,7 @@ export default function BulkEnrollmentPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       placeholder="Search students..."
                       value={searchTerm}
@@ -831,11 +826,11 @@ export default function BulkEnrollmentPage() {
                   </div>
                 ) : filteredStudents.length === 0 ? (
                   <div className="text-center py-8">
-                    <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                       No Students Found
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                       {searchTerm
                         ? "Try a different search term"
                         : "No students are currently members of your institution"}
@@ -880,11 +875,11 @@ export default function BulkEnrollmentPage() {
                             <TableCell>{student.email}</TableCell>
                             <TableCell>
                               {student.is_active ? (
-                                <Badge className="bg-green-100 text-green-800">
+                                <Badge className="bg-success/15 text-success">
                                   Active
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="text-gray-500">
+                                <Badge variant="outline" className="text-muted-foreground">
                                   Inactive
                                 </Badge>
                               )}
@@ -931,19 +926,19 @@ export default function BulkEnrollmentPage() {
             <div className="space-y-6">
               {/* Summary Stats */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-green-700">
+                <div className="bg-success/10 border border-success/30 rounded-lg p-4 text-center">
+                  <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-success">
                     {enrollmentResults.total_successful}
                   </p>
-                  <p className="text-sm text-green-600">Successful</p>
+                  <p className="text-sm text-success">Successful</p>
                 </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                  <XCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-red-700">
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-center">
+                  <XCircle className="w-8 h-8 text-destructive mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-destructive">
                     {enrollmentResults.total_failed}
                   </p>
-                  <p className="text-sm text-red-600">Failed</p>
+                  <p className="text-sm text-destructive">Failed</p>
                 </div>
               </div>
 
@@ -951,7 +946,7 @@ export default function BulkEnrollmentPage() {
               {enrollmentResults.successful.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2 flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                    <CheckCircle className="w-4 h-4 text-success mr-2" />
                     Successful Enrollments ({enrollmentResults.successful.length})
                   </h3>
                   <div className="max-h-40 overflow-y-auto border rounded-lg">
@@ -989,7 +984,7 @@ export default function BulkEnrollmentPage() {
               {enrollmentResults.failed.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2 flex items-center">
-                    <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                    <XCircle className="w-4 h-4 text-destructive mr-2" />
                     Failed Enrollments ({enrollmentResults.failed.length})
                   </h3>
                   <div className="max-h-40 overflow-y-auto border rounded-lg">
@@ -1004,7 +999,7 @@ export default function BulkEnrollmentPage() {
                         {enrollmentResults.failed.map((result, index) => (
                           <TableRow key={index}>
                             <TableCell>{result.email}</TableCell>
-                            <TableCell className="text-red-600">
+                            <TableCell className="text-destructive">
                               {result.reason}
                             </TableCell>
                           </TableRow>

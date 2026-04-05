@@ -155,7 +155,7 @@ function SortableCategoryItem({
               <CardTitle className="text-sm font-semibold truncate">
                 {category.name}
               </CardTitle>
-              <CardDescription className="text-xs text-gray-500 line-clamp-2 mt-1">
+              <CardDescription className="text-xs text-muted-foreground line-clamp-2 mt-1">
                 {category.description || "No description"}
               </CardDescription>
             </div>
@@ -186,7 +186,7 @@ function SortableCategoryItem({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-600"
+                  className="text-destructive"
                   onClick={() => onDelete(category)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -200,7 +200,7 @@ function SortableCategoryItem({
           <div className="flex flex-wrap gap-2 mt-2">
             <Badge
               variant={category.is_active ? "default" : "secondary"}
-              className={category.is_active ? "bg-green-100 text-green-800" : ""}
+              className={category.is_active ? "bg-success/15 text-success" : ""}
             >
               {category.is_active ? "Active" : "Inactive"}
             </Badge>
@@ -210,7 +210,7 @@ function SortableCategoryItem({
             </Badge>
           </div>
           {category.subcategories && category.subcategories.length > 0 && (
-            <div className="mt-3 text-xs text-gray-500">
+            <div className="mt-3 text-xs text-muted-foreground">
               <FolderOpen className="h-3 w-3 inline mr-1" />
               {category.subcategories.length} subcategories
             </div>
@@ -228,7 +228,7 @@ function SortableCategoryItem({
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="h-4 w-4 text-gray-400" />
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
       </TableCell>
 
@@ -236,7 +236,7 @@ function SortableCategoryItem({
       <TableCell>
         <Badge
           variant={category.is_active ? "default" : "secondary"}
-          className={category.is_active ? "bg-green-100 text-green-800" : ""}
+          className={category.is_active ? "bg-success/15 text-success" : ""}
         >
           {category.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -275,7 +275,7 @@ function SortableCategoryItem({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-red-600"
+              className="text-destructive"
               onClick={() => onDelete(category)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -604,12 +604,12 @@ export default function InstitutionCategoriesPage() {
         <div
           className={`flex items-center justify-between p-3 rounded-lg border ${
             level > 0 ? "ml-6" : ""
-          } ${category.is_active ? "bg-white" : "bg-gray-50"}`}
+          } ${category.is_active ? "bg-card" : "bg-muted/50"}`}
         >
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <FolderTree className={`h-4 w-4 ${category.is_active ? "text-primary" : "text-gray-400"}`} />
-              <span className={`font-medium ${category.is_active ? "" : "text-gray-500"}`}>
+              <FolderTree className={`h-4 w-4 ${category.is_active ? "text-primary" : "text-muted-foreground"}`} />
+              <span className={`font-medium ${category.is_active ? "" : "text-muted-foreground"}`}>
                 {category.name}
               </span>
             </div>
@@ -646,7 +646,7 @@ export default function InstitutionCategoriesPage() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-600"
+                  className="text-destructive"
                   onClick={() => openDeleteDialog(category)}
                 >
                   Delete
@@ -669,9 +669,9 @@ export default function InstitutionCategoriesPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-            <p className="text-gray-500 mb-6">
+            <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-6">
               You need to be an institution administrator to access category management.
             </p>
             <Button onClick={() => router.push("/dashboard")}>
@@ -688,11 +688,11 @@ export default function InstitutionCategoriesPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
             <FolderTree className="h-8 w-8 text-primary" />
             Category Management
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             {selectedInstitution?.name || "Institution"} - Organize and manage course categories
           </p>
         </div>
@@ -720,7 +720,7 @@ export default function InstitutionCategoriesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Categories</p>
+                <p className="text-sm text-muted-foreground">Total Categories</p>
                 <p className="text-2xl font-bold">{statistics.totalCategories}</p>
               </div>
               <FolderTree className="h-8 w-8 text-primary" />
@@ -732,10 +732,10 @@ export default function InstitutionCategoriesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active</p>
-                <p className="text-2xl font-bold text-green-600">{statistics.activeCategories}</p>
+                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-2xl font-bold text-success">{statistics.activeCategories}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -744,10 +744,10 @@ export default function InstitutionCategoriesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Inactive</p>
-                <p className="text-2xl font-bold text-gray-600">{statistics.inactiveCategories}</p>
+                <p className="text-sm text-muted-foreground">Inactive</p>
+                <p className="text-2xl font-bold text-muted-foreground">{statistics.inactiveCategories}</p>
               </div>
-              <XCircle className="h-8 w-8 text-gray-400" />
+              <XCircle className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -756,10 +756,10 @@ export default function InstitutionCategoriesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">With Courses</p>
+                <p className="text-sm text-muted-foreground">With Courses</p>
                 <p className="text-2xl font-bold">{statistics.categoriesWithCourses}</p>
               </div>
-              <BookOpen className="h-8 w-8 text-blue-500" />
+              <BookOpen className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -768,10 +768,10 @@ export default function InstitutionCategoriesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Avg Courses/Category</p>
+                <p className="text-sm text-muted-foreground">Avg Courses/Category</p>
                 <p className="text-2xl font-bold">{statistics.avgCoursesPerCategory}</p>
               </div>
-              <BarChart3 className="h-8 w-8 text-purple-500" />
+              <BarChart3 className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -782,7 +782,7 @@ export default function InstitutionCategoriesPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search categories by name or description..."
                 value={searchTerm}
@@ -792,7 +792,7 @@ export default function InstitutionCategoriesPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
+              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={filterActive} onValueChange={(value: any) => setFilterActive(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -806,7 +806,7 @@ export default function InstitutionCategoriesPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -873,11 +873,11 @@ export default function InstitutionCategoriesPage() {
             </div>
           ) : displayedCategories.length === 0 ? (
             <div className="text-center py-12">
-              <FolderTree className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <FolderTree className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                 No Categories Found
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchTerm ? "Try a different search term" : "Create your first category to get started"}
               </p>
               <Button onClick={() => setShowCreateDialog(true)}>
@@ -954,7 +954,7 @@ export default function InstitutionCategoriesPage() {
         {categoryPagination && categoryPagination.totalPages > 1 && (
           <CardFooter>
             <div className="flex items-center justify-between w-full">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Page {categoryPagination.page} of {categoryPagination.totalPages}
               </div>
               <div className="flex items-center gap-2">
@@ -1138,7 +1138,7 @@ export default function InstitutionCategoriesPage() {
             
             {selectedCategory && (
               <div className="pt-4 border-t">
-                <div className="text-sm text-gray-500 space-y-1">
+                <div className="text-sm text-muted-foreground space-y-1">
                   <div>
                     <span className="font-medium">Created:</span>{" "}
                     {new Date(selectedCategory.created_at).toLocaleDateString()}
@@ -1184,23 +1184,23 @@ export default function InstitutionCategoriesPage() {
           <div className="space-y-4 py-4">
             {selectedCategory && (
               <>
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-red-700 mb-1">
+                      <h4 className="font-semibold text-destructive mb-1">
                         Delete "{selectedCategory.name}"
                       </h4>
                       
                       {(selectedCategory.course_count || 0) > 0 && (
-                        <p className="text-red-600 text-sm mb-2">
+                        <p className="text-destructive text-sm mb-2">
                           ⚠️ This category has {selectedCategory.course_count || 0} courses assigned to it.
                           {(selectedCategory.course_count || 0) > 0 && " These courses will need to be reassigned."}
                         </p>
                       )}
                       
                       {selectedCategory.subcategories && selectedCategory.subcategories.length > 0 && (
-                        <p className="text-red-600 text-sm mb-2">
+                        <p className="text-destructive text-sm mb-2">
                           ⚠️ This category has {selectedCategory.subcategories.length} subcategories.
                           {selectedCategory.subcategories.length > 0 && " These will also be deleted."}
                         </p>
@@ -1211,7 +1211,7 @@ export default function InstitutionCategoriesPage() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-delete">
-                    Type <span className="font-mono text-red-600">"{selectedCategory.name}"</span> to confirm
+                    Type <span className="font-mono text-destructive">"{selectedCategory.name}"</span> to confirm
                   </Label>
                   <Input
                     id="confirm-delete"

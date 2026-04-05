@@ -17,7 +17,6 @@ const getSocketOrigin = (): string => {
  */
 export const validateToken = async (token: string): Promise<{ valid: boolean; userId?: string; error?: string }> => {
   try {
-    console.log("🔍 Validating token before socket connection...");
     
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/debug/jwt-check`, {
       headers: {
@@ -28,22 +27,17 @@ export const validateToken = async (token: string): Promise<{ valid: boolean; us
     const data = await response.json();
     
     if (data.valid) {
-      console.log("✅ Token is valid for socket connection");
-      console.log("📋 User ID from token:", data.extracted_info?.user_id);
       return { 
         valid: true, 
         userId: data.extracted_info?.user_id 
       };
     } else {
-      console.error("❌ Token validation failed:", data.verification_error?.message || data.error);
-      console.error("📋 Decoded payload:", data.decoded_payload);
       return { 
         valid: false, 
         error: data.verification_error?.message || data.error 
       };
     }
   } catch (error: any) {
-    console.error("❌ Error validating token:", error.message);
     return { valid: false, error: error.message };
   }
 };
@@ -56,7 +50,6 @@ export const getSocket = async () => {
   
   // Prevent multiple simultaneous connection attempts
   if (isConnecting) {
-    console.log("⏳ Socket connection already in progress, waiting...");
     // Wait for the existing connection attempt
     await new Promise(resolve => setTimeout(resolve, 1000));
     if (socket && socket.connected) {
@@ -70,27 +63,20 @@ export const getSocket = async () => {
     const token = localStorage.getItem("bwengeplus_token");
     const origin = getSocketOrigin();
 
-    console.log("🔌 Connecting socket to:", origin);
-    console.log("🔌 Using path: /socket.io/");
     
     if (!token) {
-      console.error("❌ No token found in localStorage");
       isConnecting = false;
       return null;
     }
     
-    console.log("🔌 Token preview:", token.substring(0, 50) + "...");
     
     // Validate token before connecting
     const validation = await validateToken(token);
     
     if (!validation.valid) {
-      console.error("❌ Token is invalid - cannot establish socket connection");
-      console.error("📋 Validation error:", validation.error);
       
       // If token is expired or invalid, clear it and redirect
       if (validation.error?.includes("expired") || validation.error?.includes("signature")) {
-        console.log("🔄 Token is invalid, clearing localStorage and redirecting to login...");
         localStorage.removeItem("bwengeplus_token");
         localStorage.removeItem("user");
         if (typeof window !== 'undefined') {
@@ -102,7 +88,6 @@ export const getSocket = async () => {
       return null;
     }
     
-    console.log("✅ Token validated, userId:", validation.userId);
     
     // Create new socket connection
     socket = io(origin, {
@@ -123,7 +108,6 @@ export const getSocket = async () => {
     });
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected successfully:", socket?.id);
       isConnecting = false;
 
       const userStr = localStorage.getItem("user");
@@ -132,36 +116,29 @@ export const getSocket = async () => {
           const user = JSON.parse(userStr);
           if (user?.id) {
             socket?.emit("join", { userId: user.id });
-            console.log("✅ Emitted join for user room:", user.id);
           }
         } catch (e) {
-          console.error("Error parsing user:", e);
         }
       }
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("❌ Socket disconnected, reason:", reason);
       if (reason === "io server disconnect") {
         // the disconnection was initiated by the server, reconnect manually
-        console.log("🔄 Server initiated disconnect, reconnecting...");
         socket?.connect();
       }
     });
 
     socket.on("connect_error", (error) => {
-      console.error("❌ Socket connection error:", error.message);
       isConnecting = false;
       
       if (error.message === "Invalid token") {
-        console.error("❌ Token rejected by server - checking token validity...");
         
         // Re-validate token
         const currentToken = localStorage.getItem("bwengeplus_token");
         if (currentToken) {
           validateToken(currentToken).then(result => {
             if (!result.valid) {
-              console.error("❌ Token is invalid, clearing and redirecting...");
               localStorage.removeItem("bwengeplus_token");
               localStorage.removeItem("user");
               if (typeof window !== 'undefined') {
@@ -174,23 +151,19 @@ export const getSocket = async () => {
     });
 
     socket.on("reconnect", (attemptNumber) => {
-      console.log("🔄 Socket reconnected after", attemptNumber, "attempts");
       const userStr = localStorage.getItem("user");
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
           if (user?.id) {
             socket?.emit("join", { userId: user.id });
-            console.log("✅ Rejoined user room after reconnect:", user.id);
           }
         } catch (e) {
-          console.error("Error parsing user on reconnect:", e);
         }
       }
     });
     
     socket.on("reconnect_attempt", async (attemptNumber) => {
-      console.log("🔄 Reconnection attempt:", attemptNumber);
       // Refresh token on reconnect attempt
       const newToken = localStorage.getItem("bwengeplus_token");
       if (newToken && socket) {
@@ -203,25 +176,20 @@ export const getSocket = async () => {
               Authorization: `Bearer ${newToken}`
             };
           }
-          console.log("✅ Token refreshed for reconnection");
         } else {
-          console.error("❌ Token invalid during reconnection attempt");
         }
       }
     });
     
     socket.on("user-room-joined", ({ userId }) => {
-      console.log("✅ Server confirmed user room joined:", userId);
     });
     
     socket.on("space-joined", ({ spaceId }) => {
-      console.log("✅ Server confirmed space room joined:", spaceId);
     });
 
     return socket;
     
   } catch (error: any) {
-    console.error("❌ Error creating socket:", error.message);
     isConnecting = false;
     return null;
   }
@@ -289,15 +257,36 @@ export const setupNotificationListener = async () => {
 export const joinSpaceRoom = async (spaceId: string) => {
   const s = await getSocket();
   if (!s) {
-    console.error("❌ Cannot join space room: socket not available");
     return;
   }
   if (!s.connected) {
-    console.log("⚠️ Socket not connected, connecting first...");
     s.connect();
   }
   s.emit("join", { spaceId });
-  console.log("✅ Emitted join for space room:", spaceId);
+};
+
+// ── Space typing indicators ──────────────────────────────────────────────────
+
+export const emitSpaceTypingStart = async (spaceId: string) => {
+  const s = await getSocket();
+  s?.emit("space-typing-start", { spaceId });
+};
+
+export const emitSpaceTypingStop = async (spaceId: string) => {
+  const s = await getSocket();
+  s?.emit("space-typing-stop", { spaceId });
+};
+
+// ── Join/leave course rooms ──────────────────────────────────────────────────
+
+export const joinCourseRoom = async (courseId: string) => {
+  const s = await getSocket();
+  s?.emit("join-course", { courseId });
+};
+
+export const leaveCourseRoom = async (courseId: string) => {
+  const s = await getSocket();
+  s?.emit("leave-course", { courseId });
 };
 
 export const disconnectSocket = () => {

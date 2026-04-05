@@ -180,7 +180,6 @@ export default function CompleteProfilePage() {
         setCompletionStatus(data.data)
       }
     } catch (error) {
-      console.error("Failed to fetch completion status:", error)
     }
   }
 
@@ -236,7 +235,6 @@ export default function CompleteProfilePage() {
       fetchCompletionStatus() // Refresh completion status
       
     } catch (error) {
-      console.error("Upload error:", error)
       toast.error("Failed to upload image. Please try again.")
     } finally {
       setIsUploading(false)
@@ -297,7 +295,6 @@ export default function CompleteProfilePage() {
       fetchCompletionStatus()
       
     } catch (error) {
-      console.error("Upload error:", error)
       toast.error("Failed to upload CV. Please try again.")
     } finally {
       setIsUploadingCV(false)
@@ -340,7 +337,6 @@ export default function CompleteProfilePage() {
         toast.error(errorData.message || "Failed to update profile")
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
       toast.error("An error occurred while updating profile")
     } finally {
       setIsSaving(false)
@@ -377,7 +373,6 @@ export default function CompleteProfilePage() {
         toast.error(errorData.message || "Failed to update account type")
       }
     } catch (error) {
-      console.error("Error updating account type:", error)
       toast.error("An error occurred while updating account type")
     }
   }
@@ -483,12 +478,12 @@ export default function CompleteProfilePage() {
 
       {/* Completion Alert */}
       {!completionStatus.is_completed && (
-        <Card className="border-yellow-200 bg-yellow-50">
+        <Card className="border-warning/30 bg-warning/10">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-yellow-800">Complete your profile</h3>
-                <p className="text-sm text-yellow-700">
+                <h3 className="font-semibold text-warning">Complete your profile</h3>
+                <p className="text-sm text-warning">
                   {completionStatus.missing_fields.length > 0 
                     ? `Missing: ${completionStatus.missing_fields.join(", ")}`
                     : "Please fill in all required fields to complete your profile."}
@@ -763,7 +758,7 @@ export default function CompleteProfilePage() {
                             href={formData.cv_file_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-primary hover:underline"
                           >
                             View Current CV
                           </a>

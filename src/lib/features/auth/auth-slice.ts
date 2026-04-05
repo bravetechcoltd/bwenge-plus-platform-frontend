@@ -207,14 +207,12 @@ export interface BwengeAuthState {
   };
 }
 
-
 // ==================== SAFE STORAGE HELPERS ====================
 const safeGetLocalStorage = (key: string, defaultValue: string = ""): string => {
   if (typeof window === "undefined") return defaultValue;
   try {
     return localStorage.getItem(key) || defaultValue;
   } catch (error) {
-    console.warn(`Failed to access localStorage for key: ${key}`, error);
     return defaultValue;
   }
 };
@@ -224,7 +222,6 @@ const safeSetLocalStorage = (key: string, value: string): void => {
   try {
     localStorage.setItem(key, value);
   } catch (error) {
-    console.warn(`Failed to set localStorage for key: ${key}`, error);
   }
 };
 
@@ -233,7 +230,6 @@ const safeRemoveLocalStorage = (key: string): void => {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.warn(`Failed to remove localStorage for key: ${key}`, error);
   }
 };
 
@@ -243,7 +239,6 @@ const safeGetLocalStorageJSON = <T>(key: string, defaultValue: T): T => {
   try {
     return JSON.parse(value) as T;
   } catch (error) {
-    console.warn(`Failed to parse JSON from localStorage for key: ${key}`, error);
     return defaultValue;
   }
 };
@@ -252,7 +247,6 @@ const safeSetLocalStorageJSON = (key: string, value: any): void => {
   try {
     safeSetLocalStorage(key, JSON.stringify(value));
   } catch (error) {
-    console.warn(`Failed to stringify JSON for localStorage key: ${key}`, error);
   }
 };
 
@@ -295,12 +289,10 @@ const getInitialAuthUser = (): BwengeUser | null => {
       const decoded = decodeURIComponent(raw);
       const parsed = JSON.parse(decoded);
       if (parsed && parsed.id) {
-        console.log("🚀 [InitialState] Hydrated user from cookie:", parsed.email);
         return parsed as BwengeUser;
       }
     }
   } catch (e) {
-    console.warn("⚠️ [InitialState] Could not parse cookie user:", e);
   }
 
   // Priority 2: localStorage fallback
@@ -309,12 +301,10 @@ const getInitialAuthUser = (): BwengeUser | null => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.id) {
-        console.log("🚀 [InitialState] Hydrated user from localStorage:", parsed.email);
         return parsed as BwengeUser;
       }
     }
   } catch (e) {
-    console.warn("⚠️ [InitialState] Could not parse localStorage user:", e);
   }
 
   return null;
@@ -332,7 +322,6 @@ const getInitialToken = (): string | null => {
 const getInitialBwengeRole = (user: BwengeUser | null): BwengeRole | null => {
   return user?.bwenge_role ?? null;
 };
-
 
 // ============================================================
 // ADD THESE THUNKS TO: auth-slice.ts
@@ -412,10 +401,8 @@ export const changePasswordWithOTP = createAsyncThunk(
   }
 );
 
-
 // ==================== AUTH DATA HELPERS ====================
 const storeAuthData = (user: BwengeUser, token: string) => {
-  console.log("🔐 [ENHANCED STORE] Storing protected authentication data...");
 
   const protectedUser: BwengeUser = {
     ...user,
@@ -497,11 +484,9 @@ const storeAuthData = (user: BwengeUser, token: string) => {
 
   safeSetLocalStorageJSON("cross_system_context", crossSystemContext);
 
-  console.log("✅ [ENHANCED STORE] All data stored with protection");
 };
 
 const clearAuthData = () => {
-  console.log("🗑️ [ENHANCED CLEAR] Clearing authentication data with protection...");
 
   Cookies.remove("bwenge_token");
   Cookies.remove("bwenge_user");
@@ -524,12 +509,10 @@ const clearAuthData = () => {
   safeRemoveLocalStorage("user");
   safeRemoveLocalStorage("token")
 
-
   try {
     localStorage.removeItem("persist:root");
   } catch (_) { }
 
-  console.log("✅ [ENHANCED CLEAR] Auth data fully cleared");
 };
 
 const normalizeBwengeUser = (backendUser: any): BwengeUser => {
@@ -667,7 +650,6 @@ const validateBwengeUser = (
 };
 
 const recoverBwengeUser = (user: Partial<BwengeUser>): BwengeUser => {
-  console.log("🔄 [RECOVERY] Attempting to recover user data...");
 
   const recoveredUser: BwengeUser = {
     id: user.id || "recovered-user-id",
@@ -730,12 +712,10 @@ const recoverBwengeUser = (user: Partial<BwengeUser>): BwengeUser => {
 
   if (!recoveredUser.IsForWhichSystem) {
     recoveredUser.IsForWhichSystem = SystemType.BWENGEPLUS;
-    console.log("✅ [RECOVERY] Set IsForWhichSystem to BWENGEPLUS");
   }
 
   if (!recoveredUser.bwenge_role) {
     recoveredUser.bwenge_role = BwengeRole.LEARNER;
-    console.log("✅ [RECOVERY] Set bwenge_role to LEARNER");
   }
 
   if (
@@ -747,9 +727,6 @@ const recoverBwengeUser = (user: Partial<BwengeUser>): BwengeUser => {
       recoveredUser.institution_ids.length > 0
     ) {
       recoveredUser.primary_institution_id = recoveredUser.institution_ids[0];
-      console.log(
-        "✅ [RECOVERY] Set primary institution from first institution ID"
-      );
     }
   }
 
@@ -768,7 +745,6 @@ const recoverBwengeUser = (user: Partial<BwengeUser>): BwengeUser => {
       version: 2,
       checksum: calculateChecksum(recoveredUser),
     };
-    console.log("✅ [RECOVERY] Initialized protection metadata");
   } else {
     recoveredUser._protection.checksum = calculateChecksum(recoveredUser);
   }
@@ -843,41 +819,28 @@ export const loginBwenge = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log("🔐 [ENHANCED LOGIN] Starting protected login...");
 
       const response = await api.post("/auth/login", credentials);
 
       if (response.data.success) {
-        console.log("✅ [ENHANCED LOGIN] Backend response received");
 
         const normalizedUser = normalizeBwengeUser(response.data.data.user);
         const validation = validateBwengeUser(normalizedUser);
 
         if (!validation.isValid) {
-          console.warn(
-            "⚠️ [PROTECTION] User data validation failed:",
-            validation
-          );
 
           const recoveredUser = recoverBwengeUser(normalizedUser);
           const recoveryValidation = validateBwengeUser(recoveredUser);
 
           if (recoveryValidation.isValid) {
-            console.log("✅ [RECOVERY] User data recovered successfully");
             return {
               token: response.data.data.token,
               user: recoveredUser,
             };
           } else {
-            console.error(
-              "❌ [RECOVERY] Failed to recover user data:",
-              recoveryValidation
-            );
             throw new Error("User data validation and recovery failed");
           }
         }
-
-        console.log("✅ [PROTECTION] User data validated successfully");
 
         return {
           token: response.data.data.token,
@@ -887,7 +850,6 @@ export const loginBwenge = createAsyncThunk(
 
       return rejectWithValue(response.data.message);
     } catch (error: any) {
-      console.error("❌ [ENHANCED LOGIN] Failed:", error);
 
       if (error.response?.data?.requires_verification) {
         return rejectWithValue({
@@ -912,13 +874,75 @@ export const loginBwenge = createAsyncThunk(
   }
 );
 
+// ── Register + auto-join institution via invite token (for new invited users) ─
+export const registerAndJoin = createAsyncThunk(
+  "bwengeAuth/registerAndJoin",
+  async (
+    data: {
+      first_name: string;
+      last_name: string;
+      email: string;
+      password: string;
+      confirm_password: string;
+      motivation?: string;
+      token: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post("/auth/register-and-join", data);
+      if (response.data.success) {
+        const normalizedUser = normalizeBwengeUser(response.data.data.user);
+        return { token: response.data.data.token, user: normalizedUser };
+      }
+      return rejectWithValue(response.data.message);
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Registration failed"
+      );
+    }
+  }
+);
+
+// ── Login + auto-join institution via invite token (for existing invited users) ─
+export const loginAndJoin = createAsyncThunk(
+  "bwengeAuth/loginAndJoin",
+  async (
+    data: { email: string; password: string; token: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post("/auth/login-and-join", data);
+      if (response.data.success) {
+        const normalizedUser = normalizeBwengeUser(response.data.data.user);
+        return { token: response.data.data.token, user: normalizedUser };
+      }
+      return rejectWithValue(response.data.message);
+    } catch (error: any) {
+      if (error.response?.data?.requires_verification) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          requires_verification: true,
+          email: error.response.data.email,
+        });
+      }
+      if (error.response?.data?.code) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          code: error.response.data.code,
+        });
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Login failed"
+      );
+    }
+  }
+);
+
 export const loginWithGoogle = createAsyncThunk(
   "bwengeAuth/loginWithGoogle",
   async (googleToken: string, { rejectWithValue }) => {
     try {
-      console.log(
-        "🔐 [ENHANCED GOOGLE LOGIN] Starting protected Google authentication..."
-      );
 
       const response = await api.post("/auth/google", { token: googleToken });
 
@@ -933,10 +957,6 @@ export const loginWithGoogle = createAsyncThunk(
           normalizedUser.bwenge_role = BwengeRole.LEARNER;
         }
 
-        console.log(
-          "✅ [ENHANCED GOOGLE LOGIN] Protection applied to Google user"
-        );
-
         return {
           token: response.data.data.token,
           user: normalizedUser,
@@ -945,7 +965,6 @@ export const loginWithGoogle = createAsyncThunk(
 
       return rejectWithValue(response.data.message);
     } catch (error: any) {
-      console.error("❌ [ENHANCED GOOGLE LOGIN] Authentication failed:", error);
       return rejectWithValue(
         error.response?.data?.message || "Google login failed"
       );
@@ -957,9 +976,6 @@ export const consumeSSOToken = createAsyncThunk(
   "bwengeAuth/consumeSSO",
   async (token: string, { rejectWithValue }) => {
     try {
-      console.log(
-        "🔓 [ENHANCED SSO] Consuming SSO token with protection..."
-      );
       const crossSystemContext = safeGetLocalStorageJSON<any>(
         "cross_system_context",
         null
@@ -973,7 +989,6 @@ export const consumeSSOToken = createAsyncThunk(
         const normalizedUser = normalizeBwengeUser(response.data.data.user);
 
         if (crossSystemContext) {
-          console.log("🔄 [ENHANCED SSO] Merging cross-system data...");
 
           if (!normalizedUser.bwenge_role && crossSystemContext.bwenge_role) {
             normalizedUser.bwenge_role = crossSystemContext.bwenge_role;
@@ -1013,8 +1028,6 @@ export const consumeSSOToken = createAsyncThunk(
           ],
         };
 
-        console.log("✅ [ENHANCED SSO] SSO completed with protection merge");
-
         return {
           token: response.data.data.token,
           user: normalizedUser,
@@ -1023,7 +1036,6 @@ export const consumeSSOToken = createAsyncThunk(
 
       return rejectWithValue(response.data.message);
     } catch (error: any) {
-      console.error("❌ [ENHANCED SSO] Failed:", error);
       return rejectWithValue(
         error.response?.data?.message || "SSO authentication failed"
       );
@@ -1035,9 +1047,6 @@ export const logoutBwenge = createAsyncThunk(
   "bwengeAuth/logout",
   async (logoutAllSystems: boolean = false, { rejectWithValue }) => {
     try {
-      console.log("👋 [ENHANCED LOGOUT] Logging out with protection...", {
-        logoutAllSystems,
-      });
 
       const currentUser = Cookies.get("bwenge_user");
       if (currentUser) {
@@ -1054,11 +1063,7 @@ export const logoutBwenge = createAsyncThunk(
           };
 
           safeSetLocalStorageJSON("cross_system_context", crossSystemContext);
-          console.log(
-            "💾 [ENHANCED LOGOUT] Saved cross-system context for recovery"
-          );
         } catch (e) {
-          console.warn("⚠️ Failed to save cross-system context:", e);
         }
       }
 
@@ -1066,11 +1071,8 @@ export const logoutBwenge = createAsyncThunk(
         `/auth/logout?logout_all_systems=${logoutAllSystems}`
       );
 
-      console.log("✅ [ENHANCED LOGOUT] Backend logout successful");
-
       return { logoutAllSystems };
     } catch (error: any) {
-      console.error("❌ [ENHANCED LOGOUT] Logout failed:", error);
 
       clearAuthData();
 
@@ -1085,15 +1087,11 @@ export const checkOngeraSession = createAsyncThunk(
   "bwengeAuth/checkOngeraSession",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("🔍 [ENHANCED] Checking Ongera session...");
 
       const response = await api.get("/auth/check-ongera-session");
 
-      console.log("✅ [ENHANCED] Ongera session check complete");
-
       return response.data.data;
     } catch (error: any) {
-      console.error("❌ [ENHANCED] Ongera session check failed:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to check Ongera session"
       );
@@ -1113,17 +1111,8 @@ export const fetchBwengeProfile = createAsyncThunk(
         const validation = validateBwengeUser(normalizedUser);
 
         if (!validation.isValid) {
-          console.warn(
-            "⚠️ [PROTECTION] Profile validation failed:",
-            validation
-          );
 
           const recoveredUser = recoverBwengeUser(normalizedUser);
-
-          console.log(
-            "✅ [RECOVERY] Profile recovered:",
-            validateBwengeUser(recoveredUser).isValid
-          );
 
           return recoveredUser;
         }
@@ -1144,9 +1133,6 @@ export const updateBwengeProfile = createAsyncThunk(
   "bwengeAuth/updateProfile",
   async (profileData: Partial<BwengeUser>, { rejectWithValue }) => {
     try {
-      console.log(
-        "✏️ [ENHANCED UPDATE] Updating profile with protection..."
-      );
 
       const protectedFields = [
         "IsForWhichSystem",
@@ -1160,9 +1146,6 @@ export const updateBwengeProfile = createAsyncThunk(
 
       protectedFields.forEach((field) => {
         if (field in safeUpdateData) {
-          console.warn(
-            `⚠️ [PROTECTION] Attempted to update protected field: ${field}`
-          );
           delete (safeUpdateData as any)[field];
         }
       });
@@ -1228,10 +1211,6 @@ export const syncCrossSystemData = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log(
-        "🔄 [SYNC] Syncing cross-system data from:",
-        data.fromSystem
-      );
 
       const requiredFields = ["system", "last_sync"];
       const missingFields = requiredFields.filter(
@@ -1257,13 +1236,11 @@ export const validateProtectionStatus = createAsyncThunk(
   "bwengeAuth/validateProtectionStatus",
   async (_, { rejectWithValue, getState }) => {
     try {
-      console.log("🛡️ [VALIDATION] Validating protection status...");
 
       const state = getState() as { bwengeAuth: BwengeAuthState };
       const reduxUser = state.bwengeAuth.user;
 
       if (reduxUser) {
-        console.log("✅ [VALIDATION] Using Redux user for validation");
         const validation = validateBwengeUser(reduxUser);
 
         const protectionValid =
@@ -1277,7 +1254,6 @@ export const validateProtectionStatus = createAsyncThunk(
           checksumValid =
             reduxUser._protection.checksum === currentChecksum;
           if (!checksumValid) {
-            console.warn("⚠️ Checksum validation failed");
           }
         }
 
@@ -1304,9 +1280,6 @@ export const validateProtectionStatus = createAsyncThunk(
           null
         );
         if (crossSystemContext) {
-          console.log(
-            "🔄 [VALIDATION] No auth data, but found cross-system context"
-          );
           return {
             isValid: false,
             validation: {
@@ -1329,9 +1302,6 @@ export const validateProtectionStatus = createAsyncThunk(
           };
         }
 
-        console.log(
-          "ℹ️ [VALIDATION] No user data found - this is normal for unauthenticated users"
-        );
         return {
           isValid: false,
           validation: {
@@ -1366,7 +1336,6 @@ export const validateProtectionStatus = createAsyncThunk(
         const currentChecksum = calculateChecksum(user);
         checksumValid = user._protection.checksum === currentChecksum;
         if (!checksumValid) {
-          console.warn("⚠️ Checksum validation failed");
         }
       }
 
@@ -1381,10 +1350,6 @@ export const validateProtectionStatus = createAsyncThunk(
         needsRecovery: !isValid && validation.missingFields.length > 0,
       };
     } catch (error: any) {
-      console.error(
-        "❌ [VALIDATION] Protection validation failed:",
-        error
-      );
       return rejectWithValue(
         error.message || "Protection validation failed"
       );
@@ -1398,9 +1363,6 @@ const bwengeAuthSlice = createSlice({
   initialState,
   reducers: {
     clearAuth: (state) => {
-      console.log(
-        "🗑️ [ENHANCED CLEAR] Clearing authentication state with protection..."
-      );
 
       if (state.user) {
         const crossSystemContext = {
@@ -1414,7 +1376,6 @@ const bwengeAuthSlice = createSlice({
         };
 
         safeSetLocalStorageJSON("cross_system_context", crossSystemContext);
-        console.log("💾 Saved cross-system context before clearing");
       }
 
       state.token = null;
@@ -1461,11 +1422,6 @@ const bwengeAuthSlice = createSlice({
 
       state.protection.lastSync = new Date().toISOString();
 
-      console.log(
-        `🛡️ [PROTECTION] Status: ${action.payload.active ? "ACTIVE" : "INACTIVE"
-        }`,
-        action.payload.reason || ""
-      );
     },
 
     updateValidationChecks: (
@@ -1605,7 +1561,6 @@ const bwengeAuthSlice = createSlice({
         }
 
         state.protection.lastSync = new Date().toISOString();
-        console.log("🔄 [MANUAL SYNC] Cross-system data applied");
       }
     },
 
@@ -1635,7 +1590,6 @@ const bwengeAuthSlice = createSlice({
     },
 
     resetProtection: (state) => {
-      console.log("🔄 [RESET] Resetting protection state...");
 
       state.protection = {
         active: true,
@@ -1681,13 +1635,11 @@ const bwengeAuthSlice = createSlice({
     builder
       // ==================== LOGIN BWENGE ====================
       .addCase(loginBwenge.pending, (state) => {
-        console.log("⏳ [ENHANCED LOGIN] Pending...");
         state.isLoading = true;
         state.error = null;
         state.protection.active = true;
       })
       .addCase(loginBwenge.fulfilled, (state, action) => {
-        console.log("✅ [ENHANCED LOGIN] Fulfilled");
         state.isLoading = false;
         state.token = action.payload.token;
         state.user = action.payload.user;
@@ -1709,8 +1661,6 @@ const bwengeAuthSlice = createSlice({
           system: !!action.payload.user.IsForWhichSystem,
         };
 
-        console.log("📊 [VALIDATION] Login validation:", validation);
-
         if (
           action.payload.user.bwenge_role ===
           BwengeRole.INSTITUTION_ADMIN &&
@@ -1725,10 +1675,8 @@ const bwengeAuthSlice = createSlice({
           };
         }
 
-        console.log("✅ [PROTECTION] Login completed successfully");
       })
       .addCase(loginBwenge.rejected, (state, action: any) => {
-        console.error("❌ [ENHANCED LOGIN] Rejected");
         state.isLoading = false;
 
         const payload = action.payload;
@@ -1750,12 +1698,10 @@ const bwengeAuthSlice = createSlice({
 
       // ==================== LOGIN WITH GOOGLE ====================
       .addCase(loginWithGoogle.pending, (state) => {
-        console.log("⏳ [GOOGLE LOGIN] Pending...");
         state.isLoading = true;
         state.error = null;
       })
       .addCase(loginWithGoogle.fulfilled, (state, action) => {
-        console.log("✅ [GOOGLE LOGIN] Fulfilled");
         state.isLoading = false;
         state.token = action.payload.token;
         state.user = action.payload.user;
@@ -1780,19 +1726,16 @@ const bwengeAuthSlice = createSlice({
         }
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
-        console.error("❌ [GOOGLE LOGIN] Rejected");
         state.isLoading = false;
         state.error = action.payload as string;
       })
 
       // ==================== SSO CONSUME ====================
       .addCase(consumeSSOToken.pending, (state) => {
-        console.log("⏳ [ENHANCED SSO] Pending...");
         state.isLoading = true;
         state.error = null;
       })
       .addCase(consumeSSOToken.fulfilled, (state, action) => {
-        console.log("✅ [ENHANCED SSO] Fulfilled");
         state.isLoading = false;
         state.token = action.payload.token;
         state.user = action.payload.user;
@@ -1817,10 +1760,8 @@ const bwengeAuthSlice = createSlice({
           };
         }
 
-        console.log("✅ [PROTECTION] SSO completed with data merge");
       })
       .addCase(consumeSSOToken.rejected, (state, action) => {
-        console.error("❌ [ENHANCED SSO] Rejected");
         state.isLoading = false;
         state.error = action.payload as string;
         state.ssoInitialized = false;
@@ -1828,7 +1769,6 @@ const bwengeAuthSlice = createSlice({
 
       // ==================== LOGOUT ====================
       .addCase(logoutBwenge.fulfilled, (state) => {
-        console.log("✅ [ENHANCED LOGOUT] Fulfilled");
 
         state.token = null;
         state.user = null;
@@ -1896,10 +1836,6 @@ const bwengeAuthSlice = createSlice({
         if (state.user) {
           const { fromSystem, data } = action.payload;
 
-          console.log(
-            `🔄 [SYNC] Applying cross-system data from ${fromSystem}`
-          );
-
           if (!state.user.bwenge_role && data.bwenge_role) {
             state.user.bwenge_role = data.bwenge_role;
           }
@@ -1945,7 +1881,6 @@ const bwengeAuthSlice = createSlice({
             expires: 7,
           });
 
-          console.log("✅ [SYNC] Cross-system data applied successfully");
         }
       })
 
@@ -1961,9 +1896,6 @@ const bwengeAuthSlice = createSlice({
         } = action.payload;
 
         if (needsRecovery && user) {
-          console.warn(
-            "⚠️ [VALIDATION] Protection validation failed, attempting recovery..."
-          );
 
           const recoveredUser = recoverBwengeUser(user);
           state.user = recoveredUser;
@@ -1975,10 +1907,6 @@ const bwengeAuthSlice = createSlice({
           Cookies.set("bwenge_user", JSON.stringify(recoveredUser), {
             expires: 7,
           });
-
-          console.log(
-            "✅ [RECOVERY] User data recovered after validation failure"
-          );
 
           state.protection.validationChecks = {
             institution: !!recoveredUser.institution,
@@ -2003,22 +1931,8 @@ const bwengeAuthSlice = createSlice({
         );
         state.protection.lastSync = new Date().toISOString();
 
-        console.log(
-          `📊 [VALIDATION] Result: ${isValid ? "PASS" : "FAIL"}`
-        );
-        console.log(`📊 [VALIDATION] Details:`, {
-          protectionValid,
-          checksumValid,
-        });
       })
       .addCase(validateProtectionStatus.rejected, (state, action) => {
-        console.error(
-          "❌ [VALIDATION] Protection validation failed:",
-          action.payload
-        );
-        console.log(
-          "⚠️ [VALIDATION] Validation failed but keeping protection active"
-        );
       })
       .addCase(registerBwenge.pending, (state) => {
         state.isLoading = true;
@@ -2037,6 +1951,54 @@ const bwengeAuthSlice = createSlice({
       .addCase(registerBwenge.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+
+      // ── Register & Join (invited new user) ───────────────────────────────────
+      .addCase(registerAndJoin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerAndJoin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+        state.bwengeRole = action.payload.user.bwenge_role;
+        state.isAuthenticated = true;
+        state.requiresVerification = false;
+        storeAuthData(action.payload.user, action.payload.token);
+        state.protection.active = true;
+      })
+      .addCase(registerAndJoin.rejected, (state, action) => {
+        state.isLoading = false;
+        const payload = action.payload as any;
+        state.error = typeof payload === "string" ? payload : payload?.message || "Registration failed";
+      })
+
+      // ── Login & Join (invited existing user) ─────────────────────────────────
+      .addCase(loginAndJoin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginAndJoin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+        state.bwengeRole = action.payload.user.bwenge_role;
+        state.isAuthenticated = true;
+        state.requiresVerification = false;
+        storeAuthData(action.payload.user, action.payload.token);
+        state.protection.active = true;
+      })
+      .addCase(loginAndJoin.rejected, (state, action) => {
+        state.isLoading = false;
+        const payload = action.payload as any;
+        if (typeof payload === "object" && payload?.requires_verification) {
+          state.requiresVerification = true;
+          state.verificationEmail = payload.email;
+          state.error = payload.message;
+        } else {
+          state.error = typeof payload === "string" ? payload : payload?.message || "Login failed";
+        }
       })
 
       // ── Request password change ───────────────────────────────────────────────
@@ -2132,16 +2094,11 @@ export const initializeProtectedAuth = (): {
       const validation = validateBwengeUser(user);
 
       if (!validation.isValid) {
-        console.warn(
-          "⚠️ [INIT] User data validation failed during initialization:",
-          validation
-        );
 
         const recoveredUser = recoverBwengeUser(user);
         const recoveryValidation = validateBwengeUser(recoveredUser);
 
         if (recoveryValidation.isValid) {
-          console.log("✅ [INIT] User data recovered successfully");
           Cookies.set("bwenge_user", JSON.stringify(recoveredUser), {
             expires: 7,
           });
@@ -2152,7 +2109,6 @@ export const initializeProtectedAuth = (): {
             needsRecovery: true,
           };
         } else {
-          console.error("❌ [INIT] Recovery failed:", recoveryValidation);
           return {
             token: null,
             user: null,
@@ -2169,10 +2125,6 @@ export const initializeProtectedAuth = (): {
         needsRecovery: false,
       };
     } catch (error) {
-      console.error(
-        "❌ [INIT] Failed to parse protected auth data:",
-        error
-      );
       clearAuthData();
       return {
         token: null,

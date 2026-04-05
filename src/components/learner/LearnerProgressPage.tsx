@@ -288,7 +288,6 @@ export default function LearnerProgressPage() {
         setStats(stats);
       }
     } catch (error) {
-      console.error("Error fetching progress data:", error);
       toast.error("Failed to load progress data");
     } finally {
       setLoading(false);
@@ -413,7 +412,6 @@ export default function LearnerProgressPage() {
         toast.error("Failed to export progress");
       }
     } catch (error) {
-      console.error("Error exporting progress:", error);
       toast.error("Failed to export progress");
     }
   };
@@ -427,7 +425,6 @@ export default function LearnerProgressPage() {
       if (!isValid(date)) return "Invalid date";
       return format(date, "MMM d");
     } catch (error) {
-      console.error("Error formatting date:", error);
       return "Invalid date";
     }
   };
@@ -470,14 +467,14 @@ export default function LearnerProgressPage() {
   const getLevelColor = (level: string) => {
     switch (level?.toUpperCase()) {
       case "BEGINNER":
-        return "bg-green-500";
+        return "bg-success/100";
       case "INTERMEDIATE":
-        return "bg-blue-500";
+        return "bg-primary";
       case "ADVANCED":
       case "EXPERT":
-        return "bg-purple-500";
+        return "bg-primary/100";
       default:
-        return "bg-gray-500";
+        return "bg-muted/500";
     }
   };
 
@@ -500,10 +497,10 @@ export default function LearnerProgressPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             My Learning Progress
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Track your progress across all courses
           </p>
         </div>
@@ -531,14 +528,14 @@ export default function LearnerProgressPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Overall Progress</p>
+                  <p className="text-sm text-muted-foreground">Overall Progress</p>
                   <p className="text-3xl font-bold">{Math.round(stats.overall_progress)}%</p>
-                  <p className="text-xs text-green-600 mt-1">
+                  <p className="text-xs text-success mt-1">
                     {stats.completed_courses} of {stats.total_courses} completed
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -548,14 +545,14 @@ export default function LearnerProgressPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Time Spent</p>
+                  <p className="text-sm text-muted-foreground">Time Spent</p>
                   <p className="text-3xl font-bold">{stats.total_time_spent_hours}h</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {stats.lessons_completed} lessons completed
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -565,14 +562,14 @@ export default function LearnerProgressPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Active Courses</p>
+                  <p className="text-sm text-muted-foreground">Active Courses</p>
                   <p className="text-3xl font-bold">{stats.active_courses}</p>
-                  <p className="text-xs text-purple-600 mt-1">
+                  <p className="text-xs text-primary mt-1">
                     {stats.streak_days} day streak
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -582,14 +579,14 @@ export default function LearnerProgressPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Achievements</p>
+                  <p className="text-sm text-muted-foreground">Achievements</p>
                   <p className="text-3xl font-bold">{stats.quizzes_passed}</p>
-                  <p className="text-xs text-yellow-600 mt-1">
+                  <p className="text-xs text-warning mt-1">
                     quizzes passed
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -664,7 +661,7 @@ export default function LearnerProgressPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search courses..."
             value={searchTerm}
@@ -690,11 +687,11 @@ export default function LearnerProgressPage() {
         {filteredCourses.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                 No Courses in Progress
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchTerm
                   ? "No courses match your search criteria"
                   : "You haven't started any courses yet"}
@@ -743,13 +740,13 @@ export default function LearnerProgressPage() {
                 <div className="flex-1 p-6">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
                         {course.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {course.description}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Users className="w-4 h-4" />
                           {course.instructor.name}
@@ -785,7 +782,7 @@ export default function LearnerProgressPage() {
                     </div>
                     <Progress value={course.progress.percentage} className="h-2" />
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>
                         {course.progress.completed_lessons} of {course.progress.total_lessons} lessons
                       </span>
@@ -801,18 +798,18 @@ export default function LearnerProgressPage() {
                   {/* Module Progress */}
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                     {course.modules.slice(0, 4).map((module) => (
-                      <div key={module.id} className="bg-gray-50 rounded-lg p-3">
+                      <div key={module.id} className="bg-muted/50 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-700 truncate">
+                          <span className="text-xs font-medium text-muted-foreground truncate">
                             {module.title}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {Math.round(module.progress)}%
                           </span>
                         </div>
                         <Progress value={module.progress} className="h-1" />
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-muted-foreground">
                             {module.lessons.filter(l => l.completed).length}/{module.lessons.length} lessons
                           </span>
                           {module.progress < 100 && (

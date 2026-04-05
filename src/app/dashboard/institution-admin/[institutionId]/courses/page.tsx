@@ -101,7 +101,6 @@ export default function InstitutionCoursesPage() {
         toast.error(data.message || "Failed to fetch courses");
       }
     } catch (error) {
-      console.error("Failed to fetch courses:", error);
       toast.error("Failed to fetch institution courses");
     } finally {
       setLoading(false);
@@ -131,7 +130,6 @@ export default function InstitutionCoursesPage() {
         toast.error(data.message || "Failed to publish course");
       }
     } catch (error) {
-      console.error("Failed to publish course:", error);
       toast.error("Failed to publish course");
     }
   };
@@ -158,7 +156,6 @@ export default function InstitutionCoursesPage() {
         toast.error(data.message || "Failed to unpublish course");
       }
     } catch (error) {
-      console.error("Failed to unpublish course:", error);
       toast.error("Failed to unpublish course");
     }
   };
@@ -213,7 +210,6 @@ export default function InstitutionCoursesPage() {
         toast.error("Failed to publish courses");
       }
     } catch (error) {
-      console.error("Failed to bulk publish courses:", error);
       toast.error("Failed to publish courses");
     }
   };
@@ -267,7 +263,6 @@ export default function InstitutionCoursesPage() {
         toast.error("Failed to unpublish courses");
       }
     } catch (error) {
-      console.error("Failed to bulk unpublish courses:", error);
       toast.error("Failed to unpublish courses");
     }
   };
@@ -295,7 +290,6 @@ export default function InstitutionCoursesPage() {
         toast.error(data.message || "Failed to delete course");
       }
     } catch (error) {
-      console.error("Failed to delete course:", error);
       toast.error("Failed to delete course");
     }
   };
@@ -329,7 +323,6 @@ export default function InstitutionCoursesPage() {
         toast.error("Failed to delete courses");
       }
     } catch (error) {
-      console.error("Failed to bulk delete courses:", error);
       toast.error("Failed to delete courses");
     }
   };
@@ -375,13 +368,13 @@ export default function InstitutionCoursesPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "bg-success/15 text-success";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-warning/15 text-warning";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -394,9 +387,9 @@ export default function InstitutionCoursesPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-            <p className="text-gray-500 mb-6">
+            <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-6">
               You need to be an institution administrator to view this page.
             </p>
           </CardContent>
@@ -410,8 +403,8 @@ export default function InstitutionCoursesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Institution Courses</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Institution Courses</h1>
+          <p className="text-muted-foreground">
             Manage all courses created for your institution
           </p>
         </div>
@@ -449,7 +442,7 @@ export default function InstitutionCoursesPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search courses by title or description..."
                 value={searchTerm}
@@ -459,11 +452,11 @@ export default function InstitutionCoursesPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-white"
+                className="px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0158B7] bg-card"
               >
                 <option value="all">All Status</option>
                 <option value="PUBLISHED">Published</option>
@@ -477,9 +470,9 @@ export default function InstitutionCoursesPage() {
 
       {/* Bulk Actions */}
       {selectedCourses.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <span className="text-blue-800 font-medium">
+            <span className="text-primary font-medium">
               {selectedCourses.length} course(s) selected
             </span>
             
@@ -489,8 +482,8 @@ export default function InstitutionCoursesPage() {
                 onClick={handleBulkPublish}
                 disabled={selectedDraftCount === 0}
                 className={selectedDraftCount > 0 
-                  ? "bg-green-600 hover:bg-green-700 text-white" 
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"}
+                  ? "bg-success hover:bg-success text-white" 
+                  : "bg-secondary text-muted-foreground cursor-not-allowed"}
                 title={selectedDraftCount === 0 ? "No draft courses selected" : `Publish ${selectedDraftCount} draft course(s)`}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -502,8 +495,8 @@ export default function InstitutionCoursesPage() {
                 onClick={handleBulkUnpublish}
                 disabled={selectedPublishedCount === 0}
                 className={selectedPublishedCount > 0
-                  ? "bg-yellow-600 hover:bg-yellow-700 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"}
+                  ? "bg-warning hover:bg-yellow-700 text-white"
+                  : "bg-secondary text-muted-foreground cursor-not-allowed"}
                 title={selectedPublishedCount === 0 ? "No published courses selected" : `Unpublish ${selectedPublishedCount} published course(s)`}
               >
                 <XCircle className="w-4 h-4 mr-2" />
@@ -513,7 +506,7 @@ export default function InstitutionCoursesPage() {
               <Button
                 size="sm"
                 onClick={handleBulkDelete}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-destructive hover:bg-destructive text-white"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete All ({selectedCourses.length})
@@ -525,7 +518,7 @@ export default function InstitutionCoursesPage() {
             variant="ghost"
             size="sm"
             onClick={() => setSelectedCourses([])}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-primary hover:text-primary"
           >
             Clear Selection
           </Button>
@@ -538,7 +531,7 @@ export default function InstitutionCoursesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Courses</p>
+                <p className="text-sm text-muted-foreground">Total Courses</p>
                 <p className="text-2xl font-bold">{courses.length}</p>
               </div>
               <BookOpen className="w-8 h-8 text-[#0158B7]" />
@@ -550,12 +543,12 @@ export default function InstitutionCoursesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Published</p>
+                <p className="text-sm text-muted-foreground">Published</p>
                 <p className="text-2xl font-bold">
                   {courses.filter(c => c.status === "PUBLISHED").length}
                 </p>
               </div>
-              <Globe className="w-8 h-8 text-green-500" />
+              <Globe className="w-8 h-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -564,12 +557,12 @@ export default function InstitutionCoursesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Students</p>
+                <p className="text-sm text-muted-foreground">Total Students</p>
                 <p className="text-2xl font-bold">
                   {courses.reduce((sum, course) => sum + course.enrollment_count, 0)}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-purple-500" />
+              <Users className="w-8 h-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -578,12 +571,12 @@ export default function InstitutionCoursesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">SPOC Courses</p>
+                <p className="text-sm text-muted-foreground">SPOC Courses</p>
                 <p className="text-2xl font-bold">
                   {courses.filter(c => c.course_type === "SPOC").length}
                 </p>
               </div>
-              <Lock className="w-8 h-8 text-orange-500" />
+              <Lock className="w-8 h-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -612,7 +605,7 @@ export default function InstitutionCoursesPage() {
                         type="checkbox"
                         checked={selectedCourses.length === filteredCourses.length && filteredCourses.length > 0}
                         onChange={toggleSelectAll}
-                        className="w-4 h-4 text-[#0158B7] border-gray-300 rounded focus:ring-[#0158B7]"
+                        className="w-4 h-4 text-[#0158B7] border-border rounded focus:ring-[#0158B7]"
                       />
                     </TableHead>
                     <TableHead>Course</TableHead>
@@ -626,13 +619,13 @@ export default function InstitutionCoursesPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredCourses.map((course) => (
-                    <TableRow key={course.id} className={selectedCourses.includes(course.id) ? "bg-blue-50/50" : ""}>
+                    <TableRow key={course.id} className={selectedCourses.includes(course.id) ? "bg-primary/10/50" : ""}>
                       <TableCell>
                         <input
                           type="checkbox"
                           checked={selectedCourses.includes(course.id)}
                           onChange={() => toggleSelectCourse(course.id)}
-                          className="w-4 h-4 text-[#0158B7] border-gray-300 rounded focus:ring-[#0158B7]"
+                          className="w-4 h-4 text-[#0158B7] border-border rounded focus:ring-[#0158B7]"
                         />
                       </TableCell>
                       <TableCell>
@@ -644,12 +637,12 @@ export default function InstitutionCoursesPage() {
                               className="w-10 h-10 rounded-lg object-cover"
                             />
                           ) : (
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <BookOpen className="w-5 h-5 text-gray-400" />
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                              <BookOpen className="w-5 h-5 text-muted-foreground" />
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-gray-900" title={course.title}>
+                            <p className="font-medium text-foreground" title={course.title}>
                               {course.title.length > 30
                                 ? `${course.title.substring(0, 30)}...`
                                 : course.title}
@@ -672,8 +665,8 @@ export default function InstitutionCoursesPage() {
                               className="w-6 h-6 rounded-full"
                             />
                           ) : (
-                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                              <Users className="w-3 h-3 text-gray-500" />
+                            <div className="w-6 h-6 bg-secondary rounded-full flex items-center justify-center">
+                              <Users className="w-3 h-3 text-muted-foreground" />
                             </div>
                           )}
                           <span className="text-sm">
@@ -683,7 +676,7 @@ export default function InstitutionCoursesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-400" />
+                          <Users className="w-4 h-4 text-muted-foreground" />
                           <span>{course.enrollment_count}</span>
                         </div>
                       </TableCell>
@@ -693,7 +686,7 @@ export default function InstitutionCoursesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {format(new Date(course.created_at), "MMM d, yyyy")}
                         </div>
                       </TableCell>
@@ -717,19 +710,19 @@ export default function InstitutionCoursesPage() {
                             
                             {course.status === "DRAFT" ? (
                               <DropdownMenuItem onClick={() => handlePublish(course.id)}>
-                                <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                                <CheckCircle className="w-4 h-4 mr-2 text-success" />
                                 Publish Course
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem onClick={() => handleUnpublish(course.id)}>
-                                <XCircle className="w-4 h-4 mr-2 text-yellow-600" />
+                                <XCircle className="w-4 h-4 mr-2 text-warning" />
                                 Unpublish Course
                               </DropdownMenuItem>
                             )}
                             
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
-                              className="text-red-600"
+                              className="text-destructive"
                               onClick={() => handleDelete(course.id)}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -745,11 +738,11 @@ export default function InstitutionCoursesPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                 No Courses Found
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchTerm ? "Try a different search term" : "Create your first course for this institution"}
               </p>
               <Button onClick={() => router.push(`/dashboard/institution-admin/${institutionId}/courses/create`)}>

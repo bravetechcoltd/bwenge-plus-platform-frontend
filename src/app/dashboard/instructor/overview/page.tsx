@@ -26,10 +26,13 @@ import {
   Award,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { CourseLevel, type Course } from "@/types"
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d"
 
 export default function CourseOverviewPage() {
+  const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [searchTerm, setSearchTerm] = useState("")
@@ -187,148 +190,38 @@ export default function CourseOverviewPage() {
   const getLevelColor = (level: string) => {
     switch (level) {
       case "beginner":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+        return "bg-success/15 text-success dark:bg-success/20/20 dark:text-success"
       case "intermediate":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+        return "bg-warning/15 text-warning dark:bg-warning/20/20 dark:text-warning"
       case "advanced":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+        return "bg-destructive/15 text-destructive dark:bg-destructive/20/20 dark:text-destructive"
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+        return "bg-muted text-foreground dark:bg-card/20 dark:text-muted-foreground"
     }
   }
 
-  const CourseCard = ({ course, index }: { course: Course; index: number }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.1 }}
-      whileHover={{ y: -5 }}
-      className="group"
-    >
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 relative">
-        {/* Gamification Elements */}
-        <div className="absolute top-3 left-3 z-10 flex gap-2">
-          {course.isPublished && (
-            <Badge className="bg-green-500 hover:bg-green-600 animate-pulse">
-              <Zap className="w-3 h-3 mr-1" />
-              Live
-            </Badge>
-          )}
-          {course.rating >= 4.8 && (
-            <Badge className="bg-yellow-500 hover:bg-yellow-600">
-              <Trophy className="w-3 h-3 mr-1" />
-              Top Rated
-            </Badge>
-          )}
-          {course.enrollmentCount > 200 && (
-            <Badge className="bg-purple-500 hover:bg-purple-600">
-              <Award className="w-3 h-3 mr-1" />
-              Popular
-            </Badge>
-          )}
-        </div>
-
-        {/* Course Thumbnail */}
-        <div className="relative overflow-hidden">
-          <img
-            src={course.thumbnail || "/placeholder.svg"}
-            alt={course.title}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Action Buttons Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button size="sm" className="bg-white/90 text-gray-900 hover:bg-white" asChild>
-              <Link href={`/instructor/courses/${course.id}`}>
-                <Eye className="w-4 h-4 mr-2" />
-                View
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-white/90 border-white/90 text-gray-900 hover:bg-white"
-              asChild
-            >
-              <Link href={`/dashboard/instructor/courses/${course.id}/edit`}>
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <Badge className={getLevelColor(course.level)}>
-              {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
-            </Badge>
-            <div className="text-right">
-              <div className="text-lg font-bold text-primary">${course.price}</div>
-              {course.isPublished && (
-                <div className="flex items-center gap-1 text-sm">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{course.rating}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-            {course.title}
-          </CardTitle>
-          <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-        </CardHeader>
-
-        <CardContent className="pt-0">
-          {/* Course Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>{course.enrollmentCount}</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <BookOpen className="w-4 h-4" />
-              <span>{course.modules?.length || 0} modules</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>{course.duration > 0 ? formatDuration(course.duration) : "Draft"}</span>
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1 mb-4">
-            {course.tags.slice(0, 3).map((tag, tagIndex) => (
-              <Badge key={tagIndex} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {course.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{course.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button className="flex-1" asChild>
-              <Link href={`/dashboard/instructor/courses/${course.id}`}>
-                <Play className="w-4 h-4 mr-2" />
-                {course.isPublished ? "Manage" : "Continue"}
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/dashboard/instructor/courses/${course.id}/analytics`}>
-                <TrendingUp className="w-4 h-4" />
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+  const renderCourseCard = (course: Course, index: number) => (
+    <BwengeCourseCard3D
+      key={course.id}
+      id={course.id}
+      title={course.title}
+      description={course.description}
+      thumbnail_url={course.thumbnail || undefined}
+      level={course.level?.toUpperCase()}
+      price={course.price}
+      average_rating={course.rating || 0}
+      enrollment_count={course.enrollmentCount || 0}
+      duration_minutes={course.duration || 0}
+      total_lessons={course.modules?.length || 0}
+      tags={course.tags}
+      status={course.isPublished ? "PUBLISHED" : "DRAFT"}
+      is_popular={course.enrollmentCount > 200}
+      variant="instructor"
+      showActions={true}
+      showInstitution={false}
+      index={index}
+      onLearnMoreClick={(id) => router.push(`/dashboard/instructor/courses/${id}`)}
+    />
   )
 
   if (loading) {
@@ -344,11 +237,11 @@ export default function CourseOverviewPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700" />
+              <div className="w-full h-48 bg-secondary dark:bg-secondary" />
               <CardHeader>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                <div className="h-4 bg-secondary dark:bg-secondary rounded w-3/4" />
+                <div className="h-3 bg-secondary dark:bg-secondary rounded w-full" />
+                <div className="h-3 bg-secondary dark:bg-secondary rounded w-2/3" />
               </CardHeader>
             </Card>
           ))}
@@ -390,7 +283,7 @@ export default function CourseOverviewPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="w-8 h-8 text-green-500" />
+              <Users className="w-8 h-8 text-success" />
               <div>
                 <div className="text-2xl font-bold">{courses.reduce((acc, c) => acc + c.enrollmentCount, 0)}</div>
                 <div className="text-sm text-muted-foreground">Total Students</div>
@@ -402,7 +295,7 @@ export default function CourseOverviewPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Star className="w-8 h-8 text-yellow-500" />
+              <Star className="w-8 h-8 text-warning" />
               <div>
                 <div className="text-2xl font-bold">
                   {courses.filter((c) => c.isPublished).length > 0
@@ -421,7 +314,7 @@ export default function CourseOverviewPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Target className="w-8 h-8 text-purple-500" />
+              <Target className="w-8 h-8 text-primary" />
               <div>
                 <div className="text-2xl font-bold">{courses.filter((c) => c.isPublished).length}</div>
                 <div className="text-sm text-muted-foreground">Published</div>
@@ -482,9 +375,9 @@ export default function CourseOverviewPage() {
       {/* Courses Grid */}
       <AnimatePresence>
         {filteredCourses.length > 0 ? (
-          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+          <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-4"}>
             {filteredCourses.map((course, index) => (
-              <CourseCard key={course.id} course={course} index={index} />
+              renderCourseCard(course, index)
             ))}
           </div>
         ) : (

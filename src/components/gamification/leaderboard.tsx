@@ -97,7 +97,6 @@ export function Leaderboard({
         throw new Error(data.message || "Failed to fetch leaderboard")
       }
     } catch (err: any) {
-      console.error("Failed to fetch leaderboard:", err)
       setError(err.message)
       
       // Fallback mock data for development
@@ -158,10 +157,10 @@ export function Leaderboard({
   }
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="w-5 h-5 text-yellow-500" />
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />
-    if (rank === 3) return <Award className="w-5 h-5 text-amber-600" />
-    return <Star className="w-5 h-5 text-blue-500" />
+    if (rank === 1) return <Trophy className="w-5 h-5 text-warning" />
+    if (rank === 2) return <Medal className="w-5 h-5 text-muted-foreground" />
+    if (rank === 3) return <Award className="w-5 h-5 text-warning" />
+    return <Star className="w-5 h-5 text-primary" />
   }
 
   const getRankColor = (rank: number) => {
@@ -199,12 +198,12 @@ export function Leaderboard({
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse"
+                className="flex items-center gap-3 p-3 rounded-lg bg-muted dark:bg-card animate-pulse"
               >
-                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                <div className="w-8 h-8 bg-secondary dark:bg-secondary rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3" />
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4" />
+                  <div className="h-4 bg-secondary dark:bg-secondary rounded w-1/3" />
+                  <div className="h-3 bg-secondary dark:bg-secondary rounded w-1/4" />
                 </div>
               </div>
             ))}
@@ -226,7 +225,7 @@ export function Leaderboard({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-500 mb-4">{error}</p>
+            <p className="text-destructive mb-4">{error}</p>
             <Button onClick={fetchLeaderboard}>Retry</Button>
           </div>
         </CardContent>
@@ -272,7 +271,7 @@ export function Leaderboard({
                   ${
                     leaderboardUser.id === currentUser?.id
                       ? "bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
-                      : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      : "bg-muted/50 dark:bg-card/50 hover:bg-muted dark:hover:bg-card"
                   }
                 `}
               >
@@ -313,7 +312,7 @@ export function Leaderboard({
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground dark:text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Trophy className="w-3 h-3" />
                       <span>{formatPoints(leaderboardUser.totalPoints)} pts</span>
@@ -385,7 +384,7 @@ export function Leaderboard({
                       Lvl {currentUser.level}
                     </Badge>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                     {formatPoints(currentUser.totalPoints)} points • {currentUser.completedCoursesCount} courses completed
                   </div>
                 </div>
@@ -399,7 +398,7 @@ export function Leaderboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Your Stats
               </CardTitle>
             </CardHeader>
@@ -418,7 +417,7 @@ export function Leaderboard({
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Learning Streak</span>
                   <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4 text-orange-500" />
+                    <Clock className="w-4 h-4 text-warning" />
                     <span className="font-medium">{currentUser.streakDays} days</span>
                   </div>
                 </div>
@@ -432,7 +431,7 @@ export function Leaderboard({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Quick Actions
               </CardTitle>
             </CardHeader>
@@ -456,7 +455,7 @@ export function Leaderboard({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Next Milestone
               </CardTitle>
             </CardHeader>
@@ -466,15 +465,15 @@ export function Leaderboard({
                   <div className="text-2xl font-bold text-primary">
                     {((currentUser.totalPoints % 500) / 500 * 100).toFixed(0)}%
                   </div>
-                  <div className="text-sm text-gray-500">to Level {currentUser.level + 1}</div>
+                  <div className="text-sm text-muted-foreground">to Level {currentUser.level + 1}</div>
                 </div>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-secondary dark:bg-secondary rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
                     style={{ width: `${((currentUser.totalPoints % 500) / 500 * 100)}%` }}
                   />
                 </div>
-                <div className="text-xs text-center text-gray-500 mt-2">
+                <div className="text-xs text-center text-muted-foreground mt-2">
                   {500 - (currentUser.totalPoints % 500)} points needed
                 </div>
               </div>

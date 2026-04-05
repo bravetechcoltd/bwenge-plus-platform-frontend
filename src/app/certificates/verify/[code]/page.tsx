@@ -87,7 +87,6 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
   useEffect(() => {
     const verifyCertificate = async () => {
       try {
-        console.log("🔍 [verifyCertificate] Verifying code:", code)
         
         // ✅ FIX: Add timeout to prevent infinite loading
         const controller = new AbortController()
@@ -106,10 +105,6 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
         clearTimeout(timeoutId)
 
         const data = await response.json()
-        console.log("📊 [verifyCertificate] Response:", data)
-        console.log("📊 [verifyCertificate] Response status:", response.status)
-        console.log("📊 [verifyCertificate] Data.success:", data.success)
-        console.log("📊 [verifyCertificate] Data.valid:", data.valid)
 
         // ✅ FIX: Handle both success cases and error cases
         if (response.ok) {
@@ -134,7 +129,6 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
           })
         }
       } catch (err: any) {
-        console.error("❌ [verifyCertificate] Error:", err)
         
         // ✅ FIX: Better error handling
         if (err.name === 'AbortError') {
@@ -151,16 +145,13 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
         })
       } finally {
         // ✅ FIX: Always stop loading
-        console.log("✅ [verifyCertificate] Setting loading to false")
         setLoading(false)
       }
     }
 
     if (code) {
-      console.log("🚀 [useEffect] Starting verification for code:", code)
       verifyCertificate()
     } else {
-      console.log("⚠️ [useEffect] No code provided")
       setLoading(false)
       setError("No verification code provided")
     }
@@ -236,7 +227,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg">
                     <CheckCircle className="w-14 h-14 text-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-success/100 flex items-center justify-center">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
                 </div>
@@ -245,7 +236,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-lg">
                     <XCircle className="w-14 h-14 text-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-destructive/100 flex items-center justify-center">
                     <AlertCircle className="w-5 h-5 text-white" />
                   </div>
                 </div>
@@ -265,23 +256,23 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
             {isValid && certData ? (
               <>
                 {/* Status Banner */}
-                <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border-2 border-green-200 dark:border-green-800">
+                <div className="p-4 bg-success/10 dark:bg-success/20/30 rounded-lg border-2 border-success/30 dark:border-success/30">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                        <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      <div className="w-10 h-10 rounded-full bg-success/15 dark:bg-success/20 flex items-center justify-center">
+                        <Shield className="w-6 h-6 text-success dark:text-success" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+                      <h3 className="font-semibold text-success dark:text-success mb-1">
                         Valid Certificate
                       </h3>
-                      <p className="text-sm text-green-700 dark:text-green-300">
+                      <p className="text-sm text-success dark:text-success">
                         This certificate has been verified against our records and is authentic. All details
                         below have been confirmed as accurate.
                       </p>
                     </div>
-                    <Badge className="bg-green-600 text-white">
+                    <Badge className="bg-success text-white">
                       Verified
                     </Badge>
                   </div>
@@ -330,8 +321,8 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                              <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            <div className="w-12 h-12 rounded-full bg-primary/15 dark:bg-primary/20/30 flex items-center justify-center">
+                              <BookOpen className="w-6 h-6 text-primary dark:text-primary" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
@@ -357,8 +348,8 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                            <div className="w-12 h-12 rounded-full bg-primary/15 dark:bg-primary/20/30 flex items-center justify-center">
+                              <GraduationCap className="w-6 h-6 text-primary dark:text-primary" />
                             </div>
                           </div>
                           <div className="flex-1">
@@ -376,8 +367,8 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                              <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                            <div className="w-12 h-12 rounded-full bg-warning/15 dark:bg-warning/20/30 flex items-center justify-center">
+                              <Calendar className="w-6 h-6 text-warning dark:text-warning" />
                             </div>
                           </div>
                           <div className="flex-1">
@@ -501,7 +492,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                           onClick={handleCopyCode}
                         >
                           {copied ? (
-                            <Check className="w-4 h-4 text-green-600" />
+                            <Check className="w-4 h-4 text-success" />
                           ) : (
                             <Copy className="w-4 h-4" />
                           )}
@@ -517,7 +508,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                             {new Date(certData.verification_details.verified_at).toLocaleString()}
                           </p>
                         </div>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                           <Clock className="w-3 h-3 mr-1" />
                           Just Now
                         </Badge>
@@ -545,21 +536,21 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
             ) : (
               <>
                 {/* Invalid Certificate */}
-                <div className="p-6 bg-red-50 dark:bg-red-950/30 rounded-lg border-2 border-red-200 dark:border-red-800">
+                <div className="p-6 bg-destructive/10 dark:bg-destructive/20/30 rounded-lg border-2 border-destructive/30 dark:border-destructive/30">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                        <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                      <div className="w-10 h-10 rounded-full bg-destructive/15 dark:bg-destructive/20 flex items-center justify-center">
+                        <XCircle className="w-6 h-6 text-destructive dark:text-destructive" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                      <h3 className="font-semibold text-destructive dark:text-destructive mb-2">
                         Certificate Not Valid
                       </h3>
-                      <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                      <p className="text-sm text-destructive dark:text-destructive mb-4">
                         {verification?.message || error || "This certificate could not be verified. The verification code may be incorrect, the certificate may have been revoked, or it may have expired."}
                       </p>
-                      <div className="space-y-2 text-sm text-red-700 dark:text-red-300">
+                      <div className="space-y-2 text-sm text-destructive dark:text-destructive">
                         <p className="font-medium">Possible reasons:</p>
                         <ul className="list-disc list-inside space-y-1 ml-2">
                           <li>The verification code is incorrect or incomplete</li>
@@ -585,7 +576,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                       onClick={handleCopyCode}
                     >
                       {copied ? (
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-success" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}

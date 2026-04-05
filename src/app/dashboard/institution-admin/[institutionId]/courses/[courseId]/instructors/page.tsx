@@ -65,7 +65,6 @@ function InstructorsPageContent() {
           router.push(`/dashboard/institution-admin/${institutionId}/courses/assign-instructors`);
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
         toast.error("Failed to load course information");
         router.push(`/dashboard/institution-admin/${institutionId}/courses/assign-instructors`);
       } finally {
@@ -94,9 +93,9 @@ function InstructorsPageContent() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">Course Not Found</h2>
-            <p className="text-gray-500 mb-6">
+            <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">Course Not Found</h2>
+            <p className="text-muted-foreground mb-6">
               The course you are looking for does not exist or you don't have access.
             </p>
             <Button onClick={() => router.push(`/dashboard/institution-admin/${institutionId}/courses/assign-instructors`)}>
@@ -124,22 +123,22 @@ function InstructorsPageContent() {
         
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Instructor Management
             </h1>
             <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <BookOpen className="w-4 h-4" />
                 <span className="font-medium">{course.title}</span>
               </div>
               {institution && (
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Building className="w-4 h-4" />
                   <span>{institution.name}</span>
                 </div>
               )}
             </div>
-            <p className="text-gray-500 mt-2">
+            <p className="text-muted-foreground mt-2">
               Manage and assign instructors for this course
             </p>
           </div>
@@ -175,18 +174,18 @@ function InstructorsPageContent() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Course Type</p>
+                <p className="text-sm text-muted-foreground">Course Type</p>
                 <p className="text-lg font-semibold capitalize">
                   {course.course_type}
                 </p>
               </div>
               {course.course_type === "MOOC" ? (
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-primary/15 rounded-lg">
+                  <BookOpen className="w-6 h-6 text-primary" />
                 </div>
               ) : (
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Users className="w-6 h-6 text-purple-600" />
+                <div className="p-2 bg-primary/15 rounded-lg">
+                  <Users className="w-6 h-6 text-primary" />
                 </div>
               )}
             </div>
@@ -197,20 +196,20 @@ function InstructorsPageContent() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
                 <p className="text-lg font-semibold capitalize">
                   {course.status}
                 </p>
               </div>
               <div className={`p-2 rounded-lg ${
-                course.status === "PUBLISHED" ? "bg-green-100" :
-                course.status === "DRAFT" ? "bg-yellow-100" :
-                "bg-gray-100"
+                course.status === "PUBLISHED" ? "bg-success/15" :
+                course.status === "DRAFT" ? "bg-warning/15" :
+                "bg-muted"
               }`}>
                 <BookOpen className={`w-6 h-6 ${
-                  course.status === "PUBLISHED" ? "text-green-600" :
-                  course.status === "DRAFT" ? "text-yellow-600" :
-                  "text-gray-600"
+                  course.status === "PUBLISHED" ? "text-success" :
+                  course.status === "DRAFT" ? "text-warning" :
+                  "text-muted-foreground"
                 }`} />
               </div>
             </div>
@@ -221,13 +220,13 @@ function InstructorsPageContent() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Enrollments</p>
+                <p className="text-sm text-muted-foreground">Enrollments</p>
                 <p className="text-lg font-semibold">
                   {course.enrollment_count || 0}
                 </p>
               </div>
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Users className="w-6 h-6 text-indigo-600" />
+              <div className="p-2 bg-primary/15 rounded-lg">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>

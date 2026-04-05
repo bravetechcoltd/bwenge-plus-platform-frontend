@@ -8,6 +8,7 @@ import courseInstructorReducer from './features/courseInstructors/courseInstruct
 import instructorReducer from "./features/instructor/instructorSlice"
 import systemAdminUserManagementReducer from "./features/systemAdmin/userManagementSlice"
 import systemSettingsReducer from "./features/system-settings/systemSettingsSlice";
+import notificationReducer from "./features/notifications/notificationSlice";
 import storage from "redux-persist/lib/storage"
 const persistConfig = {
   key: "root",
@@ -45,7 +46,8 @@ const rootReducer = combineReducers({
   enrollments: enrollmentReducer,
   courseInstructors: courseInstructorReducer,
   instructor: instructorReducer,
-  systemAdminUserManagement:systemAdminUserManagementReducer
+  systemAdminUserManagement:systemAdminUserManagementReducer,
+  notifications: notificationReducer
 
 
 

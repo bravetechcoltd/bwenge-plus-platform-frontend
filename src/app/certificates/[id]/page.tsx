@@ -106,12 +106,10 @@ export default function CertificatePage() {
 
       if (result.success && result.data) {
         setCertificate(result.data)
-        console.log("✅ [fetchCertificate] Certificate loaded:", result.data)
       } else {
         throw new Error(result.message || "Certificate not found")
       }
     } catch (err: any) {
-      console.error("❌ [fetchCertificate] Error:", err)
       setError(err.message || "Failed to load certificate")
     } finally {
       setLoading(false)
@@ -124,7 +122,6 @@ export default function CertificatePage() {
     setDownloading(true)
 
     try {
-      console.log("📥 [handleDownloadPDF] Downloading certificate PDF...")
 
       // Open PDF in new tab
       const pdfUrl = `${process.env.NEXT_PUBLIC_API_URL}/certificates/${certificate.id}/pdf/download?download=true`
@@ -135,7 +132,6 @@ export default function CertificatePage() {
         description: "Your certificate PDF is being downloaded.",
       })
     } catch (error) {
-      console.error("❌ [handleDownloadPDF] Error:", error)
       toast({
         title: "Error",
         description: "Failed to download certificate. Please try again.",
@@ -235,33 +231,33 @@ export default function CertificatePage() {
             {/* Status Banner */}
             <div className={`px-6 py-3 ${
               certificate.status === "VALID" 
-                ? "bg-green-50 dark:bg-green-950 border-b border-green-200 dark:border-green-800" 
+                ? "bg-success/10 dark:bg-success/20 border-b border-success/30 dark:border-success/30" 
                 : certificate.status === "EXPIRED"
-                ? "bg-yellow-50 dark:bg-yellow-950 border-b border-yellow-200 dark:border-yellow-800"
-                : "bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800"
+                ? "bg-warning/10 dark:bg-yellow-950 border-b border-warning/30 dark:border-yellow-800"
+                : "bg-destructive/10 dark:bg-destructive/20 border-b border-destructive/30 dark:border-destructive/30"
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {certificate.status === "VALID" && (
                     <>
-                      <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
-                      <span className="font-medium text-green-900 dark:text-green-100">
+                      <Shield className="w-5 h-5 text-success dark:text-success" />
+                      <span className="font-medium text-success dark:text-success">
                         Valid Certificate
                       </span>
                     </>
                   )}
                   {certificate.status === "EXPIRED" && (
                     <>
-                      <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                      <span className="font-medium text-yellow-900 dark:text-yellow-100">
+                      <AlertCircle className="w-5 h-5 text-warning dark:text-warning" />
+                      <span className="font-medium text-warning dark:text-warning">
                         Certificate Expired
                       </span>
                     </>
                   )}
                   {certificate.status === "REVOKED" && (
                     <>
-                      <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                      <span className="font-medium text-red-900 dark:text-red-100">
+                      <AlertCircle className="w-5 h-5 text-destructive dark:text-destructive" />
+                      <span className="font-medium text-destructive dark:text-destructive">
                         Certificate Revoked
                       </span>
                     </>

@@ -61,7 +61,7 @@ export default function CourseRating({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Star className="w-5 h-5 text-warning" />
             Rate This Course
           </CardTitle>
           <CardDescription>Share your experience to help other students</CardDescription>
@@ -83,8 +83,8 @@ export default function CourseRating({
                   <Star
                     className={`w-8 h-8 ${
                       star <= (hoveredRating || rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
+                        ? "fill-yellow-400 text-warning"
+                        : "text-muted-foreground"
                     }`}
                   />
                 </button>
@@ -154,8 +154,8 @@ export default function CourseRating({
                                   key={star}
                                   className={`w-3 h-3 ${
                                     star <= reviewItem.rating
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-gray-300"
+                                      ? "fill-yellow-400 text-warning"
+                                      : "text-muted-foreground"
                                   }`}
                                 />
                               ))}

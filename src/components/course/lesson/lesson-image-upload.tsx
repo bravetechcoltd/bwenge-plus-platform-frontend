@@ -162,10 +162,10 @@ export function LessonImageUpload({
             className={cn(
               "relative border-2 border-dashed rounded-lg transition-colors p-8",
               uploadStatus === "error"
-                ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
+                ? "border-destructive/40 bg-destructive/10 dark:border-destructive dark:bg-destructive/20/20"
                 : uploadStatus === "success"
-                  ? "border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20"
-                  : "border-gray-300 dark:border-gray-600 hover:border-primary-400",
+                  ? "border-success/40 bg-success/10 dark:border-success dark:bg-success/20/20"
+                  : "border-border dark:border-border hover:border-primary-400",
             )}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
@@ -192,7 +192,7 @@ export function LessonImageUpload({
                     <div className="text-center text-white">
                       <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
                       <p className="text-sm">{uploadProgress}%</p>
-                      <div className="w-32 bg-gray-200 rounded-full h-2 mt-2 mx-auto">
+                      <div className="w-32 bg-secondary rounded-full h-2 mt-2 mx-auto">
                         <div
                           className="bg-primary-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
@@ -202,7 +202,7 @@ export function LessonImageUpload({
                   </div>
                 )}
                 {uploadStatus === "success" && (
-                  <div className="absolute top-2 left-2 bg-green-500 text-white rounded-full p-1">
+                  <div className="absolute top-2 left-2 bg-success/100 text-white rounded-full p-1">
                     <CheckCircle className="w-4 h-4" />
                   </div>
                 )}
@@ -210,14 +210,14 @@ export function LessonImageUpload({
             ) : (
               <div className="text-center">
                 {uploadStatus === "error" ? (
-                  <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                  <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
                 ) : (
-                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 )}
-                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                <p className="text-muted-foreground dark:text-muted-foreground mb-2">
                   {uploadStatus === "error" ? "Upload failed" : "Drag and drop or click to upload"}
                 </p>
-                <p className="text-sm text-gray-500 mb-4">PNG, JPG, GIF up to 10MB (16:9 recommended)</p>
+                <p className="text-sm text-muted-foreground mb-4">PNG, JPG, GIF up to 10MB (16:9 recommended)</p>
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
@@ -275,7 +275,7 @@ export function LessonImageUpload({
                 </Button>
               </div>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Supported image formats: JPG, PNG, GIF, WebP. Maximum size: 10MB.
             </p>
           </div>

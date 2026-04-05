@@ -41,10 +41,10 @@ export function PermissionsConfig({
     <div className="space-y-4">
       <div className="space-y-3">
         {/* Grade Assignments Permission */}
-        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FileText className="w-4 h-4 text-green-600" />
+            <div className="p-2 bg-success/15 rounded-lg">
+              <FileText className="w-4 h-4 text-success" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -54,7 +54,7 @@ export function PermissionsConfig({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-gray-400" />
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
                       <p>Allows instructor to grade student assignments and quizzes</p>
@@ -62,7 +62,7 @@ export function PermissionsConfig({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Evaluate and score student submissions
               </p>
             </div>
@@ -76,10 +76,10 @@ export function PermissionsConfig({
         </div>
 
         {/* Manage Enrollments Permission */}
-        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="w-4 h-4 text-blue-600" />
+            <div className="p-2 bg-primary/15 rounded-lg">
+              <Users className="w-4 h-4 text-primary" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function PermissionsConfig({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-gray-400" />
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
                       <p>Allows instructor to approve/reject student enrollments</p>
@@ -97,7 +97,7 @@ export function PermissionsConfig({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Approve student requests and manage course roster
               </p>
             </div>
@@ -111,10 +111,10 @@ export function PermissionsConfig({
         </div>
 
         {/* Edit Course Content Permission */}
-        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Edit className="w-4 h-4 text-purple-600" />
+            <div className="p-2 bg-primary/15 rounded-lg">
+              <Edit className="w-4 h-4 text-primary" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export function PermissionsConfig({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <HelpCircle className="w-4 h-4 text-gray-400" />
+                      <HelpCircle className="w-4 h-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
                       <p>Allows instructor to modify course materials, lessons, and structure</p>
@@ -132,7 +132,7 @@ export function PermissionsConfig({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Update lessons, modules, and course materials
               </p>
             </div>
@@ -151,7 +151,7 @@ export function PermissionsConfig({
       {/* Summary */}
       <div className="space-y-2">
         <h4 className="font-medium">Permission Summary</h4>
-        <div className="text-sm text-gray-600 space-y-1">
+        <div className="text-sm text-muted-foreground space-y-1">
           <p>
             <span className="font-medium">Current permissions:</span>
           </p>
@@ -168,7 +168,7 @@ export function PermissionsConfig({
             {!value.can_grade_assignments &&
              !value.can_manage_enrollments &&
              !value.can_edit_course_content && (
-              <li className="text-gray-400">No permissions assigned</li>
+              <li className="text-muted-foreground">No permissions assigned</li>
             )}
           </ul>
         </div>

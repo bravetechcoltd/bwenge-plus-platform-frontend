@@ -223,7 +223,6 @@ export function useCourseSpace({ courseId, conversationId }: UseCourseSpaceProps
           },
         })
       } catch (err) {
-        console.error("Failed to mark message as read", err)
       }
     },
     [token, courseId, apiUrl]

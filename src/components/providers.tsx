@@ -99,9 +99,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <LearningProgressProvider>
               <ThemeProvider
                 attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
+                defaultTheme="light"
+                enableSystem={false}
+                storageKey="bwengeplus-theme"
               >
                 
                 {children}

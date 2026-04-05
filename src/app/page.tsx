@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 "use client"
 
 import type React from "react"
@@ -46,10 +47,13 @@ import {
   HelpCircle,
   Crown,
   Trophy,
+  Sun,
+  Moon,
 } from "lucide-react"
 import { Instagram, Twitter, Facebook, Linkedin } from "lucide-react"
 
 import { useEffect, useState, useRef, useCallback } from "react"
+import { useTheme } from "next-themes"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import { fetchPublicInstitutionsForHomepage } from "@/lib/features/institutions/institutionSlice"
 import { useRouter } from "next/navigation"
@@ -59,11 +63,12 @@ import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "@/lib/store"
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
 import { toast } from 'sonner'
-import { GoogleOneTapLogin } from '@/components/auth/GoogleOneTap'
+import { GoogleOneTapLogin, GoogleSignInButton } from '@/components/auth/GoogleOneTap'
 import Cookies from "js-cookie"
 import { LoginModal } from "@/components/auth/LoginModal"
 import { Course } from "@/types"
 import { Badge } from "@/components/ui/badge"
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d"
 
 // ==================== ENHANCED ROLE UTILITIES ====================
 
@@ -102,7 +107,7 @@ const safeGetLocalStorageJSON = <T,>(key: string, defaultValue: T): T => {
 
 // ==================== FIXED: Get actual user from all sources ====================
 const getActualUser = () => {
-  
+
   // 1. Try cookies
   let cookieUser = null
   const userCookie = Cookies.get("bwenge_user")
@@ -110,10 +115,9 @@ const getActualUser = () => {
     try {
       cookieUser = JSON.parse(userCookie)
     } catch (e) {
-      // console.error("❌ [UTIL] Failed to parse cookie user:", e)
     }
   }
-  
+
   // 2. Try localStorage
   let localStorageUser = null
   const localUserStr = safeGetLocalStorage("bwengeplus_user")
@@ -121,15 +125,14 @@ const getActualUser = () => {
     try {
       localStorageUser = JSON.parse(localUserStr)
     } catch (e) {
-      // console.error("❌ [UTIL] Failed to parse localStorage user:", e)
     }
   }
-  
+
   // 3. Try cross-system context
   const crossSystemContext = safeGetLocalStorageJSON("cross_system_context", null)
   if (crossSystemContext) {
   }
-  
+
   return {
     cookieUser,
     localStorageUser,
@@ -140,25 +143,25 @@ const getActualUser = () => {
 // ==================== FIXED: Determine actual role ====================
 const determineActualRole = (reduxUser: any): string => {
   const { cookieUser, localStorageUser, crossSystemContext } = getActualUser()
-  
+
   // Priority: Redux > Cookies > localStorage > cross-system context
-  
+
   if (reduxUser?.bwenge_role) {
     return reduxUser.bwenge_role
   }
-  
+
   if (cookieUser?.bwenge_role) {
     return cookieUser.bwenge_role
   }
-  
+
   if (localStorageUser?.bwenge_role) {
     return localStorageUser.bwenge_role
   }
-  
+
   if (crossSystemContext?.bwenge_role) {
     return crossSystemContext.bwenge_role
   }
-  
+
   return "LEARNER"
 }
 
@@ -253,8 +256,8 @@ function GoogleLoginButton() {
   return (
     <div className="relative w-full">
       {isLoggingIn && (
-        <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-lg z-10">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+        <div className="absolute inset-0 bg-background/90 flex items-center justify-center rounded-lg z-10">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
         </div>
       )}
 
@@ -280,7 +283,9 @@ function Navigation() {
   const { user: reduxUser, isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
   const dispatch = useDispatch<AppDispatch>()
   const router = useRouter()
-  
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
   // ==================== Track actual role ====================
   const [actualRole, setActualRole] = useState<string>("LEARNER")
   const [actualUser, setActualUser] = useState<any>(null)
@@ -288,18 +293,18 @@ function Navigation() {
 
   // ==================== Validate user from all sources ====================
   useEffect(() => {
-    
+
     // Get from all sources
     const { cookieUser, localStorageUser, crossSystemContext } = getActualUser()
-    
+
     // Determine the actual role
     const determinedRole = determineActualRole(reduxUser)
-    
+
     // Determine the actual user object (priority: redux > cookie > localStorage)
     let determinedUser = reduxUser
     if (!determinedUser && cookieUser) determinedUser = cookieUser
     if (!determinedUser && localStorageUser) determinedUser = localStorageUser
-    
+
     // If still no user but cross-system context exists, create a minimal user
     if (!determinedUser && crossSystemContext) {
       determinedUser = {
@@ -314,12 +319,14 @@ function Navigation() {
         id: "recovered"
       }
     }
-    
+
 
     setActualUser(determinedUser)
     setActualRole(determinedRole)
     setValidationDone(true)
   }, [reduxUser])
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -370,7 +377,7 @@ function Navigation() {
 
   // ==================== Helper function to get gradient based on role ====================
   const getAvatarGradient = () => {
-    switch(actualRole) {
+    switch (actualRole) {
       case 'SYSTEM_ADMIN':
         return 'from-red-500 to-orange-500'
       case 'INSTITUTION_ADMIN':
@@ -388,16 +395,16 @@ function Navigation() {
 
   if (!validationDone) {
     return (
-      <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-200">
+      <header className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <div className="font-bold text-lg text-gray-900">BwengePlus</div>
-                <div className="text-xs text-gray-500">Never Stop Learning</div>
+                <div className="font-bold text-lg text-foreground">BwengePlus</div>
+                <div className="text-xs text-muted-foreground">Never Stop Learning</div>
               </div>
             </Link>
             <div className="w-8 h-8" />
@@ -409,12 +416,11 @@ function Navigation() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 bg-white border-b border-gray-200 ${
-        isScrolled ? "shadow-lg" : "shadow-sm"
-      }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-300 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border ${isScrolled ? "shadow-lg" : "shadow-sm"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div
@@ -425,10 +431,10 @@ function Navigation() {
               <GraduationCap className="w-5 h-5 text-white" />
             </motion.div>
             <div>
-              <div className="font-bold text-lg text-gray-900 transition-colors">
+              <div className="font-bold text-lg text-foreground transition-colors">
                 BwengePlus
               </div>
-              <div className="text-xs text-gray-500">Never Stop Learning</div>
+              <div className="text-xs text-muted-foreground">Never Stop Learning</div>
             </div>
           </Link>
 
@@ -438,7 +444,7 @@ function Navigation() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors relative group"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
               >
                 {link.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
@@ -447,7 +453,20 @@ function Navigation() {
           </nav>
 
           {/* User Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="Toggle theme"
+            >
+              {mounted && theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </button>
+
             {!isAuthenticated ? (
               // NOT AUTHENTICATED - Show Login Buttons
               <div className="hidden md:flex items-center gap-3">
@@ -462,7 +481,7 @@ function Navigation() {
                 </motion.div>
 
                 {/* Divider */}
-                <div className="h-8 w-px bg-gray-300"></div>
+                <div className="h-8 w-px bg-border"></div>
 
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
@@ -471,7 +490,7 @@ function Navigation() {
                 >
                   <Link
                     href="/login"
-                    className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Sign In
                   </Link>
@@ -484,7 +503,7 @@ function Navigation() {
                 >
                   <Link
                     href="/register"
-                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
+                    className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-all shadow-sm hover:shadow-md"
                   >
                     Join Free
                   </Link>
@@ -501,7 +520,7 @@ function Navigation() {
                 {/* Dynamic Dashboard Button */}
                 <Link
                   href={dashboardPath}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   {isLearner ? "My Learning" : "Dashboard"}
@@ -514,7 +533,7 @@ function Navigation() {
                       e.stopPropagation()
                       setShowUserMenu(!showUserMenu)
                     }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
                   >
                     <div className="relative">
                       {actualUser?.profile_picture_url ? (
@@ -522,31 +541,31 @@ function Navigation() {
                         <img
                           src={actualUser.profile_picture_url}
                           alt={actualUser.first_name}
-                          className="w-8 h-8 rounded-full object-cover border-2 border-blue-600"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-primary"
                         />
                       ) : (
                         // BEAUTIFUL PLACEHOLDER - Shows first character with role-based gradient
                         <div className={`
-                          w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
+                          w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarGradient()}
                           flex items-center justify-center text-white font-semibold text-sm
-                          shadow-md border-2 border-white ring-2 ring-blue-600/30
+                          shadow-md border-2 border-background ring-2 ring-primary/30
                         `}>
                           {getUserInitials()}
                         </div>
                       )}
                       {/* Online status indicator */}
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
+                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success/100 rounded-full border-2 border-background" />
                     </div>
                     <div className="text-left hidden lg:block">
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="text-sm font-semibold text-foreground">
                         {actualUser?.first_name} {actualUser?.last_name}
                       </div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <RoleIcon className="w-3 h-3" />
                         {roleDisplayName}
                       </div>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Dropdown Menu */}
@@ -557,39 +576,39 @@ function Navigation() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                        className="absolute right-0 mt-2 w-64 bg-popover rounded-xl shadow-xl border border-border py-2 z-50"
                       >
                         {/* User Info Header */}
-                        <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="px-4 py-3 border-b border-border">
                           <div className="flex items-center gap-3">
                             {actualUser?.profile_picture_url ? (
                               <img
                                 src={actualUser.profile_picture_url}
                                 alt={actualUser.first_name}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-blue-600"
+                                className="w-10 h-10 rounded-full object-cover border-2 border-primary"
                               />
                             ) : (
                               // BEAUTIFUL PLACEHOLDER for dropdown
                               <div className={`
-                                w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
+                                w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()}
                                 flex items-center justify-center text-white font-semibold text-lg
-                                shadow-lg border-2 border-white ring-2 ring-blue-600/30
+                                shadow-lg border-2 border-background ring-2 ring-primary/30
                               `}>
                                 {getUserInitials()}
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-gray-900 truncate">
+                              <div className="text-sm font-semibold text-popover-foreground truncate">
                                 {actualUser?.first_name} {actualUser?.last_name}
                               </div>
-                              <div className="text-xs text-gray-500 truncate">
+                              <div className="text-xs text-muted-foreground truncate">
                                 {actualUser?.email}
                               </div>
                             </div>
                           </div>
-                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded-full">
-                            <RoleIcon className="w-3 h-3 text-blue-600" />
-                            <span className="text-xs font-medium text-blue-700">
+                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
+                            <RoleIcon className="w-3 h-3 text-primary" />
+                            <span className="text-xs font-medium text-primary">
                               {roleDisplayName}
                             </span>
                           </div>
@@ -599,7 +618,7 @@ function Navigation() {
                         <div className="py-1">
                           <Link
                             href={dashboardPath}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <LayoutDashboard className="w-4 h-4" />
@@ -608,7 +627,7 @@ function Navigation() {
 
                           <Link
                             href={`/dashboard/${actualRole.toLowerCase()}/profile`}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <User className="w-4 h-4" />
@@ -617,7 +636,7 @@ function Navigation() {
 
                           <Link
                             href={`/dashboard/${actualRole.toLowerCase()}/settings`}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <Settings className="w-4 h-4" />
@@ -628,7 +647,7 @@ function Navigation() {
                           {actualRole === 'INSTITUTION_ADMIN' && (
                             <Link
                               href={`/dashboard/institution-admin/institution/profile?institution=${actualUser?.primary_institution_id}`}
-                              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                               onClick={() => setShowUserMenu(false)}
                             >
                               <Building2 className="w-4 h-4" />
@@ -639,7 +658,7 @@ function Navigation() {
                           {/* Help link */}
                           <Link
                             href="/help"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <HelpCircle className="w-4 h-4" />
@@ -648,13 +667,13 @@ function Navigation() {
                         </div>
 
                         {/* Logout */}
-                        <div className="border-t border-gray-100 py-1">
+                        <div className="border-t border-border py-1">
                           <button
                             onClick={() => {
                               setShowUserMenu(false)
                               handleLogout()
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -670,7 +689,7 @@ function Navigation() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -685,21 +704,21 @@ function Navigation() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden border-t border-gray-200 py-3 overflow-hidden"
+              className="md:hidden border-t border-border py-3 overflow-hidden"
             >
               <nav className="space-y-2">
                 {navLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
-                    className="block px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
                   </a>
                 ))}
 
-                <div className="pt-2 border-t border-gray-200 space-y-2">
+                <div className="pt-2 border-t border-border space-y-2">
                   {!isAuthenticated ? (
                     <>
                       {/* Google Login Button for Mobile */}
@@ -710,23 +729,23 @@ function Navigation() {
                       {/* Divider with OR */}
                       <div className="relative py-2">
                         <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-200"></div>
+                          <div className="w-full border-t border-border"></div>
                         </div>
                         <div className="relative flex justify-center text-xs">
-                          <span className="px-2 bg-white text-gray-500">OR</span>
+                          <span className="px-2 bg-background text-muted-foreground">OR</span>
                         </div>
                       </div>
 
                       <Link
                         href="/login"
-                        className="block px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Sign In with Email
                       </Link>
                       <Link
                         href="/register"
-                        className="block px-3 py-2 bg-primary text-white text-sm font-medium rounded-lg text-center transition-colors"
+                        className="block px-3 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg text-center transition-colors hover:bg-primary/90"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Join Free
@@ -735,34 +754,34 @@ function Navigation() {
                   ) : (
                     <>
                       {/* Mobile User Info */}
-                      <div className="px-3 py-2 bg-blue-50 rounded-lg">
+                      <div className="px-3 py-2 bg-accent rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
                           {actualUser?.profile_picture_url ? (
                             <img
                               src={actualUser.profile_picture_url}
                               alt={actualUser.first_name}
-                              className="w-10 h-10 rounded-full object-cover border-2 border-blue-600"
+                              className="w-10 h-10 rounded-full object-cover border-2 border-primary"
                             />
                           ) : (
                             // BEAUTIFUL PLACEHOLDER for mobile
                             <div className={`
-                              w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()} 
+                              w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient()}
                               flex items-center justify-center text-white font-semibold text-lg
-                              shadow-lg border-2 border-white
+                              shadow-lg border-2 border-background
                             `}>
                               {getUserInitials()}
                             </div>
                           )}
                           <div>
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-sm font-semibold text-foreground">
                               {actualUser?.first_name} {actualUser?.last_name}
                             </div>
-                            <div className="text-xs text-gray-500">{actualUser?.email}</div>
+                            <div className="text-xs text-muted-foreground">{actualUser?.email}</div>
                           </div>
                         </div>
-                        <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 bg-white rounded-full">
-                          <RoleIcon className="w-3 h-3 text-blue-600" />
-                          <span className="text-xs font-medium text-blue-700">
+                        <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 bg-background rounded-full">
+                          <RoleIcon className="w-3 h-3 text-primary" />
+                          <span className="text-xs font-medium text-primary">
                             {roleDisplayName}
                           </span>
                         </div>
@@ -771,7 +790,7 @@ function Navigation() {
                       {/* Mobile Navigation Links */}
                       <Link
                         href={dashboardPath}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <LayoutDashboard className="w-4 h-4" />
@@ -780,7 +799,7 @@ function Navigation() {
 
                       <Link
                         href={`/dashboard/${actualRole.toLowerCase()}/profile`}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
@@ -789,7 +808,7 @@ function Navigation() {
 
                       <Link
                         href={`/dashboard/${actualRole.toLowerCase()}/settings`}
-                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <Settings className="w-4 h-4" />
@@ -800,7 +819,7 @@ function Navigation() {
                       {actualRole === 'INSTITUTION_ADMIN' && (
                         <Link
                           href={`/dashboard/institution-admin/institution/profile?institution=${actualUser?.primary_institution_id}`}
-                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Building2 className="w-4 h-4" />
@@ -813,7 +832,7 @@ function Navigation() {
                           setIsMobileMenuOpen(false)
                           handleLogout()
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -830,7 +849,6 @@ function Navigation() {
   )
 }
 
-// Updated HeroSection with equal height banner
 function HeroSection() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [selectedInstitution, setSelectedInstitution] = useState<string | null>(null)
@@ -839,7 +857,7 @@ function HeroSection() {
   const { user: reduxUser, isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
   const { isLoadingPublic, publicInstitutions } = useAppSelector((state) => state.institutions)
   const dispatch = useAppDispatch()
-  
+
   const [actualRole, setActualRole] = useState<string>("LEARNER")
 
   useEffect(() => {
@@ -872,151 +890,164 @@ function HeroSection() {
     setCurrentBannerIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length)
   }
 
-  return (
-    <section className="pt-16 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="flex min-h-[calc(100vh-4rem)]">
-<aside
-  className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 z-40 overflow-y-auto ${
-    isSidebarOpen ? "w-64" : "w-0 md:w-12"
-  }`}
->
-  {/* ── Toggle button ── */}
-  <button
-    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-    className="absolute right-[10px] top-[18px] w-[26px] h-[26px] bg-primary  text-white rounded-full flex items-center justify-center shadow-sm hover:bg-primary/80 hover:text-white  hover:shadow-primary hover:shadow-md transition-all duration-200 z-50"
-  >
-    {isSidebarOpen
-      ? <ChevronLeft className="w-3.5 h-3.5" />
-      : <ChevronRight className="w-3.5 h-3.5" />}
-  </button>
-
-  {/* ── Open state ── */}
-  {isSidebarOpen && (
-    <div className="p-4 pt-11">
-      {/* Header */}
+  // Skeleton component for sidebar loading
+  const SidebarSkeleton = () => (
+    <div className="p-4 pt-11 space-y-4">
+      {/* Header skeleton */}
       <div className="mb-4">
-        <h3 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">
-          Browse Institutions
-        </h3>
-        <p className="text-[11px] text-gray-400">Select to view course categories</p>
+        <div className="h-3 w-32 bg-muted rounded animate-pulse mb-1"></div>
+        <div className="h-2 w-40 bg-muted/60 rounded animate-pulse"></div>
       </div>
 
-      {isLoadingPublic ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-        </div>
-      ) : publicInstitutions.length > 0 ? (
-        <div className="space-y-2">
-          {publicInstitutions.map((institution) => (
-            <div
-              key={institution.id}
-              className={`border rounded-xl overflow-hidden transition-all duration-200 ${
-                selectedInstitution === institution.id
-                  ? "border-blue-200 shadow-sm shadow-blue-50"
-                  : "border-gray-100 hover:border-gray-200 hover:shadow-sm"
-              }`}
-            >
-              {/* Institution button */}
-              <button
-                onClick={() =>
-                  setSelectedInstitution(
-                    selectedInstitution === institution.id ? null : institution.id
-                  )
-                }
-                className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-gray-50 transition-colors"
-              >
-                <img
-                  src={institution.logo_url || "/placeholder.svg"}
-                  alt={institution.name}
-                  className="w-8 h-8 rounded-lg object-cover bg-gray-100 flex-shrink-0"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg"
-                  }}
-                />
-                <div className="flex-1 text-left min-w-0">
-                  <div className="text-[12px] font-medium text-gray-800 line-clamp-2 leading-snug">
-                    {institution.name}
-                  </div>
-                </div>
-                {/* Smart chevron pill */}
-                <div
-                  className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                    selectedInstitution === institution.id
-                      ? "bg-blue-100"
-                      : "bg-gray-100 group-hover:bg-blue-50"
-                  }`}
-                >
-                  <ChevronDown
-                    className={`w-3 h-3 transition-all duration-250 ${
-                      selectedInstitution === institution.id
-                        ? "rotate-180 text-blue-500"
-                        : "text-gray-400"
-                    }`}
-                  />
-                </div>
-              </button>
-
-              {/* Category list */}
-              {selectedInstitution === institution.id &&
-                institution.categories.length > 0 && (
-                  <div className="px-2 pb-2 pt-1 space-y-0.5 bg-gray-50 border-t border-gray-100">
-                    {institution.categories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() =>
-                          handleCategoryClick(institution.slug, category.name)
-                        }
-                        className="group w-full text-left px-2.5 py-[7px] rounded-lg flex items-center gap-2 hover:bg-blue-50 transition-colors"
-                      >
-                        {/* Dot indicator */}
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-200 flex-shrink-0 group-hover:bg-blue-500 transition-colors" />
-
-                        <span className="flex-1 text-[12px] text-gray-600 group-hover:text-blue-600 transition-colors">
-                          {category.name}
-                        </span>
-
-                        {/* Course count pill */}
-                        <span className="text-[10px] font-medium text-blue-500 bg-blue-50 rounded-full px-2 py-0.5 flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-                          {category.course_count}{" "}
-                          {category.course_count === 1 ? "course" : "courses"}
-                        </span>
-
-                        {/* Arrow */}
-                        <ArrowRight className="w-2.5 h-2.5 text-blue-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 flex-shrink-0" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-              {selectedInstitution === institution.id &&
-                institution.categories.length === 0 && (
-                  <div className="px-3 pb-3 pt-1 bg-gray-50 border-t border-gray-100">
-                    <p className="text-[11px] text-gray-400 text-center py-2">
-                      No course categories available
-                    </p>
-                  </div>
-                )}
+      {/* Institution skeletons */}
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="border border-border rounded-xl overflow-hidden">
+          <div className="px-3 py-2.5 flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-muted rounded-lg animate-pulse"></div>
+            <div className="flex-1">
+              <div className="h-3 w-24 bg-muted rounded animate-pulse"></div>
             </div>
-          ))}
+            <div className="w-5 h-5 bg-muted rounded-md animate-pulse"></div>
+          </div>
         </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-[12px] text-gray-400">No institutions available</p>
-        </div>
-      )}
+      ))}
     </div>
-  )}
+  )
 
-  {/* ── Collapsed icon column ── */}
-  {!isSidebarOpen && (
-    <div className="hidden md:flex flex-col items-center py-4 gap-4 mt-12">
-      <BookOpen className="w-[18px] h-[18px] text-gray-300" />
-      <GraduationCap className="w-[18px] h-[18px] text-gray-300" />
-      <Users className="w-[18px] h-[18px] text-gray-300" />
-    </div>
-  )}
-</aside>
+  return (
+    <section className="pt-16 bg-background">
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <aside
+          className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-300 z-40 overflow-y-auto ${isSidebarOpen ? "w-64" : "w-0 md:w-12"
+            }`}
+        >
+          {/* Toggle button */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="absolute right-[10px] top-[18px] w-[26px] h-[26px] bg-primary text-white rounded-full flex items-center justify-center shadow-sm hover:bg-primary/80 hover:text-white hover:shadow-primary hover:shadow-md transition-all duration-200 z-50"
+          >
+            {isSidebarOpen
+              ? <ChevronLeft className="w-3.5 h-3.5" />
+              : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Open state */}
+          {isSidebarOpen && (
+            <div className="p-4 pt-11">
+              {/* Header */}
+              <div className="mb-4">
+                <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                  Browse Institutions
+                </h3>
+                <p className="text-[11px] text-muted-foreground/70">Select to view course categories</p>
+              </div>
+
+              {/* Smart Compact Skeleton Loading */}
+              {isLoadingPublic ? (
+                <SidebarSkeleton />
+              ) : publicInstitutions.length > 0 ? (
+                <div className="space-y-2">
+                  {publicInstitutions.map((institution) => (
+                    <div
+                      key={institution.id}
+                      className={`border rounded-xl overflow-hidden transition-all duration-200 ${selectedInstitution === institution.id
+                          ? "border-primary/30 shadow-sm"
+                          : "border-border hover:border-border/80 hover:shadow-sm"
+                        }`}
+                    >
+                      {/* Institution button */}
+                      <button
+                        onClick={() =>
+                          setSelectedInstitution(
+                            selectedInstitution === institution.id ? null : institution.id
+                          )
+                        }
+                        className="w-full px-3 py-2.5 flex items-center gap-2.5 hover:bg-accent transition-colors"
+                      >
+                        <img
+                          src={institution.logo_url || "/placeholder.svg"}
+                          alt={institution.name}
+                          className="w-8 h-8 rounded-lg object-cover bg-accent flex-shrink-0"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/placeholder.svg"
+                          }}
+                        />
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="text-[12px] font-medium text-foreground line-clamp-2 leading-snug">
+                            {institution.name}
+                          </div>
+                        </div>
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200 ${selectedInstitution === institution.id
+                              ? "bg-primary/20"
+                              : "bg-accent"
+                            }`}
+                        >
+                          <ChevronDown
+                            className={`w-3 h-3 transition-all duration-250 ${selectedInstitution === institution.id
+                                ? "rotate-180 text-primary"
+                                : "text-muted-foreground"
+                              }`}
+                          />
+                        </div>
+                      </button>
+
+                      {/* Category list */}
+                      {selectedInstitution === institution.id &&
+                        institution.categories.length > 0 && (
+                          <div className="px-2 pb-2 pt-1 space-y-0.5 bg-accent/50 border-t border-border">
+                            {institution.categories.map((category) => (
+                              <button
+                                key={category.id}
+                                onClick={() =>
+                                  handleCategoryClick(institution.slug, category.name)
+                                }
+                                className="group w-full text-left px-2.5 py-[7px] rounded-lg flex items-center gap-2 hover:bg-accent transition-colors"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary/30 flex-shrink-0 group-hover:bg-primary transition-colors" />
+                                <span className="flex-1 text-[12px] text-muted-foreground group-hover:text-foreground transition-colors">
+                                  {category.name}
+                                </span>
+                                <span className="text-[10px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                  {category.course_count}{" "}
+                                  {category.course_count === 1 ? "course" : "courses"}
+                                </span>
+                                <ArrowRight className="w-2.5 h-2.5 text-primary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 flex-shrink-0" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                      {selectedInstitution === institution.id &&
+                        institution.categories.length === 0 && (
+                          <div className="px-3 pb-3 pt-1 bg-accent/50 border-t border-border">
+                            <p className="text-[11px] text-muted-foreground text-center py-2">
+                              No course categories available
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-[12px] text-muted-foreground">No institutions available</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Collapsed icon column */}
+          {!isSidebarOpen && (
+            <div className="hidden md:flex flex-col items-center py-4 gap-4 mt-12">
+              <BookOpen className="w-[18px] h-[18px] text-muted-foreground" />
+              <GraduationCap className="w-[18px] h-[18px] text-muted-foreground" />
+              <Users className="w-[18px] h-[18px] text-muted-foreground" />
+            </div>
+          )}
+        </aside>
+
         {/* Main Content */}
         <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "md:ml-0" : "ml-0"}`}>
           <div className="max-w-7xl mx-auto px-4 py-6">
@@ -1039,29 +1070,48 @@ function HeroSection() {
                         alt={bannerImages[currentBannerIndex].title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent ${currentBannerIndex === 0 ? 'from-primary/90 via-primary/50 to-transparent' : ''
+                        }`} />
                       <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        {currentBannerIndex === 0 && (
+                          <div className="inline-flex items-center gap-2 bg-primary/90 backdrop-blur-sm rounded-full px-3 py-1 mb-3">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span className="text-xs font-semibold uppercase tracking-wider">TRENDING NOW</span>
+                          </div>
+                        )}
                         <h2 className="text-2xl md:text-3xl font-bold mb-2">
                           {bannerImages[currentBannerIndex].title}
                         </h2>
-                        <p className="text-sm md:text-base text-gray-200">
+                        <p className="text-sm md:text-base text-white/90">
                           {bannerImages[currentBannerIndex].description}
                         </p>
+                        {currentBannerIndex === 0 && (
+                          <button
+                            onClick={() => router.push('/blog/education-trending-news')}
+                            className="mt-4 inline-flex items-center gap-2 bg-white text-primary px-5 py-2 rounded-lg font-semibold text-sm hover:bg-white/90 transition-all shadow-lg"
+                          >
+                            Learn the Strategies
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   </AnimatePresence>
 
                   <button
                     onClick={prevBanner}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-card/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-card"
                   >
-                    <ChevronLeft className="w-5 h-5 text-gray-800" />
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
                   </button>
                   <button
                     onClick={nextBanner}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-card/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-card"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-800" />
+                    <ChevronRight className="w-5 h-5 text-foreground" />
                   </button>
 
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
@@ -1069,9 +1119,8 @@ function HeroSection() {
                       <button
                         key={index}
                         onClick={() => setCurrentBannerIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          index === currentBannerIndex ? "bg-white w-6" : "bg-white/50 hover:bg-white/75"
-                        }`}
+                        className={`w-2 h-2 rounded-full transition-all ${index === currentBannerIndex ? "bg-card w-6" : "bg-card/50 hover:bg-card/75"
+                          }`}
                       />
                     ))}
                   </div>
@@ -1082,12 +1131,12 @@ function HeroSection() {
               <div className="lg:col-span-1">
                 <div className="bg-primary rounded-xl p-6 text-white h-full min-h-[400px] lg:min-h-0 shadow-lg flex flex-col">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <div className="w-12 h-12 bg-card/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                       <GraduationCap className="w-7 h-7" />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold">BwengePlus</h3>
-                      <p className="text-xs text-blue-100">Never Stop Learning</p>
+                      <p className="text-xs text-primary/80">Never Stop Learning</p>
                     </div>
                   </div>
 
@@ -1098,32 +1147,32 @@ function HeroSection() {
 
                   <div className="space-y-3 mb-6">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-card/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Shield className="w-4 h-4" />
                       </div>
                       <div>
                         <h4 className="text-sm font-semibold mb-1">Secure Learning</h4>
-                        <p className="text-xs text-blue-100">Private SPOCs for institutions</p>
+                        <p className="text-xs text-primary/80">Private SPOCs for institutions</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-card/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Globe className="w-4 h-4" />
                       </div>
                       <div>
                         <h4 className="text-sm font-semibold mb-1">Open Access</h4>
-                        <p className="text-xs text-blue-100">Public MOOCs for everyone</p>
+                        <p className="text-xs text-primary/80">Public MOOCs for everyone</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-card/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Award className="w-4 h-4" />
                       </div>
                       <div>
                         <h4 className="text-sm font-semibold mb-1">Certified Learning</h4>
-                        <p className="text-xs text-blue-100">Industry-recognized certificates</p>
+                        <p className="text-xs text-primary/80">Industry-recognized certificates</p>
                       </div>
                     </div>
                   </div>
@@ -1131,11 +1180,11 @@ function HeroSection() {
                   <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/20 mt-auto">
                     <div>
                       <div className="text-2xl font-bold">{mockStats.partnerInstitutions}+</div>
-                      <div className="text-xs text-blue-100">Partner Institutions</div>
+                      <div className="text-xs text-primary/80">Partner Institutions</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold">{mockStats.completionRate}%</div>
-                      <div className="text-xs text-blue-100">Completion Rate</div>
+                      <div className="text-xs text-primary/80">Completion Rate</div>
                     </div>
                   </div>
                 </div>
@@ -1150,7 +1199,6 @@ function HeroSection() {
     </section>
   )
 }
-
 // Mock data (preserved from original)
 const mockStats = {
   coursesCount: 1250,
@@ -1162,6 +1210,12 @@ const mockStats = {
 }
 
 const bannerImages = [
+  {
+    id: 0,
+    image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=400&fit=crop",
+    title: "How to Create Education Trending News",
+    description: "Master the art of crafting viral educational content that engages and inspires learners worldwide",
+  },
   {
     id: 1,
     image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=400&fit=crop",
@@ -1189,7 +1243,7 @@ const bannerImages = [
 ]
 
 // Updated CategoryFilters component that filters the FeaturedCourses section
-function CategoryFilters({ onCategoryChange, activeCategory }: { 
+function CategoryFilters({ onCategoryChange, activeCategory }: {
   onCategoryChange: (category: string) => void;
   activeCategory: string;
 }) {
@@ -1202,24 +1256,24 @@ function CategoryFilters({ onCategoryChange, activeCategory }: {
         setIsLoading(true)
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/all`)
         const data = await response.json()
-        
+
         if (data.success) {
           const courses = data.data.courses || []
-          
+
           // Extract unique categories from courses
           const categoryMap = new Map<string, number>()
-          
+
           // Add course types as categories
           const moocCount = courses.filter((c: any) => c.course_type === "MOOC").length
           const spocCount = courses.filter((c: any) => c.course_type === "SPOC").length
-          
+
           if (moocCount > 0) categoryMap.set("MOOC", moocCount)
           if (spocCount > 0) categoryMap.set("SPOC", spocCount)
-          
+
           // Add free courses category
           const freeCount = courses.filter((c: any) => c.price == 0 || c.price === null).length
           if (freeCount > 0) categoryMap.set("Free", freeCount)
-          
+
           // Add categories from course_category
           courses.forEach((course: any) => {
             if (course.course_category?.name) {
@@ -1227,13 +1281,13 @@ function CategoryFilters({ onCategoryChange, activeCategory }: {
               categoryMap.set(name, (categoryMap.get(name) || 0) + 1)
             }
           })
-          
+
           // Convert map to array and sort by count
           const categoryList = Array.from(categoryMap.entries())
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 8) // Take top 8 categories
-          
+
           setCategories([
             { name: "All", count: courses.length },
             ...categoryList
@@ -1250,11 +1304,11 @@ function CategoryFilters({ onCategoryChange, activeCategory }: {
 
   if (isLoading) {
     return (
-      <div className="py-4 bg-white border-b border-gray-200">
+      <div className="py-4 bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-10 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+              <div key={i} className="h-10 w-24 bg-secondary rounded-full animate-pulse flex-shrink-0"></div>
             ))}
           </div>
         </div>
@@ -1263,18 +1317,17 @@ function CategoryFilters({ onCategoryChange, activeCategory }: {
   }
 
   return (
-    <div className="py-4 bg-white border-b border-gray-200 sticky top-16 z-40">
+    <div className="py-4 bg-card border-b border-border sticky top-16 z-40">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map((category) => (
             <button
               key={category.name}
               onClick={() => onCategoryChange(category.name)}
-              className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all ${
-                activeCategory === category.name
+              className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all ${activeCategory === category.name
                   ? "bg-primary text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                  : "bg-muted text-muted-foreground hover:bg-secondary"
+                }`}
             >
               {category.name}
             </button>
@@ -1306,17 +1359,17 @@ function SearchSection() {
   useEffect(() => {
     const determinedRole = determineActualRole(user)
     setActualRole(determinedRole)
-    
+
     // Fetch real stats
     const fetchStats = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/all`)
         const data = await response.json()
-        
+
         if (data.success) {
           const courses = data.data.courses || []
           const uniqueInstructors = new Set(courses.map((c: any) => c.instructor_id)).size
-          
+
           setStats({
             coursesCount: courses.length,
             learnersCount: courses.reduce((acc: number, c: any) => acc + (c.enrollment_count || 0), 0),
@@ -1327,10 +1380,9 @@ function SearchSection() {
           })
         }
       } catch (error) {
-        // console.error("Failed to fetch stats:", error)
       }
     }
-    
+
     fetchStats()
   }, [user])
 
@@ -1346,21 +1398,21 @@ function SearchSection() {
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query)
-    
+
     if (query.length < 2) {
       setShowResults(false)
       return
     }
-    
+
     setIsSearching(true)
     setShowResults(true)
-    
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/courses/search?q=${encodeURIComponent(query)}&limit=5`
       )
       const data = await response.json()
-      
+
       if (data.success) {
         setSearchResults(data.data?.courses || [])
       }
@@ -1385,26 +1437,26 @@ function SearchSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200" ref={searchRef}>
+    <div className="bg-card rounded-xl shadow-sm p-6 mb-8 border border-border" ref={searchRef}>
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 text-center">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3 text-center">
           Find Your Perfect Course
         </h2>
 
         {/* Search Bar with Autocomplete */}
         <form onSubmit={handleSearchSubmit} className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
             placeholder="Search courses, skills, institutions, or instructors..."
-            className="w-full pl-12 pr-24 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full pl-12 pr-24 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
-          <button 
+          <button
             type="submit"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-5 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-5 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary transition-colors"
           >
             Search
           </button>
@@ -1416,10 +1468,10 @@ function SearchSection() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                className="absolute top-full left-0 right-0 mt-2 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50"
               >
                 {isSearching ? (
-                  <div className="p-4 text-center text-gray-500">
+                  <div className="p-4 text-center text-muted-foreground">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                   </div>
                 ) : searchResults.length > 0 ? (
@@ -1428,7 +1480,7 @@ function SearchSection() {
                       <div
                         key={course.id}
                         onClick={() => handleResultClick(course.id)}
-                        className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 flex items-center gap-3"
+                        className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 flex items-center gap-3"
                       >
                         {course.thumbnail_url ? (
                           <img src={course.thumbnail_url} alt={course.title} className="w-10 h-10 rounded object-cover" />
@@ -1438,27 +1490,27 @@ function SearchSection() {
                           </div>
                         )}
                         <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-gray-900">{course.title}</h4>
-                          <p className="text-xs text-gray-500">
+                          <h4 className="text-sm font-semibold text-foreground">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground">
                             {course.instructor?.first_name} {course.instructor?.last_name} • {course.course_type}
                           </p>
                         </div>
-                        <Badge className={course.course_type === "MOOC" ? "bg-blue-500" : "bg-purple-500"}>
+                        <Badge className={course.course_type === "MOOC" ? "bg-primary" : "bg-primary/100"}>
                           {course.course_type}
                         </Badge>
                       </div>
                     ))}
-                    <div className="p-2 bg-gray-50 text-center">
+                    <div className="p-2 bg-muted/50 text-center">
                       <button
                         onClick={handleSearchSubmit}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-sm text-primary hover:text-primary font-medium"
                       >
                         View all results for "{searchQuery}"
                       </button>
                     </div>
                   </div>
                 ) : searchQuery.length >= 2 ? (
-                  <div className="p-4 text-center text-gray-500">
+                  <div className="p-4 text-center text-muted-foreground">
                     No courses found matching "{searchQuery}"
                   </div>
                 ) : null}
@@ -1468,24 +1520,24 @@ function SearchSection() {
         </form>
 
         {/* Stats Row - Dynamic */}
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 mb-4">
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-4">
           <div className="flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-blue-600" />
+            <BookOpen className="w-4 h-4 text-primary" />
             <span className="font-medium">{stats.coursesCount.toLocaleString()}+</span>
             <span>Courses</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-green-600" />
+            <Users className="w-4 h-4 text-success" />
             <span className="font-medium">{Math.round(stats.learnersCount / 1000)}K+</span>
             <span>Learners</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Award className="w-4 h-4 text-purple-600" />
+            <Award className="w-4 h-4 text-primary" />
             <span className="font-medium">{Math.round(stats.certificatesIssued / 1000)}K+</span>
             <span>Certificates</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-orange-600" />
+            <TrendingUp className="w-4 h-4 text-warning" />
             <span className="font-medium">{stats.instructorsCount}+</span>
             <span>Instructors</span>
           </div>
@@ -1496,14 +1548,14 @@ function SearchSection() {
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               href={isAuthenticated ? getRoleDashboardPath(actualRole) : "/register"}
-              className="px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-sm transition-all hover:shadow-md"
+              className="px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary flex items-center gap-2 shadow-sm transition-all hover:shadow-md"
             >
               <Rocket className="w-4 h-4" />
               {isAuthenticated ? "Go to Dashboard" : "Start Learning Free"}
             </Link>
             <Link
               href="/courses"
-              className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              className="px-6 py-2.5 border-2 border-border text-muted-foreground text-sm font-medium rounded-lg hover:bg-muted/50 flex items-center gap-2 transition-colors"
             >
               <Play className="w-4 h-4" />
               Browse All Courses
@@ -1515,13 +1567,13 @@ function SearchSection() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="pt-3 border-t border-gray-200"
+              className="pt-3 border-t border-border"
             >
-              <p className="text-xs text-gray-500 text-center mb-2">Or continue with</p>
+              <p className="text-xs text-muted-foreground text-center mb-2">Or continue with</p>
               <div className="max-w-xs mx-auto">
                 <GoogleLoginButton />
               </div>
-              <p className="text-xs text-gray-400 text-center mt-2">
+              <p className="text-xs text-muted-foreground text-center mt-2">
                 Quick access with your Google account
               </p>
             </motion.div>
@@ -1548,20 +1600,19 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
       try {
         setIsLoading(true)
         const token = Cookies.get("bwenge_token")
-        
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/courses/all?limit=50`,
           {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           }
         )
-        
+
         const data = await response.json()
         if (data.success) {
           setCourses(data.data.courses || [])
         }
       } catch (error) {
-        // console.error("Failed to fetch courses:", error)
       } finally {
         setIsLoading(false)
       }
@@ -1584,7 +1635,7 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
       setFilteredCourses(courses.filter(c => c.price == 0 || c.price === null))
     } else {
       // Filter by course category name
-      setFilteredCourses(courses.filter(c => 
+      setFilteredCourses(courses.filter(c =>
         c.course_category?.name === activeCategory
       ))
     }
@@ -1621,39 +1672,39 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
   const getLevelColor = (level: string) => {
     switch (level) {
       case "BEGINNER":
-        return "bg-emerald-500"
+        return "bg-success/100"
       case "INTERMEDIATE":
-        return "bg-blue-500"
+        return "bg-primary"
       case "ADVANCED":
-        return "bg-purple-500"
+        return "bg-primary/100"
       case "EXPERT":
         return "bg-pink-500"
       default:
-        return "bg-gray-500"
+        return "bg-muted/500"
     }
   }
 
   if (isLoading) {
     return (
-      <section id="courses" className="py-12 bg-gray-50">
+      <section id="courses" className="py-12 bg-muted/50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Featured Courses</h2>
-              <p className="text-gray-600">Loading courses...</p>
+              <h2 className="text-2xl font-bold text-foreground">Featured Courses</h2>
+              <p className="text-muted-foreground">Loading courses...</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div className="h-48 bg-gray-200"></div>
+              <div key={i} className="bg-card rounded-xl shadow-sm border border-border overflow-hidden animate-pulse">
+                <div className="h-48 bg-secondary"></div>
                 <div className="p-5 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-secondary rounded w-3/4"></div>
+                  <div className="h-3 bg-secondary rounded w-1/2"></div>
+                  <div className="h-3 bg-secondary rounded w-full"></div>
                   <div className="flex gap-2 pt-2">
-                    <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-                    <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                    <div className="h-8 bg-secondary rounded w-1/3"></div>
+                    <div className="h-8 bg-secondary rounded w-1/3"></div>
                   </div>
                 </div>
               </div>
@@ -1665,18 +1716,18 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
   }
 
   return (
-    <section id="courses" className="py-12 bg-gray-50">
+    <section id="courses" className="py-12 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Featured Courses</h2>
-            <p className="text-gray-600">
-              {activeCategory === "All" 
-                ? `Showing all ${filteredCourses.length} courses` 
+            <h2 className="text-2xl font-bold text-foreground">Featured Courses</h2>
+            <p className="text-muted-foreground">
+              {activeCategory === "All"
+                ? `Showing all ${filteredCourses.length} courses`
                 : `${activeCategory} courses (${filteredCourses.length} available)`}
             </p>
           </div>
-          <Link href="/courses" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 text-sm">
+          <Link href="/courses" className="text-primary hover:text-primary font-medium flex items-center gap-1 text-sm">
             View all
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -1690,169 +1741,55 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
         />
 
         {filteredCourses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredCourses.slice(0, 8).map((course, index) => {
-              const levelInfo = {
-                icon: getLevelIcon(course.level),
-                color: getLevelColor(course.level)
-              }
-              
-              return (
-                <motion.div
-                  key={course.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
-                >
-                  {/* Course Image - Increased height to match hit cards */}
-                  <div className="relative h-48 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                    {course.thumbnail_url ? (
-                      <img
-                        src={course.thumbnail_url}
-                        alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className={`w-full h-full bg-gradient-to-br ${levelInfo.color} to-gray-700 flex items-center justify-center`}>
-                        <BookOpen className="w-16 h-16 text-white/20" />
-                      </div>
-                    )}
-                    
-                    {/* Play Icon - Always visible with clean design */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-300">
-                      <div className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                        <Play className="w-6 h-6 text-blue-600 ml-0.5" fill="currentColor" />
-                      </div>
-                    </div>
-                    
-                    {/* Course Type Badge - Clean styling */}
-                    <div className="absolute top-3 left-3">
-                      <div className={`px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-md ${
-                        course.course_type === "MOOC" 
-                          ? "bg-blue-600/90 text-white shadow-sm" 
-                          : "bg-purple-600/90 text-white shadow-sm"
-                      }`}>
-                        <div className="flex items-center gap-1.5">
-                          {course.course_type === "MOOC" ? (
-                            <Globe className="w-3 h-3" />
-                          ) : (
-                            <Shield className="w-3 h-3" />
-                          )}
-                          <span>{course.course_type}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Level Badge - Clean styling */}
-                    <div className="absolute top-3 right-3">
-                      <div className={`${levelInfo.color} backdrop-blur-sm px-2.5 py-1 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm`}>
-                        {levelInfo.icon}
-                        <span>
-                          {course.level === "BEGINNER" ? "Beginner" :
-                           course.level === "INTERMEDIATE" ? "Intermediate" :
-                           course.level === "ADVANCED" ? "Advanced" : "Expert"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Course Content - Clean and organized */}
-                  <div className="p-5 flex flex-col flex-1">
-                    {/* Instructor - Clean row */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex-shrink-0">
-                        {course.instructor?.profile_picture_url ? (
-                          <img
-                            src={course.instructor.profile_picture_url}
-                            alt={`${course.instructor.first_name} ${course.instructor.last_name}`}
-                            className="w-6 h-6 rounded-full object-cover ring-2 ring-gray-100"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                            <User className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-600 font-medium truncate">
-                        {course.instructor?.first_name} {course.instructor?.last_name || "Expert Instructor"}
-                      </span>
-                    </div>
-
-                    {/* Title - Clean and bold */}
-                    <h3 className="text-base font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
-                      {course.title}
-                    </h3>
-
-                    {/* Category Tag - Clean pill design */}
-                    {course.course_category && (
-                      <div className="mb-3">
-                        <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
-                          {course.course_category.name}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Stats Row - Clean organized grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-4 pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-semibold text-gray-700">
-                          {course.average_rating && Number(course.average_rating) > 0 
-                            ? Number(course.average_rating).toFixed(1) 
-                            : "New"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Users className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                          {course.enrollment_count?.toLocaleString() || 0}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                          {Math.ceil((course.duration_minutes || 0) / 60)}h
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Certificate & Action - Clean footer */}
-                    <div className="flex items-center justify-between gap-3 mt-auto pt-2">
-                      {course.is_certificate_available ? (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 rounded-lg">
-                          <Award className="w-3.5 h-3.5 text-amber-600" />
-                          <span className="text-xs font-medium text-amber-700">Certificate</span>
-                        </div>
-                      ) : (
-                        <div className="w-20"></div>
-                      )}
-                      
-                      <button
-                        onClick={() => handleLearnMoreClick(course.id)}
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold text-sm transition-all group/link"
-                      >
-                        <span>Learn More</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredCourses.slice(0, 8).map((course, index) => (
+              <motion.div
+                key={course.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+              >
+                <BwengeCourseCard3D
+                  id={course.id}
+                  title={course.title}
+                  description={course.description}
+                  thumbnail_url={course.thumbnail_url}
+                  instructor={course.instructor ? {
+                    id: course.instructor.id,
+                    first_name: course.instructor.first_name || "",
+                    last_name: course.instructor.last_name || "",
+                    profile_picture_url: course.instructor.profile_picture_url,
+                  } : undefined}
+                  level={course.level}
+                  course_type={course.course_type}
+                  price={Number(course.price) || 0}
+                  average_rating={Number(course.average_rating) || 0}
+                  total_reviews={Number(course.total_reviews) || 0}
+                  enrollment_count={Number(course.enrollment_count) || 0}
+                  duration_minutes={course.duration_minutes || 0}
+                  total_lessons={Number(course.total_lessons) || 0}
+                  category={course.course_category}
+                  institution={course.institution}
+                  is_certificate_available={course.is_certificate_available}
+                  tags={course.tags}
+                  onLearnMoreClick={handleLearnMoreClick}
+                  index={index}
+                />
+              </motion.div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-8 h-8 text-gray-400" />
+            <div className="bg-muted rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No courses found</h3>
-            <p className="text-gray-600">
+            <h3 className="text-lg font-semibold text-foreground mb-2">No courses found</h3>
+            <p className="text-muted-foreground">
               No courses available in the "{activeCategory}" category.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+              className="mt-4 text-primary hover:text-primary font-medium"
             >
               Try refreshing
             </button>
@@ -1900,19 +1837,19 @@ function TopInstructors() {
   ]
 
   return (
-    <section id="instructors" className="py-6 bg-gray-50">
+    <section id="instructors" className="py-6 bg-muted/50">
       <div className="max-w-7xl mx-auto px-3">
         <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold mb-1">Top Instructors</h2>
-          <p className="text-sm text-gray-600">Learn from industry leaders</p>
+          <h2 className="text-2xl font-bold mb-1">It’s truly inspiring to see your effort contributing to my future.</h2>
+          <p className="text-sm text-muted-foreground"> Thanks to all instructors</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {mockInstructors.map((instructor) => (
-            <div key={instructor.id} className="bg-white rounded-lg p-4 shadow text-center relative">
+            <div key={instructor.id} className="bg-card rounded-lg p-4 shadow text-center relative">
               {instructor.featured && (
                 <div className="absolute top-2 right-2">
-                  <span className="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded">TOP</span>
+                  <span className="px-2 py-0.5 bg-yellow-400 text-warning text-xs font-bold rounded">TOP</span>
                 </div>
               )}
 
@@ -1920,34 +1857,34 @@ function TopInstructors() {
                 <img
                   src={instructor.avatar || "/placeholder.svg"}
                   alt={instructor.name}
-                  className="w-16 h-16 rounded-full mx-auto border-2 border-gray-300"
+                  className="w-16 h-16 rounded-full mx-auto border-2 border-border"
                 />
-                <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-5 h-5 bg-success/100 rounded-full border-2 border-white flex items-center justify-center">
                   <CheckCircle className="w-3 h-3 text-white" />
                 </div>
               </div>
 
               <h3 className="text-sm font-bold mb-0.5">{instructor.name}</h3>
-              <p className="text-xs text-gray-600 mb-2">{instructor.title}</p>
+              <p className="text-xs text-muted-foreground mb-2">{instructor.title}</p>
 
               <div className="grid grid-cols-3 gap-2 mb-2">
                 <div>
-                  <div className="text-lg font-bold text-purple-600">{instructor.courses}</div>
-                  <div className="text-xs text-gray-600">Courses</div>
+                  <div className="text-lg font-bold text-primary">{instructor.courses}</div>
+                  <div className="text-xs text-muted-foreground">Courses</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-purple-600">{(instructor.students / 1000).toFixed(0)}K</div>
-                  <div className="text-xs text-gray-600">Students</div>
+                  <div className="text-lg font-bold text-primary">{(instructor.students / 1000).toFixed(0)}K</div>
+                  <div className="text-xs text-muted-foreground">Students</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-purple-600">{instructor.rating}</div>
-                  <div className="text-xs text-gray-600">Rating</div>
+                  <div className="text-lg font-bold text-primary">{instructor.rating}</div>
+                  <div className="text-xs text-muted-foreground">Rating</div>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-1 justify-center mb-2">
                 {instructor.expertise.map((skill, idx) => (
-                  <span key={idx} className="px-1.5 py-0.5 bg-purple-50 text-purple-700 text-xs rounded">
+                  <span key={idx} className="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded">
                     {skill}
                   </span>
                 ))}
@@ -1976,16 +1913,16 @@ function PlatformFeatures() {
   ]
 
   return (
-    <section className="py-6 bg-gray-50">
+    <section className="py-6 bg-muted/50">
       <div className="max-w-7xl mx-auto px-3">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold mb-1">Why Choose BwengePlus</h2>
-          <p className="text-sm text-gray-600">Everything you need to succeed</p>
+          <p className="text-sm text-muted-foreground">Everything you need to succeed</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {features.map((feature, i) => (
-            <div key={i} className="bg-white rounded-lg p-3 shadow border border-gray-200 text-center">
+            <div key={i} className="bg-card rounded-lg p-3 shadow border border-border text-center">
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center mb-2 mx-auto"
                 style={{ backgroundColor: feature.color }}
@@ -1993,7 +1930,7 @@ function PlatformFeatures() {
                 <feature.icon className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-xs font-bold mb-1">{feature.title}</h3>
-              <p className="text-xs text-gray-600">{feature.description}</p>
+              <p className="text-xs text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -2019,7 +1956,7 @@ function NewsletterCTA() {
     <section className="py-6 bg-primary">
       <div className="max-w-7xl mx-auto px-3 text-center text-white">
         <div className="inline-block mb-2">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-10 h-10 bg-card/20 rounded-full flex items-center justify-center mx-auto">
             <Mail className="w-5 h-5" />
           </div>
         </div>
@@ -2034,12 +1971,12 @@ function NewsletterCTA() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter email"
             required
-            className="flex-1 px-3 py-2 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/60 text-sm"
+            className="flex-1 px-3 py-2 bg-card/10 border border-white/30 rounded-lg text-white placeholder-white/60 text-sm"
           />
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold text-sm min-w-[100px]"
+            className="bg-card text-primary px-4 py-2 rounded-lg font-semibold text-sm min-w-[100px]"
           >
             {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : "Subscribe"}
           </button>
@@ -2056,7 +1993,7 @@ function FinalCTA() {
   const { isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
 
   return (
-    <section className="py-8 bg-gray-900 text-white text-center">
+    <section className="py-8 bg-card text-white text-center">
       <div className="max-w-7xl mx-auto px-3">
         <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
           <Rocket className="w-6 h-6" />
@@ -2085,15 +2022,15 @@ function FinalCTA() {
         <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
           <div>
             <div className="text-xl font-bold">30-Day</div>
-            <div className="text-xs text-gray-300">Money Back</div>
+            <div className="text-xs text-muted-foreground">Money Back</div>
           </div>
           <div>
             <div className="text-xl font-bold">24/7</div>
-            <div className="text-xs text-gray-300">Support</div>
+            <div className="text-xs text-muted-foreground">Support</div>
           </div>
           <div>
             <div className="text-xl font-bold">1000+</div>
-            <div className="text-xs text-gray-300">Reviews</div>
+            <div className="text-xs text-muted-foreground">Reviews</div>
           </div>
         </div>
       </div>
@@ -2127,7 +2064,7 @@ function Footer() {
   }
 
   return (
-    <footer className="bg-gray-900 text-white pt-6 pb-4">
+    <footer className="bg-card text-white pt-6 pb-4">
       <div className="max-w-7xl mx-auto px-3">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
           <div className="col-span-2">
@@ -2138,16 +2075,16 @@ function Footer() {
                 </div>
                 <div>
                   <div className="text-base font-bold">BwengePlus</div>
-                  <div className="text-xs text-gray-400">Never Stop Learning</div>
+                  <div className="text-xs text-muted-foreground">Never Stop Learning</div>
                 </div>
               </div>
             </Link>
-            <p className="text-xs text-gray-400 mb-3">Empowering learners worldwide</p>
+            <p className="text-xs text-muted-foreground mb-3">Empowering learners worldwide</p>
 
             <div className="flex items-center gap-2">
               {[Twitter, Facebook, Instagram, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center">
-                  <Icon className="w-3 h-3 text-gray-400" />
+                <a key={i} href="#" className="w-8 h-8 bg-card rounded flex items-center justify-center">
+                  <Icon className="w-3 h-3 text-muted-foreground" />
                 </a>
               ))}
             </div>
@@ -2159,7 +2096,7 @@ function Footer() {
               <ul className="space-y-1.5">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-xs text-gray-400 hover:text-white">
+                    <Link href={link.href} className="text-xs text-muted-foreground hover:text-white">
                       {link.label}
                     </Link>
                   </li>
@@ -2169,20 +2106,20 @@ function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-200 my-3" />
+        <div className="border-t border-border my-3" />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs">
-          <div className="text-gray-400">© {new Date().getFullYear()} BwengePlus</div>
+          <div className="text-muted-foreground">© {new Date().getFullYear()} BwengePlus</div>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="text-gray-400">
+            <Link href="/privacy" className="text-muted-foreground">
               Privacy
             </Link>
-            <Link href="/terms" className="text-gray-400">
+            <Link href="/terms" className="text-muted-foreground">
               Terms
             </Link>
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-1 text-gray-400"
+              className="flex items-center gap-1 text-muted-foreground"
             >
               Top <ChevronUp className="w-3 h-3" />
             </button>
@@ -2197,26 +2134,43 @@ export default function BwengePlusPage() {
   const { isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
   const [activeCategory, setActiveCategory] = useState("All")
+  const [showOneTap, setShowOneTap] = useState(true)
+  const [showFallbackButton, setShowFallbackButton] = useState(false)
 
-  if (!googleClientId) {
-    // console.error('❌ NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured')
-  }
+  // Show One Tap after delay, but show fallback if it fails
+  useEffect(() => {
+    if (!isAuthenticated && googleClientId) {
+      const timer = setTimeout(() => {
+        setShowOneTap(true)
+        
+        // If One Tap doesn't appear within 5 seconds, show fallback button
+        const fallbackTimer = setTimeout(() => {
+          setShowFallbackButton(true)
+        }, 5000)
+        
+        return () => clearTimeout(fallbackTimer)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isAuthenticated, googleClientId])
 
   return (
     <GoogleOAuthProvider clientId={googleClientId || ''}>
-      <div className="min-h-screen bg-white">
-        {/* Force One Tap to always show on homepage when not authenticated */}
-        <GoogleOneTapLogin
-          autoSelect={false}
-          cancelOnTapOutside={false}
-          context="signin"
-          forceDisplay={true}
-        />
+      <div className="min-h-screen bg-card">
+        {!isAuthenticated && showOneTap && (
+          <GoogleOneTapLogin
+            autoSelect={false}
+            cancelOnTapOutside={true}
+            context="signin"
+            forceDisplay={true}
+          />
+        )}
+        
         <Navigation />
         <HeroSection />
-        <CategoryFilters 
-          onCategoryChange={setActiveCategory} 
-          activeCategory={activeCategory} 
+        <CategoryFilters
+          onCategoryChange={setActiveCategory}
+          activeCategory={activeCategory}
         />
         <FeaturedCourses key={activeCategory} activeCategory={activeCategory} />
         <TopInstructors />

@@ -347,17 +347,17 @@ export function Sidebar({ className }: SidebarProps) {
             <button
               onClick={() => toggleExpanded(item.name)}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-300 dark:hover:bg-green-900/30 hover:bg-green-50 hover:text-green-700 dark:hover:text-white w-full group relative",
-                "border-l-4 border-transparent hover:border-green-400",
+                "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-300 dark:hover:bg-success/20/30 hover:bg-success/10 hover:text-success dark:hover:text-white w-full group relative",
+                "border-l-4 border-transparent hover:border-success/60",
                 isCollapsed && "justify-center px-3",
                 childIsActive &&
-                  "bg-gradient-to-r from-green-50 dark:from-green-900 to-green-25 text-green-700 dark:text-white border-l-green-500",
+                  "bg-gradient-to-r from-green-50 dark:from-green-900 to-green-25 text-success dark:text-white border-l-green-500",
               )}
             >
               <Icon
                 className={cn(
                   "h-5 w-5 flex-shrink-0 transition-colors duration-300",
-                  childIsActive ? "text-green-600 dark:text-white" : "text-gray-600 group-hover:text-green-600",
+                  childIsActive ? "text-success dark:text-white" : "text-muted-foreground group-hover:text-success",
                 )}
               />
               {!isCollapsed && (
@@ -365,9 +365,9 @@ export function Sidebar({ className }: SidebarProps) {
                   <span className="flex-1 text-left font-medium">{item.name}</span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 transition-transform duration-300 text-gray-400",
+                      "h-4 w-4 transition-transform duration-300 text-muted-foreground",
                       isExpanded && "rotate-180",
-                      childIsActive && "text-green-600",
+                      childIsActive && "text-success",
                     )}
                   />
                 </>
@@ -376,15 +376,15 @@ export function Sidebar({ className }: SidebarProps) {
 
             {/* Children Items */}
             {isExpanded && !isCollapsed && item.children && (
-              <div className="mt-2 space-y-1 ml-4 border-l border-gray-100 pl-4">
+              <div className="mt-2 space-y-1 ml-4 border-l border-border pl-4">
                 {item.children.map((child) => (
                   <Link
                     key={child.name}
                     href={child.href || "#"}
                     className={cn(
                       "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 group relative",
-                      "border-l-4 border-transparent hover:border-green-400",
-                      "hover:bg-green-50 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-white",
+                      "border-l-4 border-transparent hover:border-success/60",
+                      "hover:bg-success/10 dark:hover:bg-success/20/30 hover:text-success dark:hover:text-white",
                       isItemActive(child) &&
                         "bg-gradient-to-r from-green-500 to-green-600 text-white border-l-green-600 shadow-lg transform scale-[1.02]",
                     )}
@@ -392,7 +392,7 @@ export function Sidebar({ className }: SidebarProps) {
                     <child.icon
                       className={cn(
                         "h-4 w-4 flex-shrink-0 transition-colors duration-300",
-                        isItemActive(child) ? "text-white" : "text-gray-500 group-hover:text-green-600",
+                        isItemActive(child) ? "text-white" : "text-muted-foreground group-hover:text-success",
                       )}
                     />
                     <span className="font-medium">{child.name}</span>
@@ -407,17 +407,17 @@ export function Sidebar({ className }: SidebarProps) {
             href={item.href || "#"}
             className={cn(
               "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-300 group relative",
-              "border-l-4 border-transparent hover:border-green-400",
-              "hover:bg-green-50 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-white",
+              "border-l-4 border-transparent hover:border-success/60",
+              "hover:bg-success/10 dark:hover:bg-success/20/30 hover:text-success dark:hover:text-white",
               isActive &&
-                "bg-gradient-to-r from-green-50 dark:from-green-900 to-green-25 text-green-700 dark:text-white border-l-green-600 shadow-lg transform scale-[1.02]",
+                "bg-gradient-to-r from-green-50 dark:from-green-900 to-green-25 text-success dark:text-white border-l-green-600 shadow-lg transform scale-[1.02]",
               isCollapsed && "justify-center px-3",
             )}
           >
             <Icon
               className={cn(
                 "h-5 w-5 flex-shrink-0 transition-colors duration-300",
-                isActive ? "text-green-600" : "text-gray-600 group-hover:text-green-600",
+                isActive ? "text-success" : "text-muted-foreground group-hover:text-success",
               )}
             />
             {!isCollapsed && (
@@ -456,7 +456,7 @@ export function Sidebar({ className }: SidebarProps) {
               </div>
               <div>
                 <h2 className="font-bold text-text">Bwenge Plus</h2>
-                <p className="text-xs text-gray-500 capitalize font-medium">
+                <p className="text-xs text-muted-foreground capitalize font-medium">
                   {userRole === BwengeRole.SYSTEM_ADMIN 
                     ? "System Admin" 
                     : userRole === BwengeRole.INSTITUTION_ADMIN
@@ -474,12 +474,12 @@ export function Sidebar({ className }: SidebarProps) {
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-9 w-9 p-0 hover:bg-gray-100 rounded-xl transition-all duration-300"
+            className="h-9 w-9 p-0 hover:bg-accent rounded-xl transition-all duration-300"
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+              <ChevronRight className="h-4 w-4 text-foreground" />
             ) : (
-              <ChevronLeft className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+              <ChevronLeft className="h-4 w-4 text-foreground" />
             )}
           </Button>
         </div>
@@ -496,19 +496,19 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="flex flex-col gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl hover:bg-white">
+                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl hover:bg-accent">
                     <Avatar className="h-8 w-8 ring-2 ring-green-200">
                       <AvatarImage
                         src={user?.profile_picture_url || "/placeholder.svg"}
                         alt={user.first_name + " " + user.last_name}
                       />
-                      <AvatarFallback className="text-xs bg-green-500 text-white font-semibold">
+                      <AvatarFallback className="text-xs bg-success/100 text-white font-semibold">
                         {user.first_name + " " + user.last_name ? getInitials(user.first_name + " " + user.last_name) : "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-200">
+                <DropdownMenuContent align="end" className="w-56 rounded-xl border-border">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -526,7 +526,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
-                    className="cursor-pointer text-red-600 focus:text-red-600 rounded-lg"
+                    className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
@@ -542,7 +542,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start p-3 h-auto hover:bg-muted rounded-xl shadow-sm border border-transparent hover:border-border transition-all duration-300"
+                    className="w-full justify-start p-3 h-auto hover:bg-accent rounded-xl shadow-sm border border-transparent hover:border-border transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 w-full">
                       <Avatar className="h-10 w-10 ring-2 ring-green-200">
@@ -551,7 +551,7 @@ export function Sidebar({ className }: SidebarProps) {
                           alt={user.first_name + " " + user.last_name}
                           className="object-cover"
                         />
-                        <AvatarFallback className="text-sm font-semibold bg-green-500 text-white">
+                        <AvatarFallback className="text-sm font-semibold bg-success/100 text-white">
                           {user.first_name + " " + user.last_name
                             ? getInitials(user.first_name + " " + user.last_name)
                             : "U"}
@@ -561,18 +561,18 @@ export function Sidebar({ className }: SidebarProps) {
                         <p className="text-sm font-semibold truncate text-text">
                           {user.first_name + " " + user.last_name || "User"}
                         </p>
-                        <p className="text-xs text-gray-500 truncate font-medium">
+                        <p className="text-xs text-muted-foreground truncate font-medium">
                           {user?.email || "user@example.com"}
                         </p>
                       </div>
-                      <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 rounded-xl border-border">
                   <DropdownMenuLabel className="flex flex-col p-3">
                     <span className="font-semibold text-text">{user.first_name + " " + user.last_name || "User"}</span>
-                    <span className="text-sm text-gray-500 font-medium">{user?.email || "user@example.com"}</span>
+                    <span className="text-sm text-muted-foreground font-medium">{user?.email || "user@example.com"}</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -590,7 +590,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
-                    className="cursor-pointer text-red-600 focus:text-red-600 rounded-lg"
+                    className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
@@ -603,27 +603,27 @@ export function Sidebar({ className }: SidebarProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1 hover:bg-white rounded-xl h-9 transition-all duration-300"
+                  className="flex-1 hover:bg-accent rounded-xl h-9 transition-all duration-300"
                   asChild
                 >
                   <Link href="/help">
-                    <HelpCircle className="h-4 w-4 text-gray-600" />
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
                   </Link>
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1 hover:bg-white rounded-xl h-9 transition-all duration-300"
+                  className="flex-1 hover:bg-accent rounded-xl h-9 transition-all duration-300"
                   asChild
                 >
                   <Link href="/settings">
-                    <Cog className="h-4 w-4 text-gray-600" />
+                    <Cog className="h-4 w-4 text-muted-foreground" />
                   </Link>
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1 rounded-xl h-9 text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-300"
+                  className="flex-1 rounded-xl h-9 text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-300"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4" />

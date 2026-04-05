@@ -5,8 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
-
 export const generateTempId = () => {
   return `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
@@ -51,12 +49,9 @@ export const formatMessageTime = (dateString: string | Date): string => {
 
     return date.toLocaleDateString("en-US", options)
   } catch (error) {
-    console.error("Error formatting message time:", error)
     return "Unknown time"
   }
 }
-
-
 
 export const isTempId = (id: any): boolean => {
   if (typeof id !== 'string') return false

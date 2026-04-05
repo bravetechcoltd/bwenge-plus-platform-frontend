@@ -76,13 +76,13 @@ export function VideoScreen({ lesson, onComplete, isCompleted }: VideoScreenProp
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <Card className="border border-gray-200 shadow-sm">
-        <CardHeader className="border-b border-gray-200 bg-gray-50">
+      <Card className="border border-border shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Video className="w-6 h-6 text-[#0158B7]" />
               <div>
-                <CardTitle className="text-xl text-gray-900">{lesson.title}</CardTitle>
+                <CardTitle className="text-xl text-foreground">{lesson.title}</CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                   <Clock className="w-4 h-4" />
                   <span>{lesson.duration > 0 ? `${lesson.duration} minutes` : "Self-paced"}</span>
@@ -141,7 +141,7 @@ export function VideoScreen({ lesson, onComplete, isCompleted }: VideoScreenProp
                     <span>{Math.round(videoProgress)}% watched</span>
                     <span>{formatTime(duration)}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-secondary rounded-full h-2">
                     <div
                       className="bg-[#0158B7] h-2 rounded-full transition-all duration-300"
                       style={{ width: `${videoProgress}%` }}
@@ -153,7 +153,7 @@ export function VideoScreen({ lesson, onComplete, isCompleted }: VideoScreenProp
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-gray-600">No video available for this lesson yet.</p>
+              <p className="text-muted-foreground">No video available for this lesson yet.</p>
             </div>
           )}
         </CardContent>

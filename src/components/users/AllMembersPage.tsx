@@ -80,11 +80,11 @@ interface Stats {
 
 const getRoleColor = (role: string) => {
   switch (role) {
-    case "ADMIN": return "bg-purple-100 text-purple-700 border-purple-200";
-    case "CONTENT_CREATOR": return "bg-blue-100 text-blue-700 border-blue-200";
-    case "INSTRUCTOR": return "bg-green-100 text-green-700 border-green-200";
-    case "MEMBER": return "bg-gray-100 text-gray-700 border-gray-200";
-    default: return "bg-gray-100 text-gray-700 border-gray-200";
+    case "ADMIN": return "bg-primary/15 text-primary border-primary/30";
+    case "CONTENT_CREATOR": return "bg-primary/15 text-primary border-primary/30";
+    case "INSTRUCTOR": return "bg-success/15 text-success border-success/30";
+    case "MEMBER": return "bg-muted text-muted-foreground border-border";
+    default: return "bg-muted text-muted-foreground border-border";
   }
 };
 
@@ -254,9 +254,9 @@ export default function AllMembersPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -268,10 +268,10 @@ export default function AllMembersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-7 h-7 text-primary" /> All Members
           </h1>
-          <p className="text-gray-500 mt-1">Manage everyone in your institution</p>
+          <p className="text-muted-foreground mt-1">Manage everyone in your institution</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportCSV}>
@@ -292,11 +292,11 @@ export default function AllMembersPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           { label: "Total", value: stats.total, icon: Users, color: "text-primary bg-primary/10" },
-          { label: "Active", value: stats.active, icon: UserCheck, color: "text-green-600 bg-green-50" },
-          { label: "Admins", value: stats.admins, icon: Crown, color: "text-purple-600 bg-purple-50" },
-          { label: "Instructors", value: stats.instructors, icon: UserCog, color: "text-green-600 bg-green-50" },
-          { label: "Creators", value: stats.content_creators, icon: Users2, color: "text-blue-600 bg-blue-50" },
-          { label: "Learners", value: stats.members, icon: GraduationCap, color: "text-gray-600 bg-gray-50" },
+          { label: "Active", value: stats.active, icon: UserCheck, color: "text-success bg-success/10" },
+          { label: "Admins", value: stats.admins, icon: Crown, color: "text-primary bg-primary/10" },
+          { label: "Instructors", value: stats.instructors, icon: UserCog, color: "text-success bg-success/10" },
+          { label: "Creators", value: stats.content_creators, icon: Users2, color: "text-primary bg-primary/10" },
+          { label: "Learners", value: stats.members, icon: GraduationCap, color: "text-muted-foreground bg-muted/50" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
             <CardContent className="p-4 flex items-center gap-3">
@@ -305,7 +305,7 @@ export default function AllMembersPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{value}</p>
-                <p className="text-xs text-gray-500">{label}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -318,7 +318,7 @@ export default function AllMembersPage() {
           <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search by name or email..."
                   value={search}
@@ -351,7 +351,7 @@ export default function AllMembersPage() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-sm text-gray-500">{totalCount} members found</p>
+            <p className="text-sm text-muted-foreground">{totalCount} members found</p>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -361,16 +361,16 @@ export default function AllMembersPage() {
             </div>
           ) : members.length === 0 ? (
             <div className="text-center py-16">
-              <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No members found</p>
-              <p className="text-sm text-gray-400 mt-1">Try adjusting your filters or invite new members.</p>
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No members found</p>
+              <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or invite new members.</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50">
+                    <TableRow className="bg-muted/50">
                       <TableHead className="pl-6">Member</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
@@ -382,7 +382,7 @@ export default function AllMembersPage() {
                   </TableHeader>
                   <TableBody>
                     {members.map(member => (
-                      <TableRow key={member.member_id} className="hover:bg-gray-50 transition-colors">
+                      <TableRow key={member.member_id} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="pl-6">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-9 h-9">
@@ -393,7 +393,7 @@ export default function AllMembersPage() {
                             </Avatar>
                             <div>
                               <p className="font-semibold text-sm">{member.user.first_name} {member.user.last_name}</p>
-                              <p className="text-xs text-gray-500">{member.user.email}</p>
+                              <p className="text-xs text-muted-foreground">{member.user.email}</p>
                             </div>
                           </div>
                         </TableCell>
@@ -404,13 +404,13 @@ export default function AllMembersPage() {
                         </TableCell>
                         <TableCell>
                           {member.is_active
-                            ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
-                            : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
+                            ? <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
+                            : <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
                           }
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{member.user.country || "—"}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{new Date(member.joined_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-sm text-muted-foreground">{member.user.country || "—"}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{new Date(member.joined_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
                           {member.user.last_login ? new Date(member.user.last_login).toLocaleDateString() : "Never"}
                         </TableCell>
                         <TableCell className="text-right pr-6">
@@ -430,7 +430,7 @@ export default function AllMembersPage() {
                                 <UserCog className="w-4 h-4 mr-2" /> Change Role
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600" onClick={() => setRemoveMember(member)}>
+                              <DropdownMenuItem className="text-destructive" onClick={() => setRemoveMember(member)}>
                                 <Trash2 className="w-4 h-4 mr-2" /> Remove Member
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -443,7 +443,7 @@ export default function AllMembersPage() {
               </div>
               {/* Pagination */}
               <div className="flex items-center justify-between px-6 py-4 border-t">
-                <p className="text-sm text-gray-500">Page {page} of {totalPages} · {totalCount} total members</p>
+                <p className="text-sm text-muted-foreground">Page {page} of {totalPages} · {totalCount} total members</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
                     <ChevronLeft className="w-4 h-4" />
@@ -473,7 +473,7 @@ export default function AllMembersPage() {
                 </Avatar>
                 <div>
                   <h3 className="font-bold text-lg">{viewMember.user.first_name} {viewMember.user.last_name}</h3>
-                  <p className="text-sm text-gray-500">{viewMember.user.email}</p>
+                  <p className="text-sm text-muted-foreground">{viewMember.user.email}</p>
                   <Badge className={`${getRoleColor(viewMember.role)} mt-1 text-xs`}>{viewMember.role}</Badge>
                 </div>
               </div>
@@ -490,15 +490,15 @@ export default function AllMembersPage() {
                   ["Status", viewMember.is_active ? "Active" : "Inactive"],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <Label className="text-gray-400 text-xs">{label}</Label>
+                    <Label className="text-muted-foreground text-xs">{label}</Label>
                     <p className="font-medium mt-0.5">{value}</p>
                   </div>
                 ))}
               </div>
               {viewMember.user.bio && (
                 <div>
-                  <Label className="text-gray-400 text-xs">Bio</Label>
-                  <p className="text-sm mt-0.5 text-gray-700">{viewMember.user.bio}</p>
+                  <Label className="text-muted-foreground text-xs">Bio</Label>
+                  <p className="text-sm mt-0.5 text-muted-foreground">{viewMember.user.bio}</p>
                 </div>
               )}
             </div>

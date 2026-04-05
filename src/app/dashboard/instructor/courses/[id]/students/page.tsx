@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useRealtimeEvents } from "@/hooks/use-realtime";
 import {
   fetchCourseStudents,
   searchStudents,
@@ -113,34 +114,27 @@ export default function CourseStudentsPage() {
   // Debounced search
   const debouncedSearch = useDebounce(searchInput, 300);
 
+  const refetchStudents = useCallback(() => {
+    if (courseId) {
+      dispatch(fetchCourseStudents({ courseId, filters, page: 1, limit: 20 }));
+    }
+  }, [dispatch, courseId, filters]);
+
   // Initial fetch - runs when component mounts or courseId changes
   useEffect(() => {
-    console.log("🔍 CourseStudentsPage mounted or courseId changed");
-    console.log("📋 Course ID:", courseId);
-    
-    if (courseId) {
-      console.log("🚀 Dispatching fetchCourseStudents action...");
-      dispatch(fetchCourseStudents({ 
-        courseId, 
-        filters, 
-        page: 1, 
-        limit: 20 
-      })).then((result) => {
-        if (fetchCourseStudents.fulfilled.match(result)) {
-          console.log("✅ fetchCourseStudents successful:", result.payload);
-        } else if (fetchCourseStudents.rejected.match(result)) {
-          console.error("❌ fetchCourseStudents failed:", result.error);
-        }
-      });
-    } else {
-      console.error("❌ Course ID is undefined!");
-    }
+    refetchStudents();
   }, [dispatch, courseId]); // Only depend on courseId, not filters
+
+  // Real-time: refresh when enrollment changes occur
+  useRealtimeEvents({
+    "enrollment-approved": () => refetchStudents(),
+    "enrollment-rejected": () => refetchStudents(),
+    "enrollment-count-updated": () => refetchStudents(),
+    "progress-updated": () => refetchStudents(),
+  });
 
   // Separate effect for filter changes
   useEffect(() => {
-    console.log("🔄 Filters changed, refetching students...");
-    console.log("📌 Current filters:", filters);
     
     if (courseId) {
       dispatch(fetchCourseStudents({ 
@@ -154,12 +148,6 @@ export default function CourseStudentsPage() {
 
   // Log state changes for debugging
   useEffect(() => {
-    console.log("📊 Redux State Update:");
-    console.log("📌 students count:", students.length);
-    console.log("📌 isLoading:", isLoading);
-    console.log("📌 error:", error);
-    console.log("📌 pagination:", pagination);
-    console.log("📌 statistics:", statistics);
   }, [students, isLoading, error, pagination, statistics]);
 
   // Handle debounced search
@@ -186,11 +174,9 @@ export default function CourseStudentsPage() {
   };
 
   const handleExport = (format: "csv" | "excel" | "pdf") => {
-    console.log(`Exporting students in ${format} format`);
   };
 
   const handleBulkAction = (action: "message" | "export" | "unenroll") => {
-    console.log(`Bulk ${action} for ${selectedStudents.size} students`);
   };
 
   const CLEAR_STATUS = "all_status";
@@ -229,15 +215,15 @@ export default function CourseStudentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return "bg-green-100 text-green-800";
+        return "bg-success/15 text-success";
       case "COMPLETED":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/15 text-primary";
       case "DROPPED":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/15 text-destructive";
       case "PENDING":
-        return "bg-amber-100 text-amber-800";
+        return "bg-warning/15 text-warning";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -279,10 +265,10 @@ export default function CourseStudentsPage() {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Course Students
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-muted-foreground mt-2">
               Manage and monitor student progress
             </p>
           </div>
@@ -335,7 +321,7 @@ export default function CourseStudentsPage() {
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => handleBulkAction("unenroll")}
-                    className="text-red-600"
+                    className="text-destructive"
                   >
                     Unenroll Selected
                   </DropdownMenuItem>
@@ -352,7 +338,7 @@ export default function CourseStudentsPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search students by name or email..."
                   value={searchInput}
@@ -433,17 +419,17 @@ export default function CourseStudentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Students</p>
-                  <h3 className="text-3xl font-bold text-gray-900">
+                  <p className="text-sm text-muted-foreground mb-1">Total Students</p>
+                  <h3 className="text-3xl font-bold text-foreground">
                     {statistics.total_students}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {statistics.by_status.ACTIVE} active,{" "}
                     {statistics.by_status.COMPLETED} completed
                   </p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-primary/15 rounded-full">
+                  <Users className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -453,16 +439,16 @@ export default function CourseStudentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Average Completion</p>
-                  <h3 className="text-3xl font-bold text-gray-900">
+                  <p className="text-sm text-muted-foreground mb-1">Average Completion</p>
+                  <h3 className="text-3xl font-bold text-foreground">
                     {statistics.average_completion.toFixed(1)}%
                   </h3>
                   <div className="mt-2">
                     <Progress value={statistics.average_completion} className="h-2" />
                   </div>
                 </div>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
+                <div className="p-3 bg-success/15 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -470,28 +456,28 @@ export default function CourseStudentsPage() {
 
           <Card 
             className={`cursor-pointer ${
-              statistics.at_risk_students > 0 ? "border-red-200 hover:bg-red-50" : ""
+              statistics.at_risk_students > 0 ? "border-destructive/30 hover:bg-destructive/10" : ""
             }`}
             onClick={() => statistics.at_risk_students > 0 && handleFilterChange("progress_filter", "not_started")}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">At-Risk Students</p>
+                  <p className="text-sm text-muted-foreground mb-1">At-Risk Students</p>
                   <h3 className={`text-3xl font-bold ${
-                    statistics.at_risk_students > 0 ? "text-red-600" : "text-gray-900"
+                    statistics.at_risk_students > 0 ? "text-destructive" : "text-foreground"
                   }`}>
                     {statistics.at_risk_students}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Need attention
                   </p>
                 </div>
                 <div className={`p-3 rounded-full ${
-                  statistics.at_risk_students > 0 ? "bg-red-100" : "bg-gray-100"
+                  statistics.at_risk_students > 0 ? "bg-destructive/15" : "bg-muted"
                 }`}>
                   <AlertCircle className={`h-6 w-6 ${
-                    statistics.at_risk_students > 0 ? "text-red-600" : "text-gray-400"
+                    statistics.at_risk_students > 0 ? "text-destructive" : "text-muted-foreground"
                   }`} />
                 </div>
               </div>
@@ -505,16 +491,16 @@ export default function CourseStudentsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Top Performers</p>
-                  <h3 className="text-3xl font-bold text-gray-900">
+                  <p className="text-sm text-muted-foreground mb-1">Top Performers</p>
+                  <h3 className="text-3xl font-bold text-foreground">
                     {statistics.top_performers}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     &gt; 80% completion
                   </p>
                 </div>
-                <div className="p-3 bg-amber-100 rounded-full">
-                  <Award className="h-6 w-6 text-amber-600" />
+                <div className="p-3 bg-warning/15 rounded-full">
+                  <Award className="h-6 w-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -524,14 +510,14 @@ export default function CourseStudentsPage() {
 
       {/* Section 4: Students Display */}
       {error ? (
-        <Card className="border-red-200">
+        <Card className="border-destructive/30">
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-700 mb-2">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-destructive mb-2">
                 Failed to load students
               </h3>
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-destructive mb-4">{error}</p>
               <Button onClick={handleRefresh} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
@@ -543,11 +529,11 @@ export default function CourseStudentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
                 No students found
               </h3>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 {filters.search || filters.status || filters.progress_filter
                   ? "Try adjusting your filters"
                   : "No students enrolled in this course yet"}
@@ -582,7 +568,7 @@ export default function CourseStudentsPage() {
                   {students.map((student) => (
                     <TableRow 
                       key={student.student.id}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-accent cursor-pointer"
                       onClick={() => {
                         setSelectedStudent(student);
                         setShowStudentModal(true);
@@ -613,7 +599,7 @@ export default function CourseStudentsPage() {
                             <div className="font-medium">
                               {student.student.first_name} {student.student.last_name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                               {student.student.email}
                             </div>
                           </div>
@@ -622,7 +608,7 @@ export default function CourseStudentsPage() {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-muted-foreground">
                               {student.progress.completion_percentage.toFixed(1)}%
                             </span>
                           </div>
@@ -631,7 +617,7 @@ export default function CourseStudentsPage() {
                             className="h-2"
                           />
                           {student.details?.performance_indicators?.at_risk && (
-                            <Badge variant="outline" className="text-xs border-red-200 text-red-600">
+                            <Badge variant="outline" className="text-xs border-destructive/30 text-destructive">
                               At Risk
                             </Badge>
                           )}
@@ -641,7 +627,7 @@ export default function CourseStudentsPage() {
                         <div className="text-sm">
                           {student.progress.lessons.completed} / {student.progress.lessons.total}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {student.progress.lessons.completion_rate.toFixed(1)}%
                         </div>
                       </TableCell>
@@ -653,7 +639,7 @@ export default function CourseStudentsPage() {
                               })
                             : "Never"}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {student.enrollment.days_since_last_activity !== null
                             ? `${student.enrollment.days_since_last_activity} days ago`
                             : ""}
@@ -691,7 +677,7 @@ export default function CourseStudentsPage() {
                                 View Submissions
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
+                              <DropdownMenuItem className="text-destructive">
                                 <UserX className="h-4 w-4 mr-2" />
                                 Unenroll
                               </DropdownMenuItem>
@@ -711,7 +697,7 @@ export default function CourseStudentsPage() {
       {/* Section 5: Pagination */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
             {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
             {pagination.total} students
@@ -770,10 +756,8 @@ export default function CourseStudentsPage() {
         isOpen={showStudentModal}
         onClose={() => setShowStudentModal(false)}
         onSendMessage={(student) => {
-          console.log("Send message to:", student.student.email);
         }}
         onUnenroll={(student) => {
-          console.log("Unenroll student:", student.student.id);
         }}
       />
     </div>

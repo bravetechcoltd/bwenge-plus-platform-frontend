@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRealtimeEvents } from "@/hooks/use-realtime";
 import { useAppSelector } from "@/lib/hooks";
 import {
   Card,
@@ -173,6 +174,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
     }
   }, [selectedCourse]);
 
+  // Real-time: refresh analytics on enrollment or review changes
+  useRealtimeEvents({
+    "new-review": () => fetchCourseAnalytics(),
+    "review-updated": () => fetchCourseAnalytics(),
+    "enrollment-count-updated": () => fetchCourseAnalytics(),
+    "progress-updated": () => fetchCourseAnalytics(),
+  });
+
   const fetchCourses = async () => {
     try {
       const token = localStorage.getItem("bwengeplus_token");
@@ -193,7 +202,6 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
         }
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
       toast.error("Failed to load courses");
     }
   };
@@ -218,7 +226,6 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
         toast.error("Failed to load course analytics");
       }
     } catch (error) {
-      console.error("Error fetching analytics:", error);
       toast.error("Failed to load course analytics");
     } finally {
       setLoading(false);
@@ -256,7 +263,6 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
         toast.error("Failed to export analytics");
       }
     } catch (error) {
-      console.error("Error exporting analytics:", error);
       toast.error("Failed to export analytics");
     }
   };
@@ -288,11 +294,11 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               Select a Course
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               Choose a course from the dropdown to view its analytics
             </p>
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
@@ -318,11 +324,11 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               No Analytics Data
             </h2>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               There is no analytics data available for this course yet.
             </p>
           </CardContent>
@@ -336,10 +342,10 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Course Analytics
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Detailed performance metrics for your courses
           </p>
         </div>
@@ -383,7 +389,7 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
                 <Badge variant="outline">
                   {analytics.status}
                 </Badge>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   Created: {format(new Date(analytics.created_at), "MMM d, yyyy")}
                 </span>
               </div>
@@ -391,15 +397,15 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <div className="text-center">
                 <p className="text-2xl font-bold">{formatNumber(analytics.enrollment_stats.total_enrollments)}</p>
-                <p className="text-xs text-gray-500">Total Enrollments</p>
+                <p className="text-xs text-muted-foreground">Total Enrollments</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{formatPercent(analytics.enrollment_stats.completion_rate)}</p>
-                <p className="text-xs text-gray-500">Completion Rate</p>
+                <p className="text-xs text-muted-foreground">Completion Rate</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{safeFixed(analytics.rating_stats.average_rating)}</p>
-                <p className="text-xs text-gray-500">Avg Rating</p>
+                <p className="text-xs text-muted-foreground">Avg Rating</p>
               </div>
             </div>
           </div>
@@ -412,14 +418,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">Active Enrollments</p>
+                <p className="text-sm text-muted-foreground">Active Enrollments</p>
                 <p className="text-3xl font-bold">{formatNumber(analytics.enrollment_stats.active_enrollments)}</p>
-                <p className="text-xs text-green-600 mt-1">
+                <p className="text-xs text-success mt-1">
                   {formatPercent(analytics.enrollment_stats.active_enrollments / analytics.enrollment_stats.total_enrollments)} active
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -429,14 +435,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">Avg Progress</p>
+                <p className="text-sm text-muted-foreground">Avg Progress</p>
                 <p className="text-3xl font-bold">{safeFixed(analytics.progress_stats.average_progress)}%</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Median: {safeFixed(analytics.progress_stats.median_progress)}%
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-success" />
               </div>
             </div>
           </CardContent>
@@ -446,14 +452,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">Avg Time Spent</p>
+                <p className="text-sm text-muted-foreground">Avg Time Spent</p>
                 <p className="text-3xl font-bold">{formatHours(analytics.engagement_stats.average_time_spent_minutes)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Total: {formatHours(analytics.engagement_stats.total_time_spent_hours * 60)}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <Clock className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                <Clock className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -463,14 +469,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">Pass Rate</p>
+                <p className="text-sm text-muted-foreground">Pass Rate</p>
                 <p className="text-3xl font-bold">{formatPercent(analytics.assessment_stats.pass_rate)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {analytics.assessment_stats.assessments_passed} passed
                 </p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-yellow-600" />
+              <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -646,27 +652,27 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold">{analytics.content_stats.total_modules}</div>
-              <div className="text-sm text-gray-500">Modules</div>
+              <div className="text-sm text-muted-foreground">Modules</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{analytics.content_stats.total_lessons}</div>
-              <div className="text-sm text-gray-500">Lessons</div>
+              <div className="text-sm text-muted-foreground">Lessons</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{analytics.content_stats.total_videos}</div>
-              <div className="text-sm text-gray-500">Videos</div>
+              <div className="text-sm text-muted-foreground">Videos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{analytics.content_stats.total_quizzes}</div>
-              <div className="text-sm text-gray-500">Quizzes</div>
+              <div className="text-sm text-muted-foreground">Quizzes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{analytics.content_stats.total_resources}</div>
-              <div className="text-sm text-gray-500">Resources</div>
+              <div className="text-sm text-muted-foreground">Resources</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">{formatHours(analytics.content_stats.total_duration_minutes)}</div>
-              <div className="text-sm text-gray-500">Total Duration</div>
+              <div className="text-sm text-muted-foreground">Total Duration</div>
             </div>
           </div>
         </CardContent>
@@ -697,14 +703,14 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
                     <TableCell className="max-w-[200px]">
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{student.user_name}</p>
-                        <p className="text-xs text-gray-500 truncate">{student.user_email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{student.user_email}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600"
+                            className="h-full bg-primary"
                             style={{ width: `${student.progress_percentage}%` }}
                           />
                         </div>
@@ -713,7 +719,7 @@ export default function CourseAnalyticsPage({ courseId }: CourseAnalyticsPagePro
                     </TableCell>
                     <TableCell>{formatHours(student.time_spent_minutes)}</TableCell>
                     <TableCell>
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge className="bg-success/15 text-success">
                         {safeFixed(student.score)}%
                       </Badge>
                     </TableCell>

@@ -65,10 +65,10 @@ interface StudentsResponse {
 const SkeletonCard = () => (
   <Card className="animate-pulse">
     <CardHeader className="pb-2">
-      <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-1/3"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-1/3"></div>
     </CardHeader>
     <CardContent>
-      <div className="h-6 bg-gray-200 dark:bg-gray-900 rounded w-1/4"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-1/4"></div>
     </CardContent>
   </Card>
 )
@@ -77,30 +77,30 @@ const SkeletonTableRow = () => (
   <TableRow>
     <TableCell>
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
+        <div className="w-8 h-8 bg-secondary dark:bg-card rounded-full"></div>
         <div className="space-y-1">
-          <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-24"></div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-32"></div>
+          <div className="h-4 bg-secondary dark:bg-card rounded w-24"></div>
+          <div className="h-3 bg-secondary dark:bg-card rounded w-32"></div>
         </div>
       </div>
     </TableCell>
     <TableCell>
-      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-full"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-16"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-16"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-12"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-12"></div>
     </TableCell>
     <TableCell>
-      <div className="h-6 bg-gray-200 dark:bg-gray-800 rounded w-20"></div>
+      <div className="h-6 bg-secondary dark:bg-card rounded w-20"></div>
     </TableCell>
     <TableCell>
-      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-20"></div>
+      <div className="h-4 bg-secondary dark:bg-card rounded w-20"></div>
     </TableCell>
     <TableCell className="text-right">
-      <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-8 ml-auto"></div>
+      <div className="h-8 bg-secondary dark:bg-card rounded w-8 ml-auto"></div>
     </TableCell>
   </TableRow>
 )
@@ -151,7 +151,7 @@ const StudentInfoModal = ({ student, isOpen, onClose }: StudentInfoModalProps) =
               <p className="text-muted-foreground">{student.email}</p>
               <div className="flex items-center gap-2 mt-2">
                 {student.isActive ? (
-                  <Badge className="bg-green-100 text-green-700">
+                  <Badge className="bg-success/15 text-success">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     Active
                   </Badge>
@@ -159,7 +159,7 @@ const StudentInfoModal = ({ student, isOpen, onClose }: StudentInfoModalProps) =
                   <Badge variant="destructive">Inactive</Badge>
                 )}
                 {student.isEmailVerified && (
-                  <Badge variant="outline" className="text-blue-600">
+                  <Badge variant="outline" className="text-primary">
                     <Mail className="w-3 h-3 mr-1" />
                     Verified
                   </Badge>
@@ -170,20 +170,20 @@ const StudentInfoModal = ({ student, isOpen, onClose }: StudentInfoModalProps) =
 
           {/* Learning Statistics */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <BookOpen className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-blue-700">{enrolledCount}</p>
-              <p className="text-xs text-blue-600">Courses Enrolled</p>
+            <div className="bg-primary/10 rounded-lg p-3 text-center">
+              <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
+              <p className="text-2xl font-bold text-primary">{enrolledCount}</p>
+              <p className="text-xs text-primary">Courses Enrolled</p>
             </div>
-            <div className="bg-green-50 rounded-lg p-3 text-center">
-              <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-green-700">{(student.total_learning_hours ?? 0).toFixed(1)}</p>
-              <p className="text-xs text-green-600">Learning Hours</p>
+            <div className="bg-success/10 rounded-lg p-3 text-center">
+              <Clock className="w-5 h-5 text-success mx-auto mb-1" />
+              <p className="text-2xl font-bold text-success">{(student.total_learning_hours ?? 0).toFixed(1)}</p>
+              <p className="text-xs text-success">Learning Hours</p>
             </div>
-            <div className="bg-purple-50 rounded-lg p-3 text-center">
-              <GraduationCap className="w-5 h-5 text-purple-600 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-purple-700">{student.certificates_earned ?? 0}</p>
-              <p className="text-xs text-purple-600">Certificates</p>
+            <div className="bg-primary/10 rounded-lg p-3 text-center">
+              <GraduationCap className="w-5 h-5 text-primary mx-auto mb-1" />
+              <p className="text-2xl font-bold text-primary">{student.certificates_earned ?? 0}</p>
+              <p className="text-xs text-primary">Certificates</p>
             </div>
           </div>
 
@@ -199,9 +199,9 @@ const StudentInfoModal = ({ student, isOpen, onClose }: StudentInfoModalProps) =
                   <span>Completed: {completedCount} of {enrolledCount} courses</span>
                   <span className="font-semibold">{completionRate}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-secondary rounded-full h-2">
                   <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                    className="bg-success h-2 rounded-full transition-all duration-500"
                     style={{ width: `${completionRate}%` }}
                   />
                 </div>
@@ -220,13 +220,13 @@ const StudentInfoModal = ({ student, isOpen, onClose }: StudentInfoModalProps) =
                 {student.courses.map((course) => (
                   <div
                     key={course.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div>
                       <p className="font-medium">{course.title}</p>
                       <p className="text-sm text-muted-foreground">Level: {course.level}</p>
                     </div>
-                    <Badge variant="outline" className="bg-blue-50">
+                    <Badge variant="outline" className="bg-primary/10">
                       Enrolled
                     </Badge>
                   </div>
@@ -335,10 +335,8 @@ export default function StudentsManagement() {
 
           setStudents(formatted)
         } else {
-          console.error("Failed to fetch students:", response.status)
         }
       } catch (error) {
-        console.error("Failed to fetch students:", error)
       } finally {
         setIsLoading(false)
       }
@@ -404,8 +402,8 @@ export default function StudentsManagement() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-900 rounded w-64 mb-2 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-80 animate-pulse"></div>
+            <div className="h-8 bg-secondary dark:bg-card rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-secondary dark:bg-card rounded w-80 animate-pulse"></div>
           </div>
         </div>
 
@@ -422,12 +420,12 @@ export default function StudentsManagement() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <div className="h-6 bg-gray-200 dark:bg-gray-900 rounded w-32 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-900 rounded w-48 animate-pulse"></div>
+                <div className="h-6 bg-secondary dark:bg-card rounded w-32 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-secondary dark:bg-card rounded w-48 animate-pulse"></div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <div className="h-9 bg-gray-200 dark:bg-gray-900 rounded w-64 animate-pulse"></div>
+                  <div className="h-9 bg-secondary dark:bg-card rounded w-64 animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -573,7 +571,7 @@ export default function StudentsManagement() {
                   </TableHeader>
                   <TableBody>
                     {currentStudents.map((student) => (
-                      <TableRow key={student.id} className="hover:bg-gray-50 transition-colors">
+                      <TableRow key={student.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
@@ -593,9 +591,9 @@ export default function StudentsManagement() {
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 {student.isActive ? (
-                                  <span className="text-green-600">Active</span>
+                                  <span className="text-success">Active</span>
                                 ) : (
-                                  <span className="text-red-600">Inactive</span>
+                                  <span className="text-destructive">Inactive</span>
                                 )}
                               </div>
                             </div>
@@ -605,24 +603,24 @@ export default function StudentsManagement() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{student.email}</span>
                             {!student.isEmailVerified && (
-                              <Mail className="w-3 h-3 text-yellow-500" />
+                              <Mail className="w-3 h-3 text-warning" />
                             )}
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          <Badge variant="secondary" className="bg-primary/15 text-primary">
                             <BookOpen className="w-3 h-3 mr-1" />
                             {student.enrolled_courses_count ?? 0}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          <Badge variant="secondary" className="bg-success/15 text-success">
                             <Clock className="w-3 h-3 mr-1" />
                             {(student.total_learning_hours ?? 0).toFixed(1)}h
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                          <Badge variant="secondary" className="bg-primary/15 text-primary">
                             <GraduationCap className="w-3 h-3 mr-1" />
                             {student.certificates_earned ?? 0}
                           </Badge>
@@ -647,15 +645,15 @@ export default function StudentsManagement() {
                                 View Details
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-blue-600">
+                              <DropdownMenuItem className="text-primary">
                                 <BookOpen className="mr-2 h-4 w-4" />
                                 View Courses ({student.enrolled_courses_count ?? 0})
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-green-600">
+                              <DropdownMenuItem className="text-success">
                                 <Clock className="mr-2 h-4 w-4" />
                                 Learning Progress
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-purple-600">
+                              <DropdownMenuItem className="text-primary">
                                 <GraduationCap className="mr-2 h-4 w-4" />
                                 Certificates ({student.certificates_earned ?? 0})
                               </DropdownMenuItem>

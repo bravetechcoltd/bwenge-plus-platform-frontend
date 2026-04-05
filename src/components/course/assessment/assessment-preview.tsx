@@ -33,7 +33,7 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
       <Card key={questionId} className="mb-4">
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="text-lg font-medium text-foreground dark:text-white">
               {index + 1}. {question.question_text}
             </h3>
             <Badge variant="outline" className="ml-2">
@@ -56,9 +56,9 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
                   {showResults && isInstructor && (
                     <div className="ml-2">
                       {option === question.correct_answer ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className="w-5 h-5 text-success" />
                       ) : userAnswer === option ? (
-                        <X className="w-5 h-5 text-red-500" />
+                        <X className="w-5 h-5 text-destructive" />
                       ) : null}
                     </div>
                   )}
@@ -79,7 +79,7 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
                   True
                 </Label>
                 {showResults && isInstructor && question.correct_answer === "true" && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                 )}
               </div>
               <div className="flex items-center space-x-2">
@@ -88,7 +88,7 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
                   False
                 </Label>
                 {showResults && isInstructor && question.correct_answer === "false" && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                 )}
               </div>
             </RadioGroup>
@@ -105,8 +105,8 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
           )}
 
           {showResults && isInstructor && userAnswer === question.correct_answer && (
-            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+            <div className="mt-3 p-3 bg-success/10 dark:bg-success/20/20 border border-success/30 dark:border-success/30 rounded-lg">
+              <div className="flex items-center gap-2 text-success dark:text-success">
                 <CheckCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">Correct! +{question.points} points</span>
               </div>
@@ -121,8 +121,8 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
     <div className="h-full overflow-y-auto space-y-6">
       {/* Assessment Header */}
       <div className="text-center pb-6 border-b">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{assessment.title}</h1>
-        {assessment.description && <p className="text-gray-600 dark:text-gray-300 mb-4">{assessment.description}</p>}
+        <h1 className="text-2xl font-bold text-foreground dark:text-white mb-2">{assessment.title}</h1>
+        {assessment.description && <p className="text-muted-foreground dark:text-muted-foreground mb-4">{assessment.description}</p>}
         <div className="flex justify-center gap-4">
           <Badge variant="outline" className="flex items-center gap-1">
             <Target className="w-4 h-4" />
@@ -144,10 +144,10 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
 
       {/* Instructions */}
       {!showResults && (
-        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-primary/10 dark:bg-primary/20/20 border-primary/30 dark:border-primary/30">
           <CardContent className="p-4">
-            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Instructions</h3>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <h3 className="font-medium text-primary dark:text-primary mb-2">Instructions</h3>
+            <ul className="text-sm text-primary dark:text-primary space-y-1">
               <li>• Answer all questions to the best of your ability</li>
               <li>• You can change your answers before submitting</li>
               {assessment.time_limit_minutes && (
@@ -172,13 +172,13 @@ export function AssessmentPreview({ assessment, isInstructor = false }: Assessme
           </Button>
         </div>
       ) : (
-        <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+        <Card className="bg-success/10 dark:bg-success/20/20 border-success/30 dark:border-success/30">
           <CardContent className="p-6 text-center">
-            <Trophy className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-green-900 dark:text-green-100 mb-2">
+            <Trophy className="w-12 h-12 text-success mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-success dark:text-success mb-2">
               {isInstructor ? "Assessment Preview Complete!" : "Assessment Complete!"}
             </h3>
-            <p className="text-green-800 dark:text-green-200">
+            <p className="text-success dark:text-success">
               {isInstructor
                 ? "This is a preview of how students will experience your assessment."
                 : "Your assessment has been submitted successfully."}

@@ -68,8 +68,8 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Structure Your Course</h2>
-        <p className="text-gray-600 dark:text-gray-300">
+        <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">Structure Your Course</h2>
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Organize your content into logical modules that guide students through their learning journey
         </p>
       </div>
@@ -81,7 +81,7 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="flex flex-col items-center gap-2">
-                  <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
+                  <GripVertical className="w-5 h-5 text-muted-foreground cursor-move" />
                   <Badge variant="outline" className="text-xs">
                     {module.order_index}
                   </Badge>
@@ -114,7 +114,7 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
                   ) : (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{module.title}</h3>
+                        <h3 className="text-lg font-semibold text-foreground dark:text-white">{module.title}</h3>
                         <div className="flex gap-2">
                           <Button size="sm" variant="ghost" onClick={() => setEditingModule(module.id)}>
                             <Edit2 className="w-4 h-4" />
@@ -123,14 +123,14 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
                             size="sm"
                             variant="ghost"
                             onClick={() => deleteModule(module.id)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">{module.description}</p>
-                      <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                      <p className="text-muted-foreground dark:text-muted-foreground text-sm">{module.description}</p>
+                      <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <BookOpen className="w-4 h-4" />{module.lessons?.length || 0} lessons
                         </span>
@@ -187,11 +187,11 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-dashed border-2 border-gray-300 hover:border-primary-400 transition-colors">
+          <Card className="border-dashed border-2 border-border hover:border-primary-400 transition-colors">
             <CardContent className="p-8 text-center">
-              <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Add Your First Module</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground dark:text-white mb-2">Add Your First Module</h3>
+              <p className="text-muted-foreground dark:text-muted-foreground mb-4">
                 Break your course into digestible modules that build upon each other
               </p>
               <Button onClick={() => setIsAddingModule(true)}>
@@ -205,10 +205,10 @@ export function ModuleManagementStep({ modules, setModules, onNext, onPrevious }
 
       {/* Progress Indicator */}
       {modules.length > 0 && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+        <div className="bg-success/10 dark:bg-success/20/20 border border-success/30 dark:border-success/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <p className="text-green-800 dark:text-green-200">
+            <CheckCircle className="w-5 h-5 text-success" />
+            <p className="text-success dark:text-success">
               Great! You've created {modules.length} module{modules.length !== 1 ? "s" : ""}. You can always add more
               modules later.
             </p>

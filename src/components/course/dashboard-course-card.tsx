@@ -43,28 +43,28 @@ export function DashboardCourseCard({
   const getLevelColor = (level: CourseLevel) => {
     switch (level) {
       case CourseLevel.BEGINNER:
-        return "bg-emerald-500 hover:bg-emerald-600 text-white"
+        return "bg-success/100 hover:bg-emerald-600 text-white"
       case CourseLevel.INTERMEDIATE:
-        return "bg-blue-500 hover:bg-blue-600 text-white"
+        return "bg-primary hover:bg-primary text-white"
       case CourseLevel.ADVANCED:
-        return "bg-purple-500 hover:bg-purple-600 text-white"
+        return "bg-primary/100 hover:bg-primary text-white"
       case CourseLevel.EXPERT:
-        return "bg-red-500 hover:bg-red-600 text-white"
+        return "bg-destructive/100 hover:bg-destructive text-white"
       default:
-        return "bg-gray-500 hover:bg-gray-600 text-white"
+        return "bg-muted/500 hover:bg-secondary text-white"
     }
   }
 
   const getStatusColor = (status: CourseStatus) => {
     switch (status) {
       case CourseStatus.PUBLISHED:
-        return "bg-green-500 hover:bg-green-600 text-white"
+        return "bg-success/100 hover:bg-success text-white"
       case CourseStatus.DRAFT:
-        return "bg-yellow-500 hover:bg-yellow-600 text-white"
+        return "bg-warning/100 hover:bg-warning text-white"
       case CourseStatus.ARCHIVED:
-        return "bg-gray-500 hover:bg-gray-600 text-white"
+        return "bg-muted/500 hover:bg-secondary text-white"
       default:
-        return "bg-gray-500 hover:bg-gray-600 text-white"
+        return "bg-muted/500 hover:bg-secondary text-white"
     }
   }
 
@@ -170,7 +170,7 @@ export function DashboardCourseCard({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute bottom-3 right-3 bg-white/90 hover:bg-white"
+              className="absolute bottom-3 right-3 bg-card/90 hover:bg-card"
               onClick={() => onShare(course.id)}
             >
               <Share2 className="w-4 h-4" />

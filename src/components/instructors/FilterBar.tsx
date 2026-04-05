@@ -69,7 +69,7 @@ export function FilterBar({
         {filters.find(f => f.type === 'search') && (
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search..."
                 value={values.search || ''}
@@ -105,13 +105,13 @@ export function FilterBar({
 
       {/* Expanded Filters */}
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+        <div className="bg-muted/50 rounded-lg p-4 mb-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filters
               .filter(f => f.type !== 'search')
               .map((filter) => (
                 <div key={filter.key} className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-muted-foreground">
                     {filter.label}
                   </label>
                   {filter.type === 'select' && (
@@ -128,7 +128,7 @@ export function FilterBar({
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                             {option.count !== undefined && (
-                              <span className="ml-2 text-gray-500">
+                              <span className="ml-2 text-muted-foreground">
                                 ({option.count})
                               </span>
                             )}

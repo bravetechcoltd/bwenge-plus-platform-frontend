@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useAuth } from "@/hooks/use-auth"
 import { Send, MessageSquare, Search, User, BookOpen, ChevronRight, Plus, MessageCircle, Clock, Users, Zap, Loader2 } from "lucide-react"
 import { PrivateMessage, CourseSpaceMessage } from "@/types"
-import { getSocket } from "@/lib/socket"
+import { getSocket, emitSpaceTypingStart, emitSpaceTypingStop } from "@/lib/socket"
 import { format } from "date-fns"
 
 // ==================== TYPES ====================
@@ -108,7 +108,6 @@ const formatMessageTime = (dateString: string): string => {
     if (isNaN(date.getTime())) return "Invalid date"
     return format(date, "h:mm a")
   } catch (error) {
-    console.error("Error formatting date:", error)
     return "Invalid date"
   }
 }
@@ -144,49 +143,136 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
   // Refs for scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const spaceTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // ==================== SOCKET SETUP ====================
+
+  const [spaceTypingUsers, setSpaceTypingUsers] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     const socket = getSocket()
 
     // Listen for private messages
-    socket.on("new-message", (message: PrivateMessage) => {
+    const handleNewMessage = (message: PrivateMessage) => {
       if (message.conversationId === selectedConversation?.id) {
         setMessages((prevMessages) => [...prevMessages, message])
       }
-
-      // Update the conversations list with the new last message
-      setConversations(prevConversations => 
-        prevConversations.map(conv => 
-          conv.id === message.conversationId 
+      setConversations(prevConversations =>
+        prevConversations.map(conv =>
+          conv.id === message.conversationId
             ? { ...conv, lastMessage: message }
             : conv
         )
       )
-    })
+    }
 
     // Listen for space messages
-    socket.on("new-space-message", (message: CourseSpaceMessage) => {
+    const handleNewSpaceMessage = (message: CourseSpaceMessage) => {
       if (message.spaceId === selectedSpace?.courseSpaceId || message.spaceId === selectedSpace?.id) {
         setSpaceMessages((prevMessages) => [...prevMessages, message])
       }
-
-      // Update the spaces list with the new last message
-      setSpaces(prevSpaces => 
-        prevSpaces.map(space => 
+      setSpaces(prevSpaces =>
+        prevSpaces.map(space =>
           (space.courseSpaceId === message.spaceId || space.id === message.spaceId)
             ? { ...space, lastMessage: message }
             : space
         )
       )
-    })
+    }
+
+    // Conversation updated (reorder by last message)
+    const handleConversationUpdated = ({ conversationId, lastMessage, updatedAt }: any) => {
+      setConversations(prev => {
+        const updated = prev.map(conv =>
+          conv.id === conversationId ? { ...conv, lastMessage, updatedAt } : conv
+        )
+        return updated.sort((a: any, b: any) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime())
+      })
+    }
+
+    // New conversation created by other user
+    const handleNewConversation = (conversation: any) => {
+      setConversations(prev => {
+        if (prev.some(c => c.id === conversation.id)) return prev
+        return [conversation, ...prev]
+      })
+    }
+
+    // Message edited in private conversation
+    const handleMessageEdited = ({ messageId, content }: any) => {
+      setMessages(prev => prev.map(msg =>
+        (msg.id === messageId) ? { ...msg, content, isEdited: true } : msg
+      ))
+    }
+
+    // Message deleted in private conversation
+    const handleMessageDeleted = ({ messageId }: any) => {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId))
+    }
+
+    // Space message edited
+    const handleSpaceMsgEdited = ({ messageId, content }: any) => {
+      setSpaceMessages(prev => prev.map(msg =>
+        (msg.id === messageId) ? { ...msg, content, isEdited: true } : msg
+      ))
+    }
+
+    // Space message deleted
+    const handleSpaceMsgDeleted = ({ messageId }: any) => {
+      setSpaceMessages(prev => prev.filter(msg => msg.id !== messageId))
+    }
+
+    // Space settings updated (name change)
+    const handleSpaceSettingsUpdated = ({ spaceId, name }: any) => {
+      setSpaces(prev => prev.map(space =>
+        (space.courseSpaceId === spaceId || space.id === spaceId)
+          ? { ...space, title: name, name }
+          : space
+      ))
+    }
+
+    // Space typing indicators
+    const handleSpaceTypingStart = ({ spaceId, senderId }: any) => {
+      if (senderId === String(user?.id)) return
+      setSpaceTypingUsers(prev => ({
+        ...prev,
+        [spaceId]: [...new Set([...(prev[spaceId] || []), senderId])]
+      }))
+    }
+
+    const handleSpaceTypingStop = ({ spaceId, senderId }: any) => {
+      setSpaceTypingUsers(prev => ({
+        ...prev,
+        [spaceId]: (prev[spaceId] || []).filter((id: string) => id !== senderId)
+      }))
+    }
+
+    socket.on("new-message", handleNewMessage)
+    socket.on("new-space-message", handleNewSpaceMessage)
+    socket.on("conversation-updated", handleConversationUpdated)
+    socket.on("new-conversation", handleNewConversation)
+    socket.on("message-edited", handleMessageEdited)
+    socket.on("message-deleted", handleMessageDeleted)
+    socket.on("space-message-edited", handleSpaceMsgEdited)
+    socket.on("space-message-deleted", handleSpaceMsgDeleted)
+    socket.on("space-settings-updated", handleSpaceSettingsUpdated)
+    socket.on("space-typing-start", handleSpaceTypingStart)
+    socket.on("space-typing-stop", handleSpaceTypingStop)
 
     return () => {
-      socket.off("new-message")
-      socket.off("new-space-message")
+      socket.off("new-message", handleNewMessage)
+      socket.off("new-space-message", handleNewSpaceMessage)
+      socket.off("conversation-updated", handleConversationUpdated)
+      socket.off("new-conversation", handleNewConversation)
+      socket.off("message-edited", handleMessageEdited)
+      socket.off("message-deleted", handleMessageDeleted)
+      socket.off("space-message-edited", handleSpaceMsgEdited)
+      socket.off("space-message-deleted", handleSpaceMsgDeleted)
+      socket.off("space-settings-updated", handleSpaceSettingsUpdated)
+      socket.off("space-typing-start", handleSpaceTypingStart)
+      socket.off("space-typing-stop", handleSpaceTypingStop)
     }
-  }, [selectedConversation?.id, selectedSpace?.courseSpaceId, selectedSpace?.id])
+  }, [selectedConversation?.id, selectedSpace?.courseSpaceId, selectedSpace?.id, user?.id])
 
   // ==================== SCROLLING ====================
 
@@ -232,7 +318,6 @@ export function MessageInbox({ enrolledCourses = [], isStudent = true }: Message
         const data = await res.json()
         setConversations(data.conversations || data.sanitized || [])
       } catch (error) {
-        console.error("Error fetching conversations:", error)
       } finally {
         setIsLoadingConversations(false)
       }
@@ -261,11 +346,9 @@ useEffect(() => {
           courseTitle: space.course?.title || space.name || "Course Space",
         })))
       } else {
-        console.log('Space fetch returned non-OK status, skipping')
         setSpaces([])
       }
     } catch (error) {
-      console.error("Error fetching spaces (non-critical):", error)
       // Don't show error to user, just set empty spaces
       setSpaces([])
     }
@@ -304,7 +387,6 @@ useEffect(() => {
             setAvailableStudents(students)
           }
         } catch (error) {
-          console.error("Error fetching students:", error)
         } finally {
           setIsFetchingStudents(false)
         }
@@ -524,7 +606,6 @@ useEffect(() => {
         ))
       }
     } catch (error) {
-      console.error("Error fetching messages:", error)
     } finally {
       setIsFetchingMessages(false)
     }
@@ -572,7 +653,6 @@ useEffect(() => {
         ))
       }
     } catch (error) {
-      console.error("Error fetching space messages:", error)
     } finally {
       setIsFetchingMessages(false)
     }
@@ -707,7 +787,6 @@ useEffect(() => {
       }
       
     } catch (error: any) {
-      console.error("Error sending message:", error)
       alert(error.message || "Failed to send message. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -749,7 +828,6 @@ useEffect(() => {
       }
       
     } catch (error: any) {
-      console.error("Error sending space message:", error)
       alert(error.message || "Failed to send message. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -1213,8 +1291,8 @@ useEffect(() => {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-start gap-3 min-w-0 flex-1">
-                            <div className="h-8 w-8 flex-shrink-0 rounded bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <Zap className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            <div className="h-8 w-8 flex-shrink-0 rounded bg-primary/15 dark:bg-primary/20/30 flex items-center justify-center">
+                              <Zap className="h-4 w-4 text-primary dark:text-primary" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-2">
@@ -1228,7 +1306,7 @@ useEffect(() => {
                                 )}
                               </div>
                               <div className="flex items-center gap-1 text-xs opacity-70 truncate mt-1">
-                                <Zap className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                <Zap className="h-3 w-3 text-primary dark:text-primary" />
                                 <span>{space.courseTitle || "Course Space"}</span>
                               </div>
                               {space.lastMessage && (
@@ -1385,7 +1463,7 @@ useEffect(() => {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <Zap className="h-5 w-5 text-primary dark:text-primary" />
                       {selectedSpace.title || selectedSpace.name || "Space"}
                     </CardTitle>
                     <CardDescription>
@@ -1454,13 +1532,32 @@ useEffect(() => {
                   )}
                 </div>
 
+                {/* Typing indicator for space */}
+                {selectedSpace && (() => {
+                  const spaceId = selectedSpace.courseSpaceId || selectedSpace.id
+                  const typingUsers = spaceTypingUsers[spaceId] || []
+                  return typingUsers.length > 0 ? (
+                    <div className="px-3 py-1 text-xs text-muted-foreground italic">
+                      {typingUsers.length === 1 ? "Someone is typing..." : `${typingUsers.length} people are typing...`}
+                    </div>
+                  ) : null
+                })()}
+
                 {/* Space Message Input */}
                 <div className="p-3 border-t">
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="Share with the class..."
                       value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
+                      onChange={(e) => {
+                        setMessageText(e.target.value)
+                        if (selectedSpace) {
+                          const spaceId = selectedSpace.courseSpaceId || selectedSpace.id
+                          emitSpaceTypingStart(spaceId)
+                          if (spaceTypingTimeoutRef.current) clearTimeout(spaceTypingTimeoutRef.current)
+                          spaceTypingTimeoutRef.current = setTimeout(() => emitSpaceTypingStop(spaceId), 2000)
+                        }
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey && !isSubmitting) {
                           e.preventDefault()

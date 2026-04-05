@@ -71,7 +71,6 @@ export default function AccessCodeRedeemInput({
         toast.error(data.message || "Invalid access code")
       }
     } catch (error) {
-      console.error("Error redeeming access code:", error)
       setError("Failed to verify code. Please try again.")
       toast.error("Failed to verify code. Please try again.")
     } finally {
@@ -87,14 +86,14 @@ export default function AccessCodeRedeemInput({
             Enter Access Code
           </Label>
           {error && (
-            <span className="text-xs text-red-600 flex items-center">
+            <span className="text-xs text-destructive flex items-center">
               <XCircle className="w-3 h-3 mr-1" />
               {error}
             </span>
           )}
         </div>
         <div className="relative">
-          <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             id="access-code"
             type="text"
@@ -109,7 +108,7 @@ export default function AccessCodeRedeemInput({
             maxLength={20}
           />
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Check your email for the access code you received
         </p>
       </div>

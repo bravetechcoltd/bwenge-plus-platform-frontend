@@ -105,8 +105,8 @@ const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-6">
-      <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+    <div className="flex flex-col sm:flex-row justify-between items-center border-t border-border bg-card px-4 py-3 sm:px-6 mt-6">
+      <div className="text-sm text-muted-foreground mb-4 sm:mb-0">
         {totalItems && (
           <p>
             Showing <span className="font-medium">{startItem}</span> to <span className="font-medium">{endItem}</span>{" "}
@@ -142,8 +142,8 @@ const PaginationButton: React.FC<{
       onClick={onClick}
       className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
         active
-          ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+          ? "z-10 bg-primary text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          : "text-foreground ring-1 ring-inset ring-gray-300 hover:bg-muted/50 focus:z-20 focus:outline-offset-0"
       }`}
       {...props}
     >

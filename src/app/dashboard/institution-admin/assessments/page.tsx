@@ -86,13 +86,11 @@ export default function InstructorAssessmentsPage() {
       })
       if (response.ok) {
         const data = await response.json()
-        console.log("📦 Pending submissions data:", data)
         setPendingSubmissions(data.data?.submissions || [])
       } else {
         toast({ title: "Error", description: "Failed to load pending assessments", variant: "destructive" })
       }
     } catch (error) {
-      console.error("Failed to load pending assessments:", error)
       toast({ title: "Error", description: "Failed to load pending assessments", variant: "destructive" })
     } finally {
       setLoading(false)
@@ -285,7 +283,7 @@ export default function InstructorAssessmentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-muted/50 dark:bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading assessments...</p>
@@ -304,9 +302,9 @@ export default function InstructorAssessmentsPage() {
     const allQuestionsWithAnswers = getAllQuestionsWithAnswers()
 
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex flex-col bg-muted/50 dark:bg-background">
         {/* Smart Compact Header */}
-        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 shadow-sm">
+        <header className="bg-card dark:bg-card border-b border-border dark:border-border sticky top-0 z-10 shadow-sm">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={() => setSelectedSubmission(null)} className="gap-2">
@@ -331,7 +329,7 @@ export default function InstructorAssessmentsPage() {
         {/* Main Content */}
         <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl">
           {/* Student Info Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-4 mb-4">
+          <div className="bg-card dark:bg-card rounded-lg shadow-sm border border-border dark:border-border p-4 mb-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Student</p>
@@ -357,30 +355,30 @@ export default function InstructorAssessmentsPage() {
           {/* Live Score Card */}
           <div className={`rounded-lg shadow-sm border p-4 mb-4 transition-all ${
             isComplete 
-              ? (isPassing ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900" : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900")
-              : "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900"
+              ? (isPassing ? "bg-success/10 dark:bg-success/20/20 border-success/30 dark:border-success/30" : "bg-destructive/10 dark:bg-destructive/20/20 border-destructive/30 dark:border-red-900")
+              : "bg-primary/10 dark:bg-primary/20/20 border-primary/30 dark:border-primary/30"
           }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {isComplete ? (
                   isPassing ? (
-                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                    <div className="flex items-center gap-2 text-success dark:text-success">
                       <TrendingUp className="w-5 h-5" />
                       <span className="font-semibold">PASSED</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                    <div className="flex items-center gap-2 text-destructive dark:text-destructive">
                       <TrendingDown className="w-5 h-5" />
                       <span className="font-semibold">FAILED</span>
                     </div>
                   )
                 ) : (
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                  <div className="flex items-center gap-2 text-primary dark:text-primary">
                     <Clock className="w-5 h-5" />
                     <span className="font-semibold">IN PROGRESS</span>
                   </div>
                 )}
-                <div className="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
+                <div className="h-8 w-px bg-secondary dark:bg-secondary"></div>
                 <div>
                   <p className="text-2xl font-bold">{scores.percentage}%</p>
                   <p className="text-xs text-muted-foreground">Passing: {selectedSubmission.assessment.passing_score}%</p>
@@ -389,9 +387,9 @@ export default function InstructorAssessmentsPage() {
               <div className="text-right text-sm">
                 <p className="font-bold text-lg">{scores.earned} / {scores.total} pts</p>
                 <div className="flex gap-2 text-xs mt-1">
-                  <span className="text-green-600">Auto: {scores.autoGraded}pts</span>
-                  <span className="text-blue-600">Manual: {scores.manualGraded}pts</span>
-                  {scores.pending > 0 && <span className="text-orange-600">Pending: {scores.pending}pts</span>}
+                  <span className="text-success">Auto: {scores.autoGraded}pts</span>
+                  <span className="text-primary">Manual: {scores.manualGraded}pts</span>
+                  {scores.pending > 0 && <span className="text-warning">Pending: {scores.pending}pts</span>}
                 </div>
               </div>
             </div>
@@ -410,7 +408,7 @@ export default function InstructorAssessmentsPage() {
               const currentGrade = gradingAnswers[question.id]
 
               return (
-                <div key={question.id} className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 p-4">
+                <div key={question.id} className="bg-card dark:bg-card rounded-lg shadow-sm border border-border dark:border-border p-4">
                   <div className="flex items-start gap-3 mb-3">
                     <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs flex-shrink-0">
                       {index + 1}
@@ -424,10 +422,10 @@ export default function InstructorAssessmentsPage() {
                               variant={isCorrect ? "default" : answer ? "destructive" : "outline"} 
                               className={`text-xs ${
                                 isCorrect 
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                                  ? 'bg-success/15 text-success dark:bg-success/20 dark:text-success' 
                                   : answer
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                                    ? 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive'
+                                    : 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground'
                               }`}
                             >
                               {isCorrect ? (
@@ -457,7 +455,7 @@ export default function InstructorAssessmentsPage() {
                         {isAutoGraded && answer && (
                           <>
                             <span>•</span>
-                            <span className={`font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`font-medium ${isCorrect ? 'text-success' : 'text-destructive'}`}>
                               {isCorrect ? 'Correct' : 'Incorrect'}
                             </span>
                           </>
@@ -468,17 +466,17 @@ export default function InstructorAssessmentsPage() {
 
                   <div className="ml-10 space-y-3">
                     {/* Student Answer Section */}
-                    <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded border border-slate-200 dark:border-slate-700">
+                    <div className="p-3 bg-muted/50 dark:bg-card/50 rounded border border-border dark:border-border">
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Student's Answer:</p>
-                      <p className={`text-sm ${answer ? '' : 'text-gray-500 italic'}`}>
+                      <p className={`text-sm ${answer ? '' : 'text-muted-foreground italic'}`}>
                         {studentAnswer}
                       </p>
                       
                       {/* Show correct answer for auto-graded questions */}
                       {isAutoGraded && (
-                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div className="mt-2 pt-2 border-t border-border dark:border-border">
                           <p className="text-xs font-semibold text-muted-foreground mb-1">Correct Answer:</p>
-                          <p className="text-sm text-green-600 dark:text-green-400">{question.correct_answer}</p>
+                          <p className="text-sm text-success dark:text-success">{question.correct_answer}</p>
                         </div>
                       )}
                     </div>
@@ -516,7 +514,7 @@ export default function InstructorAssessmentsPage() {
 
                     {/* Already graded subjective questions */}
                     {isSubjective && isAlreadyGraded && answer && (
-                      <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
+                      <div className="p-3 bg-primary/10 dark:bg-primary/20/20 rounded border border-primary/30 dark:border-primary/30">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-xs font-semibold text-muted-foreground mb-1">Already Graded</p>
@@ -525,7 +523,7 @@ export default function InstructorAssessmentsPage() {
                               <p className="text-xs mt-1 text-muted-foreground">Feedback: {answer.feedback}</p>
                             )}
                           </div>
-                          <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                          <Badge variant="outline" className="text-xs bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary">
                             Graded
                           </Badge>
                         </div>
@@ -539,7 +537,7 @@ export default function InstructorAssessmentsPage() {
         </main>
 
         {/* Smart Compact Footer */}
-        <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 shadow-lg">
+        <footer className="bg-card dark:bg-card border-t border-border dark:border-border sticky bottom-0 shadow-lg">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm">
@@ -547,7 +545,7 @@ export default function InstructorAssessmentsPage() {
                   <span className="text-muted-foreground">Score: </span>
                   <span className="font-bold text-lg">{scores.percentage}%</span>
                 </div>
-                <div className="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div className="h-6 w-px bg-secondary dark:bg-secondary"></div>
                 <div>
                   <span className="text-muted-foreground">Points: </span>
                   <span className="font-semibold">{scores.earned}/{scores.total}</span>
@@ -570,7 +568,7 @@ export default function InstructorAssessmentsPage() {
 
   // List View
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
+    <div className="min-h-screen bg-muted/50 dark:bg-background p-6">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-1">Assessment Grading</h1>
@@ -603,7 +601,7 @@ export default function InstructorAssessmentsPage() {
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-slate-50 dark:bg-slate-900 border-b">
+                      <thead className="bg-muted/50 dark:bg-card border-b">
                         <tr>
                           <th className="text-left p-3 text-xs font-semibold whitespace-nowrap">Student</th>
                           <th className="text-left p-3 text-xs font-semibold whitespace-nowrap">Assessment</th>
@@ -614,7 +612,7 @@ export default function InstructorAssessmentsPage() {
                       </thead>
                       <tbody>
                         {pendingSubmissions.map((submission) => (
-                          <tr key={submission.key} className="border-b hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                          <tr key={submission.key} className="border-b hover:bg-muted/50 dark:hover:bg-card/50">
                             <td className="p-3 whitespace-nowrap">
                               <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />

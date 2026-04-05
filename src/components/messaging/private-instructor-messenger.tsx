@@ -116,11 +116,11 @@ export function PrivateInstructorMessenger({
   const getStatusIcon = (status: 'sending' | 'sent' | 'error') => {
     switch (status) {
       case 'sending':
-        return <Clock className="h-3 w-3 text-gray-400 animate-pulse" />
+        return <Clock className="h-3 w-3 text-muted-foreground animate-pulse" />
       case 'sent':
-        return <Check className="h-3 w-3 text-green-500" />
+        return <Check className="h-3 w-3 text-success" />
       case 'error':
-        return <AlertCircle className="h-3 w-3 text-red-500" />
+        return <AlertCircle className="h-3 w-3 text-destructive" />
       default:
         return null
     }
@@ -131,7 +131,7 @@ export function PrivateInstructorMessenger({
       <CardHeader className="pb-3 border-b bg-gradient-to-r from-green-500/5 to-cyan-500/5 dark:from-green-900/20 dark:to-cyan-900/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-green-200 dark:border-green-800">
+            <Avatar className="h-10 w-10 border-2 border-success/30 dark:border-success/30">
               <AvatarImage src={instructor.profile_picture_url} />
               <AvatarFallback className="bg-gradient-to-br from-green-500 to-primary/60 text-white font-semibold">{instructorInitials}</AvatarFallback>
             </Avatar>
@@ -139,7 +139,7 @@ export function PrivateInstructorMessenger({
               <CardTitle className="text-sm truncate font-semibold">
                 {instructor.first_name} {instructor.last_name}
               </CardTitle>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{courseTitle}</p>
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">{courseTitle}</p>
             </div>
           </div>
         </div>
@@ -156,9 +156,9 @@ export function PrivateInstructorMessenger({
         <div className="flex-1 mb-3 overflow-y-auto scrollbar-hide">
           <div className="space-y-2">
             {isLoading && messages.length === 0 ? (
-              <div className="text-xs text-gray-500 text-center py-4">Loading messages...</div>
+              <div className="text-xs text-muted-foreground text-center py-4">Loading messages...</div>
             ) : allMessages.length === 0 ? (
-              <div className="text-xs text-gray-500 text-center py-4">
+              <div className="text-xs text-muted-foreground text-center py-4">
                 No messages yet. Send your first message!
               </div>
             ) : (
@@ -176,8 +176,8 @@ export function PrivateInstructorMessenger({
                     <div className="flex items-center gap-1 mt-2">
                       <span className={`text-xs ${
                         msg.senderId === instructor.id 
-                          ? "text-gray-500 dark:text-gray-400"
-                          : "text-green-100"
+                          ? "text-muted-foreground dark:text-muted-foreground"
+                          : "text-success"
                       }`}>
                         {msg.status === 'sending' 
                           ? 'Sending...' 
@@ -203,7 +203,7 @@ export function PrivateInstructorMessenger({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSending}
-            className="text-xs h-8 bg-white dark:bg-accent/40 border-gray-200 dark:border-gray-600 focus:border-green-400 dark:focus:border-green-400"
+            className="text-xs h-8 bg-card dark:bg-accent/40 border-border dark:border-border focus:border-success/60 dark:focus:border-success/60"
           />
           <Button
             size="sm"

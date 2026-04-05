@@ -65,7 +65,7 @@ const TYPE_C: Record<string, string> = {
 // ═══════════════════════════════════════════
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-card rounded-2xl border border-border shadow-sm overflow-hidden ${className}`}>
       {children}
     </div>
   );
@@ -73,9 +73,9 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 function CardHead({ title, icon: Icon }: { title: string; icon?: any }) {
   return (
-    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60 flex items-center gap-2">
+    <div className="px-6 py-4 border-b border-border bg-muted/50/60 flex items-center gap-2">
       {Icon && <Icon className="w-4 h-4" style={{ color: P }} />}
-      <h3 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">{title}</h3>
+      <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">{title}</h3>
     </div>
   );
 }
@@ -84,7 +84,7 @@ function KpiCard({ label, value, sub, icon: Icon, change, accent = P }: {
   label: string; value: string | number; sub?: string; icon: any; change?: number; accent?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="h-[3px] w-full" style={{ backgroundColor: accent }} />
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
@@ -93,16 +93,16 @@ function KpiCard({ label, value, sub, icon: Icon, change, accent = P }: {
           </div>
           {change !== undefined && (
             <span className={`flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-full border ${
-              change >= 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"
+              change >= 0 ? "bg-success/10 text-success border-success/30" : "bg-destructive/10 text-destructive border-destructive/30"
             }`}>
               {change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
               {Math.abs(change)}%
             </span>
           )}
         </div>
-        <p className="text-2xl font-black text-gray-900 leading-none">{value}</p>
-        <p className="text-xs font-semibold text-gray-500 mt-1.5">{label}</p>
-        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-2xl font-black text-foreground leading-none">{value}</p>
+        <p className="text-xs font-semibold text-muted-foreground mt-1.5">{label}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -113,10 +113,10 @@ function MBar({ label, value, display, color = P }: { label: string; value: numb
   return (
     <div>
       <div className="flex justify-between items-center mb-1.5">
-        <span className="text-sm font-semibold text-gray-600">{label}</span>
+        <span className="text-sm font-semibold text-muted-foreground">{label}</span>
         <span className="text-sm font-black" style={{ color }}>{display ?? `${(value || 0).toFixed(1)}%`}</span>
       </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
@@ -126,13 +126,13 @@ function MBar({ label, value, display, color = P }: { label: string; value: numb
 const TTip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-lg text-xs">
-      {label && <p className="font-bold text-gray-700 mb-1.5">{label}</p>}
+    <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-lg text-xs">
+      {label && <p className="font-bold text-muted-foreground mb-1.5">{label}</p>}
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-gray-500">{p.name}:</span>
-          <span className="font-bold text-gray-800">{p.value?.toLocaleString()}</span>
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-bold text-foreground">{p.value?.toLocaleString()}</span>
         </div>
       ))}
     </div>
@@ -281,18 +281,18 @@ export default function SystemAdminInstitutionAnalyticsPage() {
       <div className="text-center">
         <div className="w-10 h-10 border-[3px] rounded-full animate-spin mx-auto mb-3"
           style={{ borderColor: `${P}30`, borderTopColor: P }} />
-        <p className="text-sm font-bold text-gray-600">Loading analytics…</p>
+        <p className="text-sm font-bold text-muted-foreground">Loading analytics…</p>
       </div>
     </div>
   );
 
   if (!analytics) return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-purple-50/40">
-      <div className="text-center bg-white rounded-2xl border border-gray-100 shadow-sm p-10">
+      <div className="text-center bg-card rounded-2xl border border-border shadow-sm p-10">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: PL }}>
           <BarChart3 className="w-7 h-7" style={{ color: P }} />
         </div>
-        <p className="text-lg font-black text-gray-800 mb-1">No Analytics Data</p>
+        <p className="text-lg font-black text-foreground mb-1">No Analytics Data</p>
         <button onClick={() => fetchAnalytics()}
           className="mt-4 px-5 py-2.5 text-sm font-bold text-white rounded-xl hover:opacity-90 transition-opacity"
           style={{ backgroundColor: P }}>Retry</button>
@@ -322,7 +322,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
         <div className="rounded-2xl overflow-hidden shadow-sm" style={{ backgroundColor: P }}>
           <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 bg-card/15 rounded-xl flex items-center justify-center shrink-0">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -334,7 +334,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
             <div className="flex items-center gap-2 flex-wrap">
               {/* time range — CLIENT-SIDE, no API call */}
               <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-36 bg-white/15 border-white/20 text-white text-xs font-bold h-9 hover:bg-white/25 focus:ring-0">
+                <SelectTrigger className="w-36 bg-card/15 border-white/20 text-white text-xs font-bold h-9 hover:bg-card/25 focus:ring-0">
                   <Calendar className="w-3.5 h-3.5 mr-1.5 text-white/70" />
                   <SelectValue />
                 </SelectTrigger>
@@ -349,7 +349,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
 
               {/* type filter — CLIENT-SIDE */}
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-44 bg-white/15 border-white/20 text-white text-xs font-bold h-9 hover:bg-white/25 focus:ring-0">
+                <SelectTrigger className="w-44 bg-card/15 border-white/20 text-white text-xs font-bold h-9 hover:bg-card/25 focus:ring-0">
                   <Building2 className="w-3.5 h-3.5 mr-1.5 text-white/70" />
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
@@ -363,13 +363,13 @@ export default function SystemAdminInstitutionAnalyticsPage() {
               </Select>
 
               <button onClick={() => fetchAnalytics(true)} disabled={refreshing}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50 h-9">
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-card/15 hover:bg-card/25 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-50 h-9">
                 <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
                 {refreshing ? "…" : "Refresh"}
               </button>
 
               <button onClick={handleExport}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-xl transition-colors h-9">
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-card/15 hover:bg-card/25 text-white text-xs font-bold rounded-xl transition-colors h-9">
                 <Download className="w-3.5 h-3.5" />Export
               </button>
             </div>
@@ -385,11 +385,11 @@ export default function SystemAdminInstitutionAnalyticsPage() {
               { label: "Completion",   val: `${summary.average_completion_rate?.toFixed(1)}%` },
             ].map((m, i) => (
               <div key={i} className="flex items-center gap-4">
-                {i > 0 && <div className="w-px h-4 bg-white/20 hidden md:block" />}
+                {i > 0 && <div className="w-px h-4 bg-card/20 hidden md:block" />}
                 <div>
                   <p className="text-[10px] text-white/60 uppercase tracking-widest font-bold">{m.label}</p>
                   <div className="flex items-center gap-1.5">
-                    {(m as any).dot && <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+                    {(m as any).dot && <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />}
                     <p className="text-xs text-white font-black">{m.val}</p>
                   </div>
                 </div>
@@ -420,11 +420,11 @@ export default function SystemAdminInstitutionAnalyticsPage() {
         </div>
 
         {/* ══ TAB BAR ══════════════════════════════════════════════════════ */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-1.5 flex gap-1 overflow-x-auto">
+        <div className="bg-card rounded-xl border border-border shadow-sm p-1.5 flex gap-1 overflow-x-auto">
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`flex-1 px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap min-w-[80px] ${
-                activeTab === tab ? "text-white shadow-sm" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                activeTab === tab ? "text-white shadow-sm" : "text-muted-foreground hover:text-muted-foreground hover:bg-muted/50"
               }`}
               style={activeTab === tab ? { backgroundColor: P } : {}}>
               {tab === "risk" ? "⚠ Risk" : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -460,19 +460,19 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                         {iByType.map((item: any, i: number) => {
                           const col = TYPE_C[item.type] || C[i % C.length];
                           return (
-                            <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors">
                               <div className="flex items-center gap-2">
                                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: col }} />
-                                <span className="text-xs font-semibold text-gray-600 truncate">{item.type.replace("_", " ")}</span>
+                                <span className="text-xs font-semibold text-muted-foreground truncate">{item.type.replace("_", " ")}</span>
                               </div>
-                              <span className="text-sm font-black text-gray-800 ml-2">{item.count}</span>
+                              <span className="text-sm font-black text-foreground ml-2">{item.count}</span>
                             </div>
                           );
                         })}
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400 text-center py-12">No data for selected filter</p>
+                    <p className="text-sm text-muted-foreground text-center py-12">No data for selected filter</p>
                   )}
                 </div>
               </Card>
@@ -489,7 +489,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     ].map((m, i) => (
                       <div key={i} className="rounded-xl p-3 text-center" style={{ backgroundColor: `${m.color}12` }}>
                         <p className="text-lg font-black" style={{ color: m.color }}>{m.val}</p>
-                        <p className="text-xs text-gray-500 font-semibold mt-0.5">{m.label}</p>
+                        <p className="text-xs text-muted-foreground font-semibold mt-0.5">{m.label}</p>
                       </div>
                     ))}
                   </div>
@@ -498,9 +498,9 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     <MBar label="Course Engagement Rate" value={engagement_metrics.course_engagement_rate} color={BLUE} />
                     <MBar label="Avg Completion Rate"    value={summary.average_completion_rate}           color={OK}   />
                   </div>
-                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                  <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
                     <span>Total time spent</span>
-                    <span className="font-black text-gray-700">{engagement_metrics.total_time_spent_hours?.toFixed(1)}h</span>
+                    <span className="font-black text-muted-foreground">{engagement_metrics.total_time_spent_hours?.toFixed(1)}h</span>
                   </div>
                 </div>
               </Card>
@@ -535,12 +535,12 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                 { label: "Avg Courses / Institution",  value: comparative_analysis.average_courses_per_institution,         icon: BookOpen,     color: BLUE },
                 { label: "Avg Enrollments / Course",   value: comparative_analysis.average_enrollments_per_course,          icon: GraduationCap,color: AMB  },
               ].map((m, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div key={i} className="bg-card rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-shadow">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${m.color}14` }}>
                     <m.icon className="w-4 h-4" style={{ color: m.color }} />
                   </div>
-                  <p className="text-2xl font-black text-gray-900">{m.value}</p>
-                  <p className="text-xs font-semibold text-gray-500 mt-1">{m.label}</p>
+                  <p className="text-2xl font-black text-foreground">{m.value}</p>
+                  <p className="text-xs font-semibold text-muted-foreground mt-1">{m.label}</p>
                 </div>
               ))}
             </div>
@@ -553,9 +553,9 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     <Zap className="w-4 h-4" style={{ color: OK }} />
                     <span className="text-xs font-black uppercase tracking-widest" style={{ color: OK }}>Top Performer</span>
                   </div>
-                  <p className="font-black text-gray-900">{comparative_analysis.top_performing_institution.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Score: <span className="font-bold text-gray-700">{comparative_analysis.top_performing_institution.score?.toFixed(0)}</span>
+                  <p className="font-black text-foreground">{comparative_analysis.top_performing_institution.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Score: <span className="font-bold text-muted-foreground">{comparative_analysis.top_performing_institution.score?.toFixed(0)}</span>
                   </p>
                 </div>
               )}
@@ -565,9 +565,9 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     <AlertCircle className="w-4 h-4" style={{ color: WARN }} />
                     <span className="text-xs font-black uppercase tracking-widest" style={{ color: WARN }}>Needs Attention</span>
                   </div>
-                  <p className="font-black text-gray-900">{comparative_analysis.bottom_performing_institution.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Score: <span className="font-bold text-gray-700">{comparative_analysis.bottom_performing_institution.score?.toFixed(0)}</span>
+                  <p className="font-black text-foreground">{comparative_analysis.bottom_performing_institution.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Score: <span className="font-bold text-muted-foreground">{comparative_analysis.bottom_performing_institution.score?.toFixed(0)}</span>
                   </p>
                 </div>
               )}
@@ -583,26 +583,26 @@ export default function SystemAdminInstitutionAnalyticsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50/60">
+                    <tr className="border-b border-border bg-muted/50/60">
                       {["Institution", "Type", "Members", "Courses", "Enrollments", "Completion", "Growth", ""].map((h, i) => (
-                        <th key={i} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 ${i > 1 ? "text-right" : "text-left"}`}>{h}</th>
+                        <th key={i} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground ${i > 1 ? "text-right" : "text-left"}`}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {top_institutions.length === 0
-                      ? <tr><td colSpan={8} className="text-center py-8 text-sm text-gray-400">No institutions match this filter</td></tr>
+                      ? <tr><td colSpan={8} className="text-center py-8 text-sm text-muted-foreground">No institutions match this filter</td></tr>
                       : top_institutions.map((inst: any) => (
-                        <tr key={inst.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <tr key={inst.id} className="border-b border-border hover:bg-muted/50/50 transition-colors">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
                               {inst.logo_url
-                                ? <img src={inst.logo_url} alt={inst.name} className="w-8 h-8 rounded-lg object-cover border border-gray-100" />
+                                ? <img src={inst.logo_url} alt={inst.name} className="w-8 h-8 rounded-lg object-cover border border-border" />
                                 : <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: PL }}>
                                     <Building2 className="w-4 h-4" style={{ color: P }} />
                                   </div>
                               }
-                              <span className="text-sm font-bold text-gray-800 max-w-[180px] truncate">{inst.name}</span>
+                              <span className="text-sm font-bold text-foreground max-w-[180px] truncate">{inst.name}</span>
                             </div>
                           </td>
                           <td className="px-4 py-3">
@@ -611,9 +611,9 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                               {inst.type.replace("_", " ")}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right text-sm font-bold text-gray-800">{fmtN(inst.members)}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-600">{inst.courses}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-600">{fmtK(inst.enrollments)}</td>
+                          <td className="px-4 py-3 text-right text-sm font-bold text-foreground">{fmtN(inst.members)}</td>
+                          <td className="px-4 py-3 text-right text-sm text-muted-foreground">{inst.courses}</td>
+                          <td className="px-4 py-3 text-right text-sm text-muted-foreground">{fmtK(inst.enrollments)}</td>
                           <td className="px-4 py-3 text-right">
                             <span className="text-sm font-bold"
                               style={{ color: inst.completion_rate >= 70 ? OK : inst.completion_rate >= 40 ? AMB : inst.completion_rate > 0 ? ORG : "#9ca3af" }}>
@@ -627,8 +627,8 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <button onClick={() => { setSelInst(inst); setShowDialog(true); }}
-                              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                              <Eye className="w-4 h-4 text-gray-400" />
+                              className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                              <Eye className="w-4 h-4 text-muted-foreground" />
                             </button>
                           </td>
                         </tr>
@@ -643,19 +643,19 @@ export default function SystemAdminInstitutionAnalyticsPage() {
               <CardHead title="Completion Rate Breakdown" icon={Target} />
               <div className="p-6 space-y-4">
                 {institution_performance.length === 0
-                  ? <p className="text-sm text-gray-400 text-center py-4">No data for this filter</p>
+                  ? <p className="text-sm text-muted-foreground text-center py-4">No data for this filter</p>
                   : institution_performance.map((inst: any) => {
                       const barColor = inst.completion_rate >= 70 ? OK : inst.completion_rate >= 40 ? AMB : inst.completion_rate > 0 ? ORG : "#d1d5db";
                       return (
                         <div key={inst.id} className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-bold text-gray-700 truncate max-w-[260px]">{inst.name}</span>
-                            <div className="flex items-center gap-3 text-xs text-gray-400 shrink-0 ml-3">
+                            <span className="text-sm font-bold text-muted-foreground truncate max-w-[260px]">{inst.name}</span>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0 ml-3">
                               <span>{inst.members}m · {inst.courses}c</span>
                               <span className="font-black" style={{ color: barColor }}>{inst.completion_rate?.toFixed(0)}%</span>
                             </div>
                           </div>
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div className="h-full rounded-full" style={{ width: `${Math.min(inst.completion_rate, 100)}%`, backgroundColor: barColor }} />
                           </div>
                         </div>
@@ -707,18 +707,18 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                       </div>
                       <div className="space-y-1 mt-3">
                         {membersByRole.map((r: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50">
+                          <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-muted/50">
                             <div className="flex items-center gap-2">
                               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: C[i % C.length] }} />
-                              <span className="text-xs font-semibold text-gray-600">{r.role}</span>
+                              <span className="text-xs font-semibold text-muted-foreground">{r.role}</span>
                             </div>
-                            <span className="text-sm font-black text-gray-800">{fmtN(r.count)}</span>
+                            <span className="text-sm font-black text-foreground">{fmtN(r.count)}</span>
                           </div>
                         ))}
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400 text-center py-8">No role data</p>
+                    <p className="text-sm text-muted-foreground text-center py-8">No role data</p>
                   )}
                 </div>
               </Card>
@@ -760,9 +760,9 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                 { label: "MOOC",      value: content_metrics.mooc_courses,       color: BLUE },
                 { label: "SPOC",      value: content_metrics.spoc_courses,       color: PURP },
               ].map((m, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center hover:shadow-md transition-shadow">
+                <div key={i} className="bg-card rounded-2xl border border-border shadow-sm p-5 text-center hover:shadow-md transition-shadow">
                   <div className="h-1 w-10 mx-auto rounded-full mb-4" style={{ backgroundColor: m.color }} />
-                  <p className="text-3xl font-black text-gray-900">{m.value}</p>
+                  <p className="text-3xl font-black text-foreground">{m.value}</p>
                   <p className="text-xs font-semibold mt-1" style={{ color: m.color }}>{m.label}</p>
                 </div>
               ))}
@@ -805,8 +805,8 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     { label: "With Certificates",  value: fmtN(content_metrics.courses_with_certificates),         color: OK   },
                     { label: "Archived",           value: fmtN(content_metrics.archived_courses),                  color: "#94a3b8" },
                   ].map((m, i) => (
-                    <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                      <span className="text-sm text-gray-500 font-semibold">{m.label}</span>
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <span className="text-sm text-muted-foreground font-semibold">{m.label}</span>
                       <span className="text-sm font-black" style={{ color: m.color }}>{m.value}</span>
                     </div>
                   ))}
@@ -826,8 +826,8 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                 { label: "Monthly", v: trends.growth_rates?.monthly ?? 0 },
                 { label: "Yearly",  v: trends.growth_rates?.yearly  ?? 0 },
               ].map((g, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{g.label} Growth</p>
+                <div key={i} className="bg-card rounded-2xl border border-border shadow-sm p-5">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">{g.label} Growth</p>
                   <p className="text-2xl font-black" style={{ color: g.v >= 0 ? OK : WARN }}>
                     {g.v >= 0 ? "+" : ""}{g.v?.toFixed(1)}%
                   </p>
@@ -951,7 +951,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                     style={{ color: m.value > 0 ? m.color : OK }}>{m.label}</p>
                   <p className="text-3xl font-black"
                     style={{ color: m.value > 0 ? m.color : OK }}>{m.value}</p>
-                  <p className="text-xs font-semibold mt-1 text-gray-400">institutions</p>
+                  <p className="text-xs font-semibold mt-1 text-muted-foreground">institutions</p>
                 </div>
               ))}
             </div>
@@ -963,18 +963,18 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                   ? (
                     <div className="text-center py-8">
                       <CheckCircle className="w-10 h-10 mx-auto mb-3" style={{ color: OK }} />
-                      <p className="text-sm font-bold text-gray-600">No at-risk institutions</p>
+                      <p className="text-sm font-bold text-muted-foreground">No at-risk institutions</p>
                     </div>
                   )
                   : risk_metrics.at_risk_institutions.map((inst: any) => (
                     <div key={inst.id}
-                      className="flex items-start justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/40 hover:bg-gray-50 transition-colors">
+                      className="flex items-start justify-between p-4 rounded-xl border border-border bg-muted/50/40 hover:bg-muted/50 transition-colors">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-gray-800 text-sm">{inst.name}</p>
+                          <p className="font-bold text-foreground text-sm">{inst.name}</p>
                           {riskBadge(inst.risk_level)}
                         </div>
-                        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                           <span>{inst.members} members</span>·
                           <span>{inst.courses} courses</span>·
                           <span>{inst.engagement_rate?.toFixed(1)}% engagement</span>
@@ -987,7 +987,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                         </div>
                       </div>
                       <Link href={`/dashboard/system-admin/institutions/${inst.id}`}
-                        className="ml-3 shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-200 text-gray-600 hover:bg-white transition-colors">
+                        className="ml-3 shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-border text-muted-foreground hover:bg-card transition-colors">
                         <Eye className="w-3.5 h-3.5" />Review
                       </Link>
                     </div>
@@ -1002,11 +1002,11 @@ export default function SystemAdminInstitutionAnalyticsPage() {
         <div className="rounded-2xl border p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
           style={{ backgroundColor: `${P}08`, borderColor: `${P}20` }}>
           <div>
-            <h4 className="text-base font-black text-gray-800 mb-1">Platform Summary</h4>
-            <p className="text-sm text-gray-500">
+            <h4 className="text-base font-black text-foreground mb-1">Platform Summary</h4>
+            <p className="text-sm text-muted-foreground">
               {summary.total_institutions} institutions · {fmtN(summary.total_members)} members · {fmtN(summary.total_courses)} courses
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {summary.active_institutions} active · {summary.average_completion_rate?.toFixed(1)}% avg completion
             </p>
           </div>
@@ -1031,19 +1031,19 @@ export default function SystemAdminInstitutionAnalyticsPage() {
         <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-black">Institution Details</DialogTitle>
-            <DialogDescription className="text-xs text-gray-400">Performance snapshot</DialogDescription>
+            <DialogDescription className="text-xs text-muted-foreground">Performance snapshot</DialogDescription>
           </DialogHeader>
           {selInst && (
             <div className="space-y-5 mt-1">
               <div className="flex items-center gap-4">
                 {selInst.logo_url
-                  ? <img src={selInst.logo_url} alt={selInst.name} className="w-14 h-14 rounded-xl object-cover border border-gray-100" />
+                  ? <img src={selInst.logo_url} alt={selInst.name} className="w-14 h-14 rounded-xl object-cover border border-border" />
                   : <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: PL }}>
                       <Building2 className="w-7 h-7" style={{ color: P }} />
                     </div>
                 }
                 <div>
-                  <h3 className="text-base font-black text-gray-900">{selInst.name}</h3>
+                  <h3 className="text-base font-black text-foreground">{selInst.name}</h3>
                   <span className="text-xs font-bold px-2.5 py-1 rounded-full mt-1 inline-block"
                     style={{ backgroundColor: PL, color: P }}>
                     {selInst.type?.replace("_", " ")}
@@ -1059,28 +1059,28 @@ export default function SystemAdminInstitutionAnalyticsPage() {
                   { label: "Avg Rating",  value: selInst.average_rating?.toFixed(1) ?? "—" },
                 ].map((m, i) => (
                   <div key={i} className="rounded-xl p-3.5" style={{ backgroundColor: PL }}>
-                    <p className="text-xs text-gray-500 font-semibold mb-0.5">{m.label}</p>
+                    <p className="text-xs text-muted-foreground font-semibold mb-0.5">{m.label}</p>
                     <p className="text-xl font-black" style={{ color: P }}>{m.value}</p>
                   </div>
                 ))}
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Performance</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Performance</p>
                 <MBar label="Completion Rate" value={selInst.completion_rate ?? 0} />
                 <MBar label="Growth"
                   value={Math.min(selInst.growth * 5, 100)}
                   display={`${selInst.growth >= 0 ? "+" : ""}${selInst.growth?.toFixed(1)}%`} />
               </div>
 
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 Created: {format(new Date(selInst.created_at), "MMMM d, yyyy")}
               </p>
             </div>
           )}
           <DialogFooter className="mt-2">
             <button onClick={() => setShowDialog(false)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+              className="px-4 py-2 text-sm font-bold text-muted-foreground rounded-xl border border-border hover:bg-muted/50 transition-colors">
               Close
             </button>
             <Link href={`/dashboard/system-admin/institutions/${selInst?.id}`}

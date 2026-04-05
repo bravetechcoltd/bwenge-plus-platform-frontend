@@ -92,7 +92,7 @@ export function InstructorSelector({
               </Badge>
             </div>
           ) : (
-            <span className="text-gray-500">{placeholder}</span>
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -144,10 +144,10 @@ export function InstructorSelector({
                             {instructor.institution_role}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-500 truncate">
+                        <p className="text-sm text-muted-foreground truncate">
                           {instructor.email}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           {instructor.courses_tached} courses taught
                         </p>
                       </div>

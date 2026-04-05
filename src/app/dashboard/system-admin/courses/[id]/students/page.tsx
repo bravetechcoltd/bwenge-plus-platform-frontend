@@ -75,7 +75,6 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
           setStudents(data.data || [])
         }
       } catch (error) {
-        console.error("Failed to fetch students:", error)
       } finally {
         setIsLoading(false)
       }
@@ -94,13 +93,13 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-100 text-red-800"
+        return "bg-destructive/15 text-destructive"
       case "instructor":
-        return "bg-blue-100 text-blue-800"
+        return "bg-primary/15 text-primary"
       case "student":
-        return "bg-green-100 text-green-800"
+        return "bg-success/15 text-success"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-foreground"
     }
   }
 
@@ -166,7 +165,6 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
         alert(`Failed to add students: ${errorData.message || "Unknown error"}`)
       }
     } catch (error) {
-      console.error("Failed to add students:", error)
       alert("Failed to add students. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -218,7 +216,6 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
         alert(`Failed to remove student: ${errorData.message || "Unknown error"}`)
       }
     } catch (error) {
-      console.error("Failed to remove student:", error)
       alert("Failed to remove student. Please try again.")
     } finally {
       setIsRemoving(false)
@@ -256,7 +253,7 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
           <CardContent>
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div key={i} className="h-12 bg-secondary dark:bg-secondary rounded animate-pulse" />
               ))}
             </div>
           </CardContent>
@@ -394,7 +391,7 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {student.user.email}
-                        {!student.user.is_verified && <Mail className="w-4 h-4 text-yellow-500" />}
+                        {!student.user.is_verified && <Mail className="w-4 h-4 text-warning" />}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -420,7 +417,7 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => openRemoveDialog(student)}>
+                          <DropdownMenuItem className="text-destructive" onClick={() => openRemoveDialog(student)}>
                             <Trash2 className="mr-2 h-4 w-4" />
                             Remove Student
                           </DropdownMenuItem>
@@ -449,7 +446,7 @@ export default function StudentsManagement({ params }: { params: Promise<{ id: s
             <AlertDialogAction
               onClick={handleRemoveStudent}
               disabled={isRemoving}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              className="bg-destructive hover:bg-destructive focus:ring-red-600"
             >
               {isRemoving ? "Removing..." : "Remove Student"}
             </AlertDialogAction>

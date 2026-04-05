@@ -109,7 +109,7 @@ export default function LearningNavigation({
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-sm text-muted-foreground truncate">{getDisplayTitle()}</p>
                 {isCurrentStepCompleted && getCompletionText() && (
-                  <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-xs text-success dark:text-success bg-success/10 dark:bg-success/20/30 px-2 py-0.5 rounded-full">
                     <CheckCircle className="w-3 h-3" />
                     {getCompletionText()}
                   </span>
@@ -137,7 +137,7 @@ export default function LearningNavigation({
                 disabled={isNextButtonDisabled()}
                 className={`flex items-center gap-1 ${
                   isCurrentStepCompleted
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-success hover:bg-success"
                     : "bg-[#0158B7] hover:bg-[#014A9C]"
                 } ${isNextStepLocked && !isCurrentStepCompleted ? "opacity-70 cursor-not-allowed" : ""}`}
               >
@@ -165,7 +165,7 @@ export default function LearningNavigation({
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{getDisplayTitle()}</p>
                 {isCurrentStepCompleted && getCompletionText() && (
-                  <span className="flex items-center gap-1 text-xs text-green-600 mt-1">
+                  <span className="flex items-center gap-1 text-xs text-success mt-1">
                     <CheckCircle className="w-3 h-3" />
                     {getCompletionText()}
                   </span>
@@ -195,7 +195,7 @@ export default function LearningNavigation({
                 disabled={isNextButtonDisabled()}
                 className={`flex-1 ${
                   isCurrentStepCompleted
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-success hover:bg-success"
                     : "bg-[#0158B7] hover:bg-[#014A9C]"
                 } ${isNextStepLocked && !isCurrentStepCompleted ? "opacity-70 cursor-not-allowed" : ""}`}
               >
@@ -205,7 +205,7 @@ export default function LearningNavigation({
             </div>
 
             {isNextStepLocked && !isCurrentStepCompleted && (
-              <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
+              <div className="text-xs text-warning dark:text-warning bg-warning/10 dark:bg-warning/20/20 p-2 rounded">
                 <p className="font-medium">Complete this lesson to unlock the next one</p>
               </div>
             )}

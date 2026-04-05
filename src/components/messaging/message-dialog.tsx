@@ -74,7 +74,7 @@ export function MessageConversation({
               <CardTitle className="text-base">
                 {recipient.first_name} {recipient.last_name}
               </CardTitle>
-              <p className="text-xs text-gray-600">{courseTitle}</p>
+              <p className="text-xs text-muted-foreground">{courseTitle}</p>
             </div>
           </div>
         </div>
@@ -84,13 +84,13 @@ export function MessageConversation({
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {isLoading ? (
-              <div className="text-center text-sm text-gray-500 py-8">Loading messages...</div>
+              <div className="text-center text-sm text-muted-foreground py-8">Loading messages...</div>
             ) : messages.length === 0 ? (
-              <div className="text-center text-sm text-gray-500 py-8">No messages yet. Start a conversation!</div>
+              <div className="text-center text-sm text-muted-foreground py-8">No messages yet. Start a conversation!</div>
             ) : (
               messages.map((msg) => (
                 <div key={msg.id} className="flex justify-end">
-                  <div className="bg-blue-600 text-white rounded-lg px-3 py-2 max-w-xs break-words">
+                  <div className="bg-primary text-white rounded-lg px-3 py-2 max-w-xs break-words">
                     <p className="text-sm">{msg.content}</p>
                     <p className="text-xs opacity-70 mt-1">
                       {formatMessageTime(msg.createdAt)}

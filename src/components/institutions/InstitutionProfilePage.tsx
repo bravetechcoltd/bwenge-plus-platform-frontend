@@ -161,8 +161,10 @@ interface Institution {
 interface InstitutionLimits {
   max_instructors: number;
   max_members: number;
+  total_capacity?: number;
   current_instructors: number;
   current_members: number;
+  total_current?: number;
   instructors_remaining: number;
   members_remaining: number;
   can_add_instructor: boolean;
@@ -458,15 +460,15 @@ export default function InstitutionProfilePage() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-purple-100 text-purple-700";
+        return "bg-primary/15 text-primary";
       case "CONTENT_CREATOR":
-        return "bg-blue-100 text-blue-700";
+        return "bg-primary/15 text-primary";
       case "INSTRUCTOR":
-        return "bg-green-100 text-green-700";
+        return "bg-success/15 text-success";
       case "MEMBER":
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -492,11 +494,11 @@ export default function InstitutionProfilePage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-8 text-center">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">
+            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-muted-foreground mb-2">
               {!hasAccess ? "Access Denied" : "Institution Not Found"}
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               {!hasAccess
                 ? "You don't have admin access to this institution."
                 : "You don't have access to any institution or the institution doesn't exist."}
@@ -558,7 +560,7 @@ export default function InstitutionProfilePage() {
             )}
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               {institution.name}
             </h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -566,7 +568,7 @@ export default function InstitutionProfilePage() {
                 {institution.type.replace(/_/g, " ").toLowerCase()}
               </Badge>
               {institution.is_active ? (
-                <Badge className="bg-green-100 text-green-700">
+                <Badge className="bg-success/15 text-success">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
                   Active
                 </Badge>
@@ -704,17 +706,17 @@ export default function InstitutionProfilePage() {
                   ) : (
                     <>
                       <div>
-                        <Label className="text-sm text-gray-500">
+                        <Label className="text-sm text-muted-foreground">
                           Description
                         </Label>
-                        <p className="mt-1 text-gray-700">
+                        <p className="mt-1 text-muted-foreground">
                           {institution.description ||
                             "No description provided"}
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm text-gray-500">
+                          <Label className="text-sm text-muted-foreground">
                             Type
                           </Label>
                           <p className="mt-1 capitalize">
@@ -743,7 +745,7 @@ export default function InstitutionProfilePage() {
                       <p className="text-2xl font-bold">
                         {selectedInstitution?.memberCount || 0}
                       </p>
-                      <p className="text-sm text-gray-500">Members</p>
+                      <p className="text-sm text-muted-foreground">Members</p>
                     </div>
                     <div className="bg-primary/5 rounded-lg p-4 text-center">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -752,7 +754,7 @@ export default function InstitutionProfilePage() {
                       <p className="text-2xl font-bold">
                         {selectedInstitution?.courseCount || 0}
                       </p>
-                      <p className="text-sm text-gray-500">Courses</p>
+                      <p className="text-sm text-muted-foreground">Courses</p>
                     </div>
                     <div className="bg-primary/5 rounded-lg p-4 text-center">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -761,7 +763,7 @@ export default function InstitutionProfilePage() {
                       <p className="text-2xl font-bold">
                         {selectedInstitution?.categoryCount || 0}
                       </p>
-                      <p className="text-sm text-gray-500">Categories</p>
+                      <p className="text-sm text-muted-foreground">Categories</p>
                     </div>
                     <div className="bg-primary/5 rounded-lg p-4 text-center">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -772,7 +774,7 @@ export default function InstitutionProfilePage() {
                           selectedInstitution?.statistics?.active_learners
                         )}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Active Learners
                       </p>
                     </div>
@@ -860,7 +862,7 @@ export default function InstitutionProfilePage() {
                           <p className="font-semibold">
                             {authUser.first_name} {authUser.last_name}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {authUser.email}
                           </p>
                           <Badge
@@ -874,13 +876,13 @@ export default function InstitutionProfilePage() {
                       </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center">
-                          <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                          <Phone className="w-4 h-4 mr-2 text-muted-foreground" />
                           <span>
                             {authUser.phone_number || "No phone"}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <Globe className="w-4 h-4 mr-2 text-gray-400" />
+                          <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
                           <span>
                             {authUser.country || "No country specified"}
                           </span>
@@ -951,7 +953,7 @@ export default function InstitutionProfilePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1 md:w-auto">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder="Search members..."
                       value={memberSearch}
@@ -962,19 +964,19 @@ export default function InstitutionProfilePage() {
                   
                   {/* Limits Display in Members Tab */}
                   {limits && (
-                    <div className="hidden md:flex items-center gap-3 text-xs bg-gray-50 px-3 py-1.5 rounded-lg">
+                    <div className="hidden md:flex items-center gap-3 text-xs bg-muted/50 px-3 py-1.5 rounded-lg">
                       <div className="flex items-center gap-1">
-                        <UserCog className="w-3.5 h-3.5 text-indigo-600" />
-                        <span className="text-gray-600">Instructors:</span>
-                        <span className={`font-medium ${!canAddInstructor ? 'text-red-600' : 'text-gray-900'}`}>
+                        <UserCog className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-muted-foreground">Instructors:</span>
+                        <span className={`font-medium ${!canAddInstructor ? 'text-destructive' : 'text-foreground'}`}>
                           {limits.current_instructors}/{limits.max_instructors === 0 ? '∞' : limits.max_instructors}
                         </span>
                       </div>
-                      <div className="w-px h-4 bg-gray-300" />
+                      <div className="w-px h-4 bg-secondary" />
                       <div className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5 text-indigo-600" />
-                        <span className="text-gray-600">Members:</span>
-                        <span className={`font-medium ${!canAddMember ? 'text-red-600' : 'text-gray-900'}`}>
+                        <Users className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-muted-foreground">Members:</span>
+                        <span className={`font-medium ${!canAddMember ? 'text-destructive' : 'text-foreground'}`}>
                           {limits.current_members}/{limits.max_members === 0 ? '∞' : limits.max_members}
                         </span>
                       </div>
@@ -992,7 +994,7 @@ export default function InstitutionProfilePage() {
                 </div>
               </div>
               {!canAddMember && (
-                <p className="text-sm text-red-600 mt-2">
+                <p className="text-sm text-destructive mt-2">
                   Member limit reached. Cannot add new members until some are removed or the limit is increased.
                 </p>
               )}
@@ -1034,7 +1036,7 @@ export default function InstitutionProfilePage() {
                                   {member.user.first_name}{" "}
                                   {member.user.last_name}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                   {member.user.email}
                                 </p>
                               </div>
@@ -1051,14 +1053,14 @@ export default function InstitutionProfilePage() {
                             {member.is_active ? (
                               <Badge
                                 variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200"
+                                className="bg-success/10 text-success border-success/30"
                               >
                                 Active
                               </Badge>
                             ) : (
                               <Badge
                                 variant="outline"
-                                className="bg-red-50 text-red-700 border-red-200"
+                                className="bg-destructive/10 text-destructive border-destructive/30"
                               >
                                 Inactive
                               </Badge>
@@ -1122,7 +1124,7 @@ export default function InstitutionProfilePage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  className="text-red-600"
+                                  className="text-destructive"
                                   onClick={() =>
                                     handleRemoveMember(member.user.id)
                                   }
@@ -1140,11 +1142,11 @@ export default function InstitutionProfilePage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                     No Members Found
                   </h3>
-                  <p className="text-gray-500 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     {memberSearch
                       ? "Try a different search term"
                       : "Add your first member to get started"}
@@ -1177,10 +1179,10 @@ export default function InstitutionProfilePage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Allow Public Courses
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Enable courses to be publicly accessible
                       </p>
                     </div>
@@ -1201,10 +1203,10 @@ export default function InstitutionProfilePage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Require SPOC Approval
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Require approval for SPOC course enrollments
                       </p>
                     </div>
@@ -1249,16 +1251,16 @@ export default function InstitutionProfilePage() {
                           })
                         }
                         disabled={!limits?.can_add_instructor}
-                        className={limits?.can_add_instructor ? "" : "bg-gray-100 cursor-not-allowed opacity-60"}
+                        className={limits?.can_add_instructor ? "" : "bg-muted cursor-not-allowed opacity-60"}
                       />
              
                       {limits && !limits.can_add_instructor && (
-                        <p className="text-xs text-amber-600 mt-1">
+                        <p className="text-xs text-warning mt-1">
                           ⚠️ Instructor limit reached. Cannot add more instructors.
                         </p>
                       )}
                       {limits?.can_add_instructor && (
-                        <p className="text-xs text-blue-600 mt-1">
+                        <p className="text-xs text-primary mt-1">
                           You can increase the limit up to {limits.current_instructors + limits.instructors_remaining} instructors.
                         </p>
                       )}
@@ -1283,16 +1285,16 @@ export default function InstitutionProfilePage() {
                           })
                         }
                         disabled={!limits?.can_add_member}
-                        className={limits?.can_add_member ? "" : "bg-gray-100 cursor-not-allowed opacity-60"}
+                        className={limits?.can_add_member ? "" : "bg-muted cursor-not-allowed opacity-60"}
                       />
                    
                       {limits && !limits.can_add_member && (
-                        <p className="text-xs text-amber-600 mt-1">
+                        <p className="text-xs text-warning mt-1">
                           ⚠️ Member limit reached. Cannot add more members.
                         </p>
                       )}
                       {limits?.can_add_member && (
-                        <p className="text-xs text-blue-600 mt-1">
+                        <p className="text-xs text-primary mt-1">
                           You can increase the limit up to {limits.current_members + limits.members_remaining} members.
                         </p>
                       )}
@@ -1329,8 +1331,8 @@ export default function InstitutionProfilePage() {
                           )}
                         </div>
                       ) : (
-                        <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                          <Building2 className="w-8 h-8 text-gray-400" />
+                        <div className="w-20 h-20 border-2 border-dashed border-border rounded-lg flex items-center justify-center">
+                          <Building2 className="w-8 h-8 text-muted-foreground" />
                         </div>
                       )}
                       {isEditing && (
@@ -1353,7 +1355,7 @@ export default function InstitutionProfilePage() {
                             onChange={handleLogoChange}
                             className="hidden"
                           />
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             PNG, JPG or WEBP. Max 5MB.
                           </p>
                         </div>
@@ -1366,17 +1368,17 @@ export default function InstitutionProfilePage() {
               <Separator />
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-red-600">
+                <h3 className="text-lg font-semibold text-destructive">
                   Danger Zone
                 </h3>
-                <div className="space-y-4 rounded-lg border border-red-200 bg-red-50 p-4">
+                <div className="space-y-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-semibold text-red-700">
+                      <h4 className="font-semibold text-destructive">
                         {institution.is_active ? "Deactivate" : "Activate"}{" "}
                         Institution
                       </h4>
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-destructive">
                         {institution.is_active
                           ? "Temporarily disable the institution"
                           : "Reactivate the institution"}
@@ -1410,11 +1412,11 @@ export default function InstitutionProfilePage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="text-center py-8">
-                  <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                     No Recent Activity
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Activity tracking will appear here as members interact
                     with your institution.
                   </p>
@@ -1439,12 +1441,12 @@ export default function InstitutionProfilePage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+              className="bg-card rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-primary to-primary/80 px-5 py-4 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 bg-card/20 rounded-xl flex items-center justify-center overflow-hidden">
                     {selectedMember.user.profile_picture_url ? (
                       <img
                         src={selectedMember.user.profile_picture_url}
@@ -1467,7 +1469,7 @@ export default function InstitutionProfilePage() {
                 </div>
                 <button
                   onClick={() => setSelectedMember(null)}
-                  className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/15 transition-colors"
+                  className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-card/15 transition-colors"
                 >
                   <XCircle className="w-5 h-5" />
                 </button>
@@ -1480,33 +1482,33 @@ export default function InstitutionProfilePage() {
                   <div className="bg-primary/10 px-3 py-1.5 rounded-t-lg">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">Identity</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Full Name</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Full Name</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {selectedMember.user.first_name} {selectedMember.user.last_name}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Username</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Username</span>
+                      <span className="text-xs font-semibold text-foreground">
                         @{selectedMember.user.username || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Email</span>
-                      <span className="text-xs font-semibold text-gray-800">{selectedMember.user.email}</span>
+                      <span className="text-xs text-muted-foreground font-medium">Email</span>
+                      <span className="text-xs font-semibold text-foreground">{selectedMember.user.email}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Phone</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Phone</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {selectedMember.user.phone_number || "—"}
                       </span>
                     </div>
                     {(selectedMember.user.country || selectedMember.user.city) && (
                       <div className="flex justify-between py-2">
-                        <span className="text-xs text-gray-500 font-medium">Location</span>
-                        <span className="text-xs font-semibold text-gray-800">
+                        <span className="text-xs text-muted-foreground font-medium">Location</span>
+                        <span className="text-xs font-semibold text-foreground">
                           {[selectedMember.user.city, selectedMember.user.country].filter(Boolean).join(", ")}
                         </span>
                       </div>
@@ -1519,22 +1521,22 @@ export default function InstitutionProfilePage() {
                   <div className="bg-primary/10 px-3 py-1.5 rounded-t-lg">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">Institution Membership</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Institution Role</span>
+                      <span className="text-xs text-muted-foreground font-medium">Institution Role</span>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${getRoleColor(selectedMember.role)}`}>
                         {getRoleLabel(selectedMember.role)}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Membership Status</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Membership Status</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.is_active ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                         {selectedMember.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Joined</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Joined</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {new Date(selectedMember.joined_at).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })}
                       </span>
                     </div>
@@ -1546,42 +1548,42 @@ export default function InstitutionProfilePage() {
                   <div className="bg-primary/10 px-3 py-1.5 rounded-t-lg">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">Account Details</span>
                   </div>
-                  <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-2 divide-y divide-gray-100">
+                  <div className="bg-card border border-border rounded-b-lg px-3 py-2 divide-y divide-gray-100">
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Account Type</span>
-                      <span className="text-xs font-semibold text-gray-800 capitalize">
+                      <span className="text-xs text-muted-foreground font-medium">Account Type</span>
+                      <span className="text-xs font-semibold text-foreground capitalize">
                         {selectedMember.user.account_type?.replace(/_/g, " ").toLowerCase() || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Platform Role</span>
-                      <span className="text-xs font-semibold text-gray-800 capitalize">
+                      <span className="text-xs text-muted-foreground font-medium">Platform Role</span>
+                      <span className="text-xs font-semibold text-foreground capitalize">
                         {selectedMember.user.bwenge_role?.replace(/_/g, " ").toLowerCase() || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Verified</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.user.is_verified ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Verified</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.user.is_verified ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
                         {selectedMember.user.is_verified ? "Verified" : "Unverified"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Account Status</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.user.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      <span className="text-xs text-muted-foreground font-medium">Account Status</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selectedMember.user.is_active ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                         {selectedMember.user.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Date Joined Platform</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Date Joined Platform</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {selectedMember.user.date_joined
                           ? new Date(selectedMember.user.date_joined).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })
                           : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-xs text-gray-500 font-medium">Last Login</span>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs text-muted-foreground font-medium">Last Login</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {selectedMember.user.last_login
                           ? new Date(selectedMember.user.last_login).toLocaleDateString("en-RW", { year: "numeric", month: "long", day: "numeric" })
                           : "Never"}
@@ -1596,18 +1598,18 @@ export default function InstitutionProfilePage() {
                     <div className="bg-primary/10 px-3 py-1.5 rounded-t-lg">
                       <span className="text-xs font-bold text-primary uppercase tracking-wider">Bio</span>
                     </div>
-                    <div className="bg-white border border-gray-100 rounded-b-lg px-3 py-3">
-                      <p className="text-xs text-gray-700 leading-relaxed">{selectedMember.user.bio}</p>
+                    <div className="bg-card border border-border rounded-b-lg px-3 py-3">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{selectedMember.user.bio}</p>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 bg-gray-50 border-t border-gray-200 px-5 py-3 flex items-center justify-end">
+              <div className="shrink-0 bg-muted/50 border-t border-border px-5 py-3 flex items-center justify-end">
                 <button
                   onClick={() => setSelectedMember(null)}
-                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Close
                 </button>

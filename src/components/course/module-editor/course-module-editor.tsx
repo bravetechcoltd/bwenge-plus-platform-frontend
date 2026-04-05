@@ -118,17 +118,17 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
   return (
     <div className="space-y-6">
       {/* Module Details Card */}
-      <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20">
-        <CardHeader className="border-b bg-white/60 dark:bg-gray-900/60">
+      <Card className="border-2 border-primary/20 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <CardHeader className="border-b bg-card/60 dark:bg-card/60">
           <CardTitle className="flex items-center gap-2 text-xl">
-            <BookOpen className="w-5 h-5 text-blue-600" />
+            <BookOpen className="w-5 h-5 text-primary" />
             Module Details
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-semibold">
-              Module Title <span className="text-red-500">*</span>
+              Module Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
@@ -155,7 +155,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="order" className="text-sm font-semibold flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-600" />
+                <Zap className="w-4 h-4 text-warning" />
                 Order Index
               </Label>
               <Input
@@ -170,7 +170,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
 
             <div className="space-y-2">
               <Label htmlFor="duration" className="text-sm font-semibold flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-primary" />
                 Estimated Duration (hours)
               </Label>
               <Input
@@ -188,11 +188,11 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
       </Card>
 
       {/* Lessons Section */}
-      <Card className="border-2 border-green-100 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20">
-        <CardHeader className="border-b bg-white/60 dark:bg-gray-900/60">
+      <Card className="border-2 border-success/20 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20">
+        <CardHeader className="border-b bg-card/60 dark:bg-card/60">
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2 text-xl">
-              <FileText className="w-5 h-5 text-green-600" />
+              <FileText className="w-5 h-5 text-success" />
               Lessons
             </span>
             <Badge variant="outline" className="text-base px-3 py-1">
@@ -202,7 +202,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           {/* Add New Lesson */}
-          <div className="space-y-2 p-4 border-2 border-dashed border-green-200 rounded-lg bg-white/60 dark:bg-gray-900/60">
+          <div className="space-y-2 p-4 border-2 border-dashed border-success/30 rounded-lg bg-card/60 dark:bg-card/60">
             <Label htmlFor="newLesson" className="text-sm font-semibold">Add New Lesson</Label>
             <div className="flex gap-2">
               <Input
@@ -224,7 +224,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
           {moduleData.lessons && moduleData.lessons.length > 0 && (
             <div className="space-y-4">
               {moduleData.lessons.map((lesson, index) => (
-                <Card key={lesson.id} className="border-2 bg-white dark:bg-gray-950">
+                <Card key={lesson.id} className="border-2 bg-card dark:bg-background">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="space-y-1">
@@ -249,7 +249,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteLesson(lesson.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border border-red-200"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 border border-destructive/30"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
@@ -326,7 +326,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
                     <div className="space-y-3 pt-4 border-t">
                       <div className="flex items-center justify-between">
                         <Label className="flex items-center gap-2 text-sm font-medium">
-                          <Target className="w-4 h-4 text-amber-600" />
+                          <Target className="w-4 h-4 text-warning" />
                           Assessments
                         </Label>
                         <Button
@@ -343,7 +343,7 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
                       {lesson.assessments && lesson.assessments.length > 0 ? (
                         <div className="space-y-2">
                           {lesson.assessments.map(assessment => (
-                            <div key={assessment.id} className="p-3 border-2 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 flex items-center justify-between">
+                            <div key={assessment.id} className="p-3 border-2 rounded-lg bg-warning/10/50 dark:bg-warning/20/20 flex items-center justify-between">
                               <div>
                                 <span className="font-medium">{assessment.title}</span>
                                 <Badge variant="secondary" className="ml-2 text-xs">
@@ -367,8 +367,8 @@ export default function ModuleEditor({ module, courseId, onSave, onCancel }: Mod
           )}
 
           {(!moduleData.lessons || moduleData.lessons.length === 0) && (
-            <div className="text-center py-12 border-2 border-dashed rounded-lg bg-white/60 dark:bg-gray-900/60">
-              <BookOpen className="w-16 h-16 mx-auto mb-3 text-gray-300" />
+            <div className="text-center py-12 border-2 border-dashed rounded-lg bg-card/60 dark:bg-card/60">
+              <BookOpen className="w-16 h-16 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground font-medium">No lessons yet. Add your first lesson above.</p>
             </div>
           )}

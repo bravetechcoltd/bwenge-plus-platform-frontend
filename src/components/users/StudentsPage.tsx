@@ -147,7 +147,6 @@ export default function StudentsPage() {
         toast.error(data.message || "Failed to load students");
       }
     } catch (error) {
-      console.error("Fetch error:", error);
       toast.error("Failed to load students");
     } finally {
       setIsLoading(false);
@@ -215,9 +214,9 @@ export default function StudentsPage() {
     return (
       <div className="container mx-auto p-6">
         <Card><CardContent className="p-8 text-center">
-          <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 mb-6">You don't have admin access to this institution.</p>
+          <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-muted-foreground mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-6">You don't have admin access to this institution.</p>
           <Button asChild><Link href="/dashboard">Go to Dashboard</Link></Button>
         </CardContent></Card>
       </div>
@@ -228,10 +227,10 @@ export default function StudentsPage() {
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <GraduationCap className="w-7 h-7 text-amber-600" /> Students
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+            <GraduationCap className="w-7 h-7 text-warning" /> Students
           </h1>
-          <p className="text-gray-500 mt-1">Track and manage your institution's learners</p>
+          <p className="text-muted-foreground mt-1">Track and manage your institution's learners</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportCSV}>
@@ -251,11 +250,11 @@ export default function StudentsPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: "Total", value: stats.total, icon: GraduationCap, color: "text-amber-600 bg-amber-50" },
-          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-green-600 bg-green-50" },
-          { label: "Enrollments", value: stats.total_enrollments, icon: BookOpen, color: "text-blue-600 bg-blue-50" },
-          { label: "Avg Progress", value: `${stats.avg_completion}%`, icon: TrendingUp, color: "text-purple-600 bg-purple-50" },
-          { label: "Learning Hours", value: stats.total_hours.toFixed(1), icon: Clock, color: "text-indigo-600 bg-indigo-50" },
+          { label: "Total", value: stats.total, icon: GraduationCap, color: "text-warning bg-warning/10" },
+          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-success bg-success/10" },
+          { label: "Enrollments", value: stats.total_enrollments, icon: BookOpen, color: "text-primary bg-primary/10" },
+          { label: "Avg Progress", value: `${stats.avg_completion}%`, icon: TrendingUp, color: "text-primary bg-primary/10" },
+          { label: "Learning Hours", value: stats.total_hours.toFixed(1), icon: Clock, color: "text-primary bg-primary/10" },
           { label: "Certificates", value: stats.certificates, icon: Award, color: "text-rose-600 bg-rose-50" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
@@ -265,7 +264,7 @@ export default function StudentsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{value}</p>
-                <p className="text-xs text-gray-500">{label}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
               </div>
             </CardContent>
           </Card>
@@ -278,7 +277,7 @@ export default function StudentsPage() {
           <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input 
                   placeholder="Search students..." 
                   value={search}
@@ -295,7 +294,7 @@ export default function StudentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-sm text-gray-500">{totalCount} students</p>
+            <p className="text-sm text-muted-foreground">{totalCount} students</p>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -303,16 +302,16 @@ export default function StudentsPage() {
             <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : students.length === 0 ? (
             <div className="text-center py-16">
-              <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">No students found</p>
-              <p className="text-sm text-gray-400 mt-1">Invite students to join your institution.</p>
+              <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No students found</p>
+              <p className="text-sm text-muted-foreground mt-1">Invite students to join your institution.</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50">
+                    <TableRow className="bg-muted/50">
                       <TableHead className="pl-6">Student</TableHead>
                       <TableHead>Courses</TableHead>
                       <TableHead>Progress</TableHead>
@@ -330,18 +329,18 @@ export default function StudentsPage() {
                       const progress = calculateAvgProgress(enrolled, completed);
                       
                       return (
-                        <TableRow key={student.member_id} className="hover:bg-gray-50">
+                        <TableRow key={student.member_id} className="hover:bg-muted/50">
                           <TableCell className="pl-6">
                             <div className="flex items-center gap-3">
                               <Avatar className="w-9 h-9">
                                 <AvatarImage src={student.user.profile_picture_url || undefined} />
-                                <AvatarFallback className="text-xs font-semibold bg-amber-50 text-amber-700">
+                                <AvatarFallback className="text-xs font-semibold bg-warning/10 text-warning">
                                   {student.user.first_name?.[0]}{student.user.last_name?.[0]}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="font-semibold text-sm">{student.user.first_name} {student.user.last_name}</p>
-                                <p className="text-xs text-gray-500">{student.user.email}</p>
+                                <p className="text-xs text-muted-foreground">{student.user.email}</p>
                               </div>
                             </div>
                           </TableCell>
@@ -352,7 +351,7 @@ export default function StudentsPage() {
                                 {enrolled} enrolled
                               </Badge>
                               {completed > 0 && (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">
                                   <CheckCircle2 className="w-3 h-3 mr-1" />
                                   {completed} done
                                 </Badge>
@@ -362,31 +361,31 @@ export default function StudentsPage() {
                           <TableCell>
                             <div className="w-24 space-y-1">
                               <Progress value={progress} className="h-2" />
-                              <p className="text-xs text-gray-500">{progress}%</p>
+                              <p className="text-xs text-muted-foreground">{progress}%</p>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-gray-600 flex items-center gap-1">
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {student.user.total_learning_hours?.toFixed(1) || 0}h
                             </span>
                           </TableCell>
                           <TableCell>
                             {(student.user.certificates_earned || 0) > 0 ? (
-                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs">
                                 <Award className="w-3 h-3 mr-1" />{student.user.certificates_earned}
                               </Badge>
                             ) : (
-                              <span className="text-xs text-gray-400">None</span>
+                              <span className="text-xs text-muted-foreground">None</span>
                             )}
                           </TableCell>
                           <TableCell>
                             {student.is_active
-                              ? <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
-                              : <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
+                              ? <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
+                              : <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
                             }
                           </TableCell>
-                          <TableCell className="text-sm text-gray-600">
+                          <TableCell className="text-sm text-muted-foreground">
                             {new Date(student.joined_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right pr-6">
@@ -400,7 +399,7 @@ export default function StudentsPage() {
                                   <Eye className="w-4 h-4 mr-2" /> View Profile
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600" onClick={() => setRemoveTarget(student)}>
+                                <DropdownMenuItem className="text-destructive" onClick={() => setRemoveTarget(student)}>
                                   <Trash2 className="w-4 h-4 mr-2" /> Remove
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -415,7 +414,7 @@ export default function StudentsPage() {
               
               {/* Pagination */}
               <div className="flex items-center justify-between px-6 py-4 border-t">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Page {page} of {totalPages} · {totalCount} students
                 </p>
                 <div className="flex items-center gap-2">
@@ -460,7 +459,7 @@ export default function StudentsPage() {
                   <div className="absolute -bottom-8 left-6">
                     <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
                       <AvatarImage src={viewStudent.user.profile_picture_url || undefined} />
-                      <AvatarFallback className="text-2xl bg-amber-50 text-amber-700">
+                      <AvatarFallback className="text-2xl bg-warning/10 text-warning">
                         {viewStudent.user.first_name?.[0]}{viewStudent.user.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -470,7 +469,7 @@ export default function StudentsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setViewStudent(null)}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-card/20"
                     >
                       <X className="w-5 h-5" />
                     </Button>
@@ -481,12 +480,12 @@ export default function StudentsPage() {
                 <div className="px-6 pb-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">
+                      <h2 className="text-2xl font-bold text-foreground">
                         {viewStudent.user.first_name} {viewStudent.user.last_name}
                       </h2>
-                      <p className="text-gray-600 mt-1">{viewStudent.user.email}</p>
+                      <p className="text-muted-foreground mt-1">{viewStudent.user.email}</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge className="bg-amber-100 text-amber-700">Student</Badge>
+                        <Badge className="bg-warning/15 text-warning">Student</Badge>
                         <Badge variant={viewStudent.is_active ? "default" : "secondary"}>
                           {viewStudent.is_active ? "Active" : "Inactive"}
                         </Badge>
@@ -497,18 +496,18 @@ export default function StudentsPage() {
 
                 {/* Institution Membership Section */}
                 <div className="px-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-warning" />
                     Institution Membership
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Role</Label>
-                      <p className="font-medium text-gray-900 mt-1">{viewStudent.role}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Role</Label>
+                      <p className="font-medium text-foreground mt-1">{viewStudent.role}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Joined Date</Label>
-                      <p className="font-medium text-gray-900 mt-1">
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Joined Date</Label>
+                      <p className="font-medium text-foreground mt-1">
                         {new Date(viewStudent.joined_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -517,28 +516,28 @@ export default function StudentsPage() {
 
                 {/* Account Details Section */}
                 <div className="px-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Mail className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-warning" />
                     Account Details
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Email</Label>
-                      <p className="font-medium text-gray-900 mt-1">{viewStudent.user.email}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Email</Label>
+                      <p className="font-medium text-foreground mt-1">{viewStudent.user.email}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Phone</Label>
-                      <p className="font-medium text-gray-900 mt-1">
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Phone</Label>
+                      <p className="font-medium text-foreground mt-1">
                         {viewStudent.user.phone_number || "Not provided"}
                       </p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Country</Label>
-                      <p className="font-medium text-gray-900 mt-1">{viewStudent.user.country || "Not specified"}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Country</Label>
+                      <p className="font-medium text-foreground mt-1">{viewStudent.user.country || "Not specified"}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <Label className="text-gray-500 text-sm">Last Login</Label>
-                      <p className="font-medium text-gray-900 mt-1">
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <Label className="text-muted-foreground text-sm">Last Login</Label>
+                      <p className="font-medium text-foreground mt-1">
                         {viewStudent.user.last_login ? new Date(viewStudent.user.last_login).toLocaleDateString() : "Never"}
                       </p>
                     </div>
@@ -547,42 +546,42 @@ export default function StudentsPage() {
 
                 {/* Learning Progress Section */}
                 <div className="px-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-warning" />
                     Learning Progress
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="bg-amber-50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-amber-700">
+                    <div className="bg-warning/10 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-warning">
                         {viewStudent.user.enrolled_courses_count || 0}
                       </div>
-                      <div className="text-sm text-amber-600">Enrolled Courses</div>
+                      <div className="text-sm text-warning">Enrolled Courses</div>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-green-700">
+                    <div className="bg-success/10 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-success">
                         {viewStudent.user.completed_courses_count || 0}
                       </div>
-                      <div className="text-sm text-green-600">Completed Courses</div>
+                      <div className="text-sm text-success">Completed Courses</div>
                     </div>
-                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-blue-700">
+                    <div className="bg-primary/10 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-primary">
                         {viewStudent.user.total_learning_hours?.toFixed(1) || 0}
                       </div>
-                      <div className="text-sm text-blue-600">Learning Hours</div>
+                      <div className="text-sm text-primary">Learning Hours</div>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-700">
+                    <div className="bg-primary/10 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-primary">
                         {viewStudent.user.certificates_earned || 0}
                       </div>
-                      <div className="text-sm text-purple-600">Certificates</div>
+                      <div className="text-sm text-primary">Certificates</div>
                     </div>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="bg-muted/50 rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
-                      <Label className="text-gray-700 font-medium">Overall Progress</Label>
-                      <span className="text-sm font-medium text-gray-600">
+                      <Label className="text-muted-foreground font-medium">Overall Progress</Label>
+                      <span className="text-sm font-medium text-muted-foreground">
                         {calculateAvgProgress(viewStudent.user.enrolled_courses_count || 0, viewStudent.user.completed_courses_count || 0)}%
                       </span>
                     </div>
@@ -590,7 +589,7 @@ export default function StudentsPage() {
                       value={calculateAvgProgress(viewStudent.user.enrolled_courses_count || 0, viewStudent.user.completed_courses_count || 0)}
                       className="h-3"
                     />
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       Average completion rate across all enrolled courses
                     </p>
                   </div>
@@ -599,12 +598,12 @@ export default function StudentsPage() {
                 {/* Bio Section */}
                 {viewStudent.user.bio && (
                   <div className="px-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <UserPlus className="w-5 h-5 text-amber-600" />
+                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <UserPlus className="w-5 h-5 text-warning" />
                       Bio
                     </h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-700 leading-relaxed">{viewStudent.user.bio}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <p className="text-muted-foreground leading-relaxed">{viewStudent.user.bio}</p>
                     </div>
                   </div>
                 )}

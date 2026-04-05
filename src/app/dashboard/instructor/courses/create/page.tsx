@@ -26,14 +26,14 @@ export default function InstitutionCourseCreatePage() {
   if (!hasPermission) {
     return (
       <div className="container mx-auto p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-red-900 mb-2">Access Denied</h2>
-          <p className="text-red-700 mb-4">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-destructive mb-2">Access Denied</h2>
+          <p className="text-destructive mb-4">
             You don't have permission to create courses for this institution.
           </p>
           <button
             onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            className="px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive"
           >
             Go to Dashboard
           </button>

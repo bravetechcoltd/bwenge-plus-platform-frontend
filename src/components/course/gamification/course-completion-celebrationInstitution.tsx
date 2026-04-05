@@ -70,7 +70,7 @@ export function CourseCompletionCelebration({
           transition={{ type: "spring", damping: 20 }}
           className="relative max-w-lg w-full"
         >
-          <Card className="relative overflow-hidden border border-gray-300 bg-white shadow-xl">
+          <Card className="relative overflow-hidden border border-border bg-card shadow-xl">
             {/* Gradient top border */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0158B7] via-green-400 to-yellow-400" />
 
@@ -79,7 +79,7 @@ export function CourseCompletionCelebration({
                 variant="ghost" 
                 size="sm" 
                 onClick={onClose} 
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="absolute top-3 right-3 text-muted-foreground hover:text-muted-foreground hover:bg-muted"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -104,7 +104,7 @@ export function CourseCompletionCelebration({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-2xl md:text-3xl font-bold text-gray-900"
+                  className="text-2xl md:text-3xl font-bold text-foreground"
                 >
                   {user?.bwenge_role === "SYSTEM_ADMIN" ? "Course Published!" : "Course Submitted Successfully!"}
                 </motion.h2>
@@ -112,9 +112,9 @@ export function CourseCompletionCelebration({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="text-gray-600"
+                  className="text-muted-foreground"
                 >
-                  <span className="font-medium text-gray-900">"{courseTitle}"</span>{" "}
+                  <span className="font-medium text-foreground">"{courseTitle}"</span>{" "}
                   {user?.bwenge_role === "SYSTEM_ADMIN"
                     ? "is now live and ready for students!"
                     : "has been submitted for admin review!"}
@@ -126,23 +126,23 @@ export function CourseCompletionCelebration({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="grid grid-cols-4 gap-3 py-4 border-t border-gray-200"
+                className="grid grid-cols-4 gap-3 py-4 border-t border-border"
               >
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-center p-3 bg-primary/10 rounded-lg">
                   <div className="text-xl md:text-2xl font-bold text-[#0158B7]">{stats.modules}</div>
-                  <div className="text-xs text-gray-600 font-medium">Modules</div>
+                  <div className="text-xs text-muted-foreground font-medium">Modules</div>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-xl md:text-2xl font-bold text-green-600">{stats.lessons}</div>
-                  <div className="text-xs text-gray-600 font-medium">Lessons</div>
+                <div className="text-center p-3 bg-success/10 rounded-lg">
+                  <div className="text-xl md:text-2xl font-bold text-success">{stats.lessons}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Lessons</div>
                 </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg">
-                  <div className="text-xl md:text-2xl font-bold text-orange-600">{stats.assessments}</div>
-                  <div className="text-xs text-gray-600 font-medium">Assessments</div>
+                <div className="text-center p-3 bg-warning/10 rounded-lg">
+                  <div className="text-xl md:text-2xl font-bold text-warning">{stats.assessments}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Assessments</div>
                 </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-xl md:text-2xl font-bold text-purple-600">{stats.qualityScore}%</div>
-                  <div className="text-xs text-gray-600 font-medium">Quality</div>
+                <div className="text-center p-3 bg-primary/10 rounded-lg">
+                  <div className="text-xl md:text-2xl font-bold text-primary">{stats.qualityScore}%</div>
+                  <div className="text-xs text-muted-foreground font-medium">Quality</div>
                 </div>
               </motion.div>
 
@@ -153,7 +153,7 @@ export function CourseCompletionCelebration({
                   transition={{ delay: 0.7 }}
                   className="text-center"
                 >
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-full border border-green-200">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 text-success rounded-full border border-success/30">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">
                       {stats.enrolledStudents} student{stats.enrolledStudents !== 1 ? "s" : ""} enrolled
@@ -181,7 +181,7 @@ export function CourseCompletionCelebration({
                     onClick={() => router.push(`/dashboard/system-admin/courses/${courseId}`)} 
                     variant="outline" 
                     size="lg"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6"
+                    className="border-border text-muted-foreground hover:bg-muted/50 px-6"
                   >
                     View Course
                   </Button>
@@ -191,7 +191,7 @@ export function CourseCompletionCelebration({
                     onClick={handleShare} 
                     variant="outline" 
                     size="lg"
-                    className="border-green-300 text-green-700 hover:bg-green-50 px-6"
+                    className="border-success/40 text-success hover:bg-success/10 px-6"
                   >
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
@@ -204,7 +204,7 @@ export function CourseCompletionCelebration({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1 }}
-                  className="text-sm text-gray-500 pt-4 border-t border-gray-200"
+                  className="text-sm text-muted-foreground pt-4 border-t border-border"
                 >
                   <span className="font-medium">Note:</span> Your course will be reviewed by system administrators within 24-48 hours.
                 </motion.p>

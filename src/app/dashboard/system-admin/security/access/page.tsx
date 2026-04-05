@@ -295,12 +295,12 @@ export default function AccessControlPage() {
     : [];
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6 bg-muted/50 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Access Control</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-foreground">Access Control</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Institution security policies · Session management
           </p>
         </div>
@@ -318,7 +318,7 @@ export default function AccessControlPage() {
       <div className="grid grid-cols-3 gap-4">
         {loading
           ? Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div key={i} className="bg-card rounded-2xl border border-border shadow-sm p-4">
                 <Skeleton className="h-4 w-24 mb-3" />
                 <Skeleton className="h-8 w-16" />
               </div>
@@ -326,16 +326,16 @@ export default function AccessControlPage() {
           : statCards.map((card) => (
               <div
                 key={card.label}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden"
               >
                 <div className="h-[3px]" style={{ backgroundColor: card.color }} />
                 <div className="p-4 flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                       {card.label}
                     </p>
-                    <p className="text-2xl font-black text-gray-900 mt-0.5">{card.value}</p>
-                    <p className="text-xs text-gray-400 mt-1">{card.sub}</p>
+                    <p className="text-2xl font-black text-foreground mt-0.5">{card.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
                   </div>
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -349,14 +349,14 @@ export default function AccessControlPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex border-b border-gray-100">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="flex border-b border-border">
           {(["institutions", "sessions"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-6 py-3.5 text-sm font-medium transition-colors capitalize relative ${
-                tab === t ? "text-gray-900" : "text-gray-500 hover:text-gray-700"
+                tab === t ? "text-foreground" : "text-muted-foreground hover:text-muted-foreground"
               }`}
             >
               {t === "institutions" ? "Institutions" : "Active Sessions"}
@@ -373,9 +373,9 @@ export default function AccessControlPage() {
         {/* Institutions Tab */}
         {tab === "institutions" && (
           <div>
-            <div className="px-5 py-3 border-b border-gray-50 flex items-center gap-3">
+            <div className="px-5 py-3 border-b border-border flex items-center gap-3">
               <div className="relative flex-1">
-                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search institutions…"
                   value={instSearch}
@@ -391,20 +391,20 @@ export default function AccessControlPage() {
 
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-50">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Institution</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">2FA</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Session Timeout</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Max Attempts</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Password Policy</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Members</th>
+                <tr className="border-b border-border">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Institution</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">2FA</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Session Timeout</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max Attempts</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Password Policy</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Members</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {loading
                   ? Array.from({ length: 6 }).map((_, i) => (
-                      <tr key={i} className="border-b border-gray-50">
+                      <tr key={i} className="border-b border-border">
                         {Array.from({ length: 7 }).map((_, j) => (
                           <td key={j} className="px-5 py-3">
                             <Skeleton className="h-4 w-full" />
@@ -413,42 +413,42 @@ export default function AccessControlPage() {
                       </tr>
                     ))
                   : institutions.map((inst) => (
-                      <tr key={inst.id} className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors">
+                      <tr key={inst.id} className="border-b border-border hover:bg-muted/50/40 transition-colors">
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                               {inst.logo_url ? (
                                 <img src={inst.logo_url} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <span className="text-xs font-bold text-gray-500">
+                                <span className="text-xs font-bold text-muted-foreground">
                                   {inst.name[0]}
                                 </span>
                               )}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-800 text-sm">{inst.name}</p>
-                              <p className="text-[10px] text-gray-400">{inst.type}</p>
+                              <p className="font-medium text-foreground text-sm">{inst.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{inst.type}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-5 py-3">
                           {inst.security_settings.require_2fa ? (
-                            <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                            <span className="flex items-center gap-1 text-xs text-success font-medium">
                               <CheckCircle size={12} /> Required
                             </span>
                           ) : (
-                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <XCircle size={12} /> Optional
                             </span>
                           )}
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-muted-foreground">
                             {inst.security_settings.session_timeout}m
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-muted-foreground">
                             {inst.security_settings.max_login_attempts}
                           </span>
                         </td>
@@ -474,12 +474,12 @@ export default function AccessControlPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-sm text-gray-600">{inst.member_count}</span>
+                          <span className="text-sm text-muted-foreground">{inst.member_count}</span>
                         </td>
                         <td className="px-5 py-3">
                           <button
                             onClick={() => openEditDialog(inst)}
-                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-muted-foreground transition-colors"
                           >
                             <Settings size={14} />
                           </button>
@@ -488,7 +488,7 @@ export default function AccessControlPage() {
                     ))}
                 {!loading && institutions.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-gray-400 text-sm">
+                    <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground text-sm">
                       No institutions found.
                     </td>
                   </tr>
@@ -497,21 +497,21 @@ export default function AccessControlPage() {
             </table>
 
             {instTotal > 20 && (
-              <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
-                <p className="text-xs text-gray-500">{instTotal} institutions total</p>
+              <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{instTotal} institutions total</p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setInstPage((p) => Math.max(1, p - 1))}
                     disabled={instPage === 1}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
-                  <span className="text-xs text-gray-600 px-2">Page {instPage}</span>
+                  <span className="text-xs text-muted-foreground px-2">Page {instPage}</span>
                   <button
                     onClick={() => setInstPage((p) => p + 1)}
                     disabled={instPage * 20 >= instTotal}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -524,9 +524,9 @@ export default function AccessControlPage() {
         {/* Sessions Tab */}
         {tab === "sessions" && (
           <div>
-            <div className="px-5 py-3 border-b border-gray-50 flex items-center gap-3">
+            <div className="px-5 py-3 border-b border-border flex items-center gap-3">
               <div className="relative flex-1">
-                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search by email or IP…"
                   value={sesSearch}
@@ -552,20 +552,20 @@ export default function AccessControlPage() {
 
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-50">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">IP Address</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Device</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Active</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Expires</th>
+                <tr className="border-b border-border">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">System</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">IP Address</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Device</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last Active</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expires</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {sesLoading
                   ? Array.from({ length: 8 }).map((_, i) => (
-                      <tr key={i} className="border-b border-gray-50">
+                      <tr key={i} className="border-b border-border">
                         {Array.from({ length: 7 }).map((_, j) => (
                           <td key={j} className="px-5 py-3">
                             <Skeleton className="h-4 w-full" />
@@ -574,7 +574,7 @@ export default function AccessControlPage() {
                       </tr>
                     ))
                   : sessions.map((session) => (
-                      <tr key={session.id} className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors">
+                      <tr key={session.id} className="border-b border-border hover:bg-muted/50/40 transition-colors">
                         <td className="px-5 py-3">
                           {session.user ? (
                             <div className="flex items-center gap-2">
@@ -584,14 +584,14 @@ export default function AccessControlPage() {
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="text-xs font-medium text-gray-800">
+                                <p className="text-xs font-medium text-foreground">
                                   {session.user.first_name} {session.user.last_name}
                                 </p>
-                                <p className="text-[10px] text-gray-400">{session.user.email}</p>
+                                <p className="text-[10px] text-muted-foreground">{session.user.email}</p>
                               </div>
                             </div>
                           ) : (
-                            <span className="text-xs text-gray-400">Unknown</span>
+                            <span className="text-xs text-muted-foreground">Unknown</span>
                           )}
                         </td>
                         <td className="px-5 py-3">
@@ -607,12 +607,12 @@ export default function AccessControlPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="font-mono text-xs text-gray-600">
+                          <span className="font-mono text-xs text-muted-foreground">
                             {session.ip_address || "—"}
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <div className="flex items-center gap-1.5 text-gray-500">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
                             {getDeviceIcon(session.device_info)}
                             <span className="text-xs truncate max-w-[120px]">
                               {session.device_info || "Unknown"}
@@ -620,10 +620,10 @@ export default function AccessControlPage() {
                           </div>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-xs text-gray-500">{formatTime(session.last_activity)}</span>
+                          <span className="text-xs text-muted-foreground">{formatTime(session.last_activity)}</span>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-xs text-gray-500">{formatTime(session.expires_at)}</span>
+                          <span className="text-xs text-muted-foreground">{formatTime(session.expires_at)}</span>
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-1">
@@ -631,7 +631,7 @@ export default function AccessControlPage() {
                               onClick={() => handleTerminateSession(session.id)}
                               disabled={terminatingId === session.id}
                               title="Terminate this session"
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-40"
+                              className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
                             >
                               <LogOut size={13} />
                             </button>
@@ -641,7 +641,7 @@ export default function AccessControlPage() {
                                   handleTerminateAllUserSessions(session.user!.id, session.user!.email)
                                 }
                                 title="Terminate all sessions for this user"
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                               >
                                 <X size={13} />
                               </button>
@@ -652,7 +652,7 @@ export default function AccessControlPage() {
                     ))}
                 {!sesLoading && sessions.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-gray-400 text-sm">
+                    <td colSpan={7} className="px-5 py-10 text-center text-muted-foreground text-sm">
                       No active sessions found.
                     </td>
                   </tr>
@@ -661,13 +661,13 @@ export default function AccessControlPage() {
             </table>
 
             {sesTotal > 30 && (
-              <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between">
-                <p className="text-xs text-gray-500">{sesTotal} sessions total</p>
+              <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{sesTotal} sessions total</p>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setSesPage((p) => Math.max(1, p - 1))}
                     disabled={sesPage === 1}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
@@ -675,7 +675,7 @@ export default function AccessControlPage() {
                   <button
                     onClick={() => setSesPage((p) => p + 1)}
                     disabled={sesPage * 30 >= sesTotal}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                    className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-40"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -704,18 +704,18 @@ export default function AccessControlPage() {
               {/* 2FA Toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Require Two-Factor Authentication</p>
-                  <p className="text-xs text-gray-500 mt-0.5">All members must set up 2FA to access the platform</p>
+                  <p className="text-sm font-medium text-foreground">Require Two-Factor Authentication</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">All members must set up 2FA to access the platform</p>
                 </div>
                 <button
                   onClick={() => setEditSettings((s) => ({ ...s, require_2fa: !s.require_2fa }))}
                   className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${
-                    editSettings.require_2fa ? "" : "bg-gray-200"
+                    editSettings.require_2fa ? "" : "bg-secondary"
                   }`}
                   style={editSettings.require_2fa ? { backgroundColor: P } : {}}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 mt-0.5 ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition duration-200 mt-0.5 ${
                       editSettings.require_2fa ? "translate-x-4" : "translate-x-0.5"
                     }`}
                   />
@@ -724,7 +724,7 @@ export default function AccessControlPage() {
 
               {/* Session Timeout */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-800">Session Timeout (minutes)</label>
+                <label className="text-sm font-medium text-foreground">Session Timeout (minutes)</label>
                 <Input
                   type="number"
                   min={5}
@@ -735,14 +735,14 @@ export default function AccessControlPage() {
                   }
                   className="text-sm"
                 />
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   Idle sessions will expire after this period (5–1440 min)
                 </p>
               </div>
 
               {/* Max Login Attempts */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-800">Max Login Attempts</label>
+                <label className="text-sm font-medium text-foreground">Max Login Attempts</label>
                 <Input
                   type="number"
                   min={1}
@@ -753,12 +753,12 @@ export default function AccessControlPage() {
                   }
                   className="text-sm"
                 />
-                <p className="text-xs text-gray-400">Account will be locked after this many failed logins</p>
+                <p className="text-xs text-muted-foreground">Account will be locked after this many failed logins</p>
               </div>
 
               {/* Password Complexity */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-800">Password Complexity</label>
+                <label className="text-sm font-medium text-foreground">Password Complexity</label>
                 <Select
                   value={editSettings.password_complexity}
                   onValueChange={(v) =>

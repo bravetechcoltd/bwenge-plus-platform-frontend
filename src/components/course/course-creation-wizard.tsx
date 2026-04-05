@@ -81,7 +81,6 @@ export function CourseCreationWizard() {
         if (savedCourseData) {
           const parsed = JSON.parse(savedCourseData)
           setCourseData((prev) => ({ ...prev, ...parsed }))
-          console.log("✅ Loaded course data from storage")
         }
 
         const savedModules = localStorage.getItem(STORAGE_KEYS.MODULES)
@@ -103,18 +102,15 @@ export function CourseCreationWizard() {
             })),
           }))
           setModules(modulesWithDates)
-          console.log("✅ Loaded modules from storage:", modulesWithDates.length)
         }
 
         const savedStep = localStorage.getItem(STORAGE_KEYS.CURRENT_STEP)
         if (savedStep) {
           setCurrentStep(parseInt(savedStep))
-          console.log("✅ Loaded current step from storage:", savedStep)
         }
 
         const savedThumbnailName = localStorage.getItem(STORAGE_KEYS.THUMBNAIL_NAME)
         if (savedThumbnailName) {
-          console.log("ℹ️ Previous thumbnail file name:", savedThumbnailName)
         }
 
         setIsDataLoaded(true)
@@ -125,7 +121,6 @@ export function CourseCreationWizard() {
           })
         }
       } catch (error) {
-        console.error("❌ Error loading from storage:", error)
         setIsDataLoaded(true)
       }
     }
@@ -146,12 +141,9 @@ export function CourseCreationWizard() {
             localStorage.setItem(STORAGE_KEYS.THUMBNAIL_NAME, thumbnailFile.name)
           }
           lastSaveRef.current = currentData
-          console.log("💾 Auto-saved to storage")
         }
       } catch (error) {
-        console.error("❌ Error saving to storage:", error)
         if (error instanceof DOMException && error.name === "QuotaExceededError") {
-          console.warn("⚠️ Storage quota exceeded, clearing old data")
           clearStorage()
         }
       }
@@ -167,7 +159,6 @@ export function CourseCreationWizard() {
     localStorage.removeItem(STORAGE_KEYS.MODULES)
     localStorage.removeItem(STORAGE_KEYS.CURRENT_STEP)
     localStorage.removeItem(STORAGE_KEYS.THUMBNAIL_NAME)
-    console.log("🗑️ Storage cleared")
   }
 
   const clearStorageOnSuccess = () => {
@@ -178,73 +169,33 @@ export function CourseCreationWizard() {
   // ── AUTH DEBUG ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    console.log("=".repeat(80))
-    console.log("🔍 [CourseCreationWizard] AUTHENTICATION DEBUG")
-    console.log("=".repeat(80))
 
-    console.log("📋 [useAuth Hook]:", {
-      hasUser: !!user,
-      hasToken: !!token,
-      userId: user?.id,
-      email: user?.email,
-      role: user?.bwenge_role,
-      fullUser: user,
-    })
 
     const cookieToken = Cookies.get("bwenge_token")
     const cookieUser = Cookies.get("bwenge_user")
-    console.log("🍪 [Cookies]:", {
-      hasCookieToken: !!cookieToken,
-      hasCookieUser: !!cookieUser,
-      cookieTokenPreview: cookieToken?.substring(0, 20) + "...",
-      cookieUserPreview: cookieUser?.substring(0, 100) + "...",
-    })
 
     if (cookieUser) {
       try {
         const parsedCookieUser = JSON.parse(decodeURIComponent(cookieUser))
-        console.log("🍪 [Parsed Cookie User]:", {
-          id: parsedCookieUser.id,
-          email: parsedCookieUser.email,
-          role: parsedCookieUser.bwenge_role,
-        })
       } catch (error) {
-        console.error("❌ [Cookie Parse Error]:", error)
       }
     }
 
     const localToken = localStorage.getItem("bwengeplus_token")
     const localUser = localStorage.getItem("bwengeplus_user")
-    console.log("💾 [localStorage]:", {
-      hasLocalToken: !!localToken,
-      hasLocalUser: !!localUser,
-      localTokenPreview: localToken?.substring(0, 20) + "...",
-    })
 
     if (localUser) {
       try {
         const parsedLocalUser = JSON.parse(localUser)
-        console.log("💾 [Parsed localStorage User]:", {
-          id: parsedLocalUser.id,
-          email: parsedLocalUser.email,
-          role: parsedLocalUser.bwenge_role,
-        })
       } catch (error) {
-        console.error("❌ [localStorage Parse Error]:", error)
       }
     }
 
     if (!user && !cookieUser && !localUser) {
-      console.error("❌ [CRITICAL] No authentication found anywhere!")
-      console.log("🔴 [ACTION] User should be redirected to login")
     } else if (!user && (cookieUser || localUser)) {
-      console.warn("⚠️ [WARNING] Auth data exists but useAuth hook not initialized yet")
-      console.log("⏳ [INFO] Wait for hook to initialize...")
     } else if (user) {
-      console.log("✅ [SUCCESS] User authenticated and ready")
     }
 
-    console.log("=".repeat(80))
   }, [user, token])
 
   // ── DATA FETCHING ──────────────────────────────────────────────────────────
@@ -252,15 +203,12 @@ export function CourseCreationWizard() {
   useEffect(() => {
     const fetchData = async () => {
       if (!token || !user) {
-        console.log("⏸️ [fetchData] Skipping data fetch - no authentication")
         return
       }
 
-      console.log("📡 [fetchData] Starting data fetch...")
       setInLoading(true)
 
       try {
-        console.log("📁 [fetchData] Fetching categories...")
         const categoriesResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/courses/categories`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -269,12 +217,10 @@ export function CourseCreationWizard() {
           const data = await categoriesResponse.json()
           const categoriesArray = data.data?.categories || data.data || []
           setCategories(categoriesArray)
-          console.log("✅ [fetchData] Categories loaded:", categoriesArray.length)
         }
 
         // System Admin: always fetch instructors and institutions
         if (user.bwenge_role === "SYSTEM_ADMIN") {
-          console.log("🏛️ [fetchData] Fetching institutions...")
           const institutionsResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/institutions`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -282,10 +228,8 @@ export function CourseCreationWizard() {
           if (institutionsResponse.ok) {
             const data = await institutionsResponse.json()
             setInstitutions(data.data || [])
-            console.log("✅ [fetchData] Institutions loaded:", data.data?.length)
           }
 
-          console.log("👥 [fetchData] Fetching instructors...")
           const instructorsResponse = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/users?role=INSTRUCTOR`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -293,13 +237,10 @@ export function CourseCreationWizard() {
           if (instructorsResponse.ok) {
             const data = await instructorsResponse.json()
             setInstructors(data.data || [])
-            console.log("✅ [fetchData] Instructors loaded:", data.data?.length)
           }
         }
 
-        console.log("✅ [fetchData] All data fetched successfully")
       } catch (error) {
-        console.error("❌ [fetchData] Error:", error)
         toast.error("Failed to load initial data")
       } finally {
         setInLoading(false)
@@ -363,32 +304,15 @@ export function CourseCreationWizard() {
   // ── COURSE SUBMISSION ─────────────────────────────────────────────────────
 
   const handleCourseSubmission = async () => {
-    console.log("=".repeat(80))
-    console.log("🚀 [handleCourseSubmission] SUBMISSION START")
-    console.log("=".repeat(80))
 
-    console.log("🔐 [handleCourseSubmission] Checking authentication...")
 
     if (!user || !token) {
-      console.error("❌ [handleCourseSubmission] AUTHENTICATION FAILED")
-      console.log("📊 [handleCourseSubmission] Auth State:", {
-        hasUser: !!user,
-        hasToken: !!token,
-        userId: user?.id,
-        email: user?.email,
-      })
 
       const cookieToken = Cookies.get("bwenge_token")
       const cookieUser = Cookies.get("bwenge_user")
       const localToken = localStorage.getItem("bwengeplus_token")
       const localUser = localStorage.getItem("bwengeplus_user")
 
-      console.log("🔍 [handleCourseSubmission] Looking for auth in storage:", {
-        hasCookieToken: !!cookieToken,
-        hasCookieUser: !!cookieUser,
-        hasLocalToken: !!localToken,
-        hasLocalUser: !!localUser,
-      })
 
       if (cookieToken || localToken) {
         toast.error("Session initializing, please try again in a moment")
@@ -399,15 +323,6 @@ export function CourseCreationWizard() {
       return
     }
 
-    console.log("✅ [handleCourseSubmission] Authentication verified")
-    console.log("👤 [handleCourseSubmission] User details:", {
-      id: user.id,
-      email: user.email,
-      role: user.bwenge_role,
-      primary_institution_id: user.primary_institution_id,
-      institution_ids: user.institution_ids,
-      institution: user.institution,
-    })
 
     setIsSubmitting(true)
 
@@ -417,9 +332,7 @@ export function CourseCreationWizard() {
       // ── Course thumbnail ─────────────────────────────────────
       if (thumbnailFile) {
         formData.append("thumbnail", thumbnailFile)
-        console.log("🖼️ [handleCourseSubmission] Thumbnail attached:", thumbnailFile.name)
       } else {
-        console.log("⚠️ [handleCourseSubmission] No thumbnail file selected")
       }
 
       // ── Course payload ───────────────────────────────────────
@@ -446,16 +359,11 @@ export function CourseCreationWizard() {
       }
 
       // ── SYSTEM_ADMIN institution handling ────────────────────
-      console.log("🏢 [handleCourseSubmission] Processing institution assignment...")
 
       if (user.bwenge_role === "SYSTEM_ADMIN") {
         if (courseData.course_type === "SPOC") {
           if (courseData.institution_id) {
             coursePayload.institution_id = courseData.institution_id
-            console.log(
-              "✅ [handleCourseSubmission] System Admin - Using selected institution_id:",
-              courseData.institution_id
-            )
           } else {
             toast.error("Please select an institution for SPOC course")
             return
@@ -463,10 +371,6 @@ export function CourseCreationWizard() {
         } else {
           // MOOC: institution_id from form if set, else null
           coursePayload.institution_id = courseData.institution_id || null
-          console.log(
-            "ℹ️ [handleCourseSubmission] System Admin - MOOC course, institution_id:",
-            coursePayload.institution_id || "null"
-          )
         }
       } else if (user.bwenge_role === "INSTITUTION_ADMIN") {
         // Fallback: institution admin using this wizard
@@ -476,30 +380,14 @@ export function CourseCreationWizard() {
           return
         }
         coursePayload.institution_id = targetInstitutionId
-        console.log(
-          "✅ [handleCourseSubmission] Institution Admin - Using primary_institution_id:",
-          targetInstitutionId
-        )
       } else if (user.primary_institution_id) {
         coursePayload.institution_id = user.primary_institution_id
-        console.log(
-          "✅ [handleCourseSubmission] User with institution - Using primary_institution_id:",
-          user.primary_institution_id
-        )
       }
 
-      console.log(
-        "🏢 [handleCourseSubmission] Final institution_id:",
-        coursePayload.institution_id || "null"
-      )
 
       // ── Instructor assignment (System Admin) ─────────────────
       if (user.bwenge_role === "SYSTEM_ADMIN" && courseData.instructor_id) {
         coursePayload.instructor_id = courseData.instructor_id
-        console.log(
-          "👨‍🏫 [handleCourseSubmission] Admin assigned instructor:",
-          courseData.instructor_id
-        )
       }
 
       // ── SPOC-specific settings ───────────────────────────────
@@ -507,7 +395,6 @@ export function CourseCreationWizard() {
         if (courseData.max_enrollments) {
           coursePayload.max_enrollments = courseData.max_enrollments
         }
-        console.log("🎓 [handleCourseSubmission] SPOC course settings applied")
       }
 
       // ── Category assignment ──────────────────────────────────
@@ -583,17 +470,6 @@ export function CourseCreationWizard() {
         }),
       }))
 
-      console.log("📦 [handleCourseSubmission] Payload summary:", {
-        title: coursePayload.title,
-        course_type: coursePayload.course_type,
-        institution_id: coursePayload.institution_id || "null",
-        instructor_id: coursePayload.instructor_id || "Will use logged-in user",
-        modules_count: coursePayload.modules.length,
-        total_lessons: coursePayload.modules.reduce(
-          (sum: number, m: any) => sum + (m.lessons?.length || 0),
-          0
-        ),
-      })
 
       // ── Append course payload to FormData ────────────────────
       Object.keys(coursePayload).forEach((key) => {
@@ -615,36 +491,22 @@ export function CourseCreationWizard() {
           if (videoFile) {
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].video`
             formData.append(fieldName, videoFile)
-            console.log(
-              `🎬 [handleCourseSubmission] Appended video: ${fieldName} (${videoFile.name})`
-            )
           }
           // Lesson thumbnail
           const thumbFile = thumbnailFilesMap.get(lesson.id)
           if (thumbFile) {
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].thumbnail`
             formData.append(fieldName, thumbFile)
-            console.log(
-              `🖼️ [handleCourseSubmission] Appended lesson thumbnail: ${fieldName} (${thumbFile.name})`
-            )
           }
           // Lesson materials
           const matFiles = materialFilesMap.get(lesson.id) || []
           matFiles.forEach((matFile, matIdx) => {
             const fieldName = `modules[${modIdx}].lessons[${lesIdx}].materials[${matIdx}]`
             formData.append(fieldName, matFile)
-            console.log(
-              `📎 [handleCourseSubmission] Appended material: ${fieldName} (${matFile.name})`
-            )
           })
         })
       })
 
-      console.log("📡 [handleCourseSubmission] Sending request to API...")
-      console.log(
-        "🔑 [handleCourseSubmission] Using token:",
-        token.substring(0, 20) + "..."
-      )
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/courses/create`,
@@ -655,36 +517,20 @@ export function CourseCreationWizard() {
         }
       )
 
-      console.log("📨 [handleCourseSubmission] Response status:", response.status)
 
       const result = await response.json()
 
-      console.log("📬 [handleCourseSubmission] Response data:", {
-        success: result.success,
-        message: result.message,
-        courseId: result.data?.id,
-        institution_id: result.data?.institution_id,
-        summary: result.summary,
-      })
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to create course")
       }
 
-      console.log("✅ [handleCourseSubmission] Course created successfully!")
-      console.log("=".repeat(80))
 
       clearStorageOnSuccess()
       toast.success("Course created successfully!")
 
       return result
     } catch (error: any) {
-      console.error("❌ [handleCourseSubmission] Error:", error)
-      console.error("📋 [handleCourseSubmission] Error details:", {
-        message: error.message,
-        stack: error.stack,
-      })
-      console.log("=".repeat(80))
 
       toast.error(error.message || "Failed to create course")
       throw error
@@ -700,20 +546,19 @@ export function CourseCreationWizard() {
     !Cookies.get("bwenge_token") &&
     !localStorage.getItem("bwengeplus_token")
   ) {
-    console.log("⚠️ [Render] No authentication found - showing error")
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive/30 bg-destructive/10">
           <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-bold text-red-900 mb-2">
+            <h2 className="text-xl font-bold text-destructive mb-2">
               Authentication Required
             </h2>
-            <p className="text-red-700 mb-4">
+            <p className="text-destructive mb-4">
               You must be logged in to create a course.
             </p>
             <button
               onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive"
             >
               Go to Login
             </button>
@@ -738,7 +583,7 @@ export function CourseCreationWizard() {
               {index < steps.length - 1 && (
                 <div
                   className={`hidden md:block absolute top-3 left-1/2 w-full h-0.5 ${
-                    index < currentStep ? "bg-[#0158B7]" : "bg-gray-200"
+                    index < currentStep ? "bg-[#0158B7]" : "bg-secondary"
                   }`}
                 />
               )}
@@ -752,8 +597,8 @@ export function CourseCreationWizard() {
                     index === currentStep
                       ? "bg-[#0158B7] text-white shadow-lg ring-2 ring-[#0158B7] ring-offset-2"
                       : index < currentStep
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-200 text-gray-400"
+                      ? "bg-success/100 text-white"
+                      : "bg-secondary text-muted-foreground"
                   }
                   ${
                     index <= currentStep
@@ -772,12 +617,12 @@ export function CourseCreationWizard() {
               <div className="text-center">
                 <p
                   className={`text-xs font-medium ${
-                    index <= currentStep ? "text-gray-900" : "text-gray-400"
+                    index <= currentStep ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {step.title}
                 </p>
-                <p className="text-[10px] text-gray-500 mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   {step.description}
                 </p>
               </div>
@@ -787,7 +632,7 @@ export function CourseCreationWizard() {
       </div>
 
       {/* Step Content */}
-      <Card className="min-h-[600px] border border-gray-200 bg-white shadow-sm">
+      <Card className="min-h-[600px] border border-border bg-card shadow-sm">
         <CardContent className="p-6 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div

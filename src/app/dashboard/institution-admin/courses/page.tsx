@@ -37,17 +37,20 @@ import {
   Filter,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import type { Course, CourseType, CourseLevel, CourseStatus } from "@/types"
 import { useAuth } from "@/hooks/use-auth"
 import { useCourses as useCoursesContext } from "@/hooks/use-courses"
 import { DashboardCourseCard } from "@/components/course/dashboard-course-card"
+import { BwengeCourseCard3D } from "@/components/course/bwenge-course-card-3d"
 
 export default function CourseOverviewPage() {
+  const router = useRouter()
   // Use the context hook correctly
   const { useInstructorCourses } = useCoursesContext()
   const { courses: contextCourses, loading: contextLoading } = useInstructorCourses()
-  
+
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<CourseStatus | "all">("all")
@@ -104,15 +107,15 @@ export default function CourseOverviewPage() {
   const getLevelColor = (level: CourseLevel) => {
     switch (level) {
       case "BEGINNER":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+        return "bg-success/15 text-success dark:bg-success/20/20 dark:text-success"
       case "INTERMEDIATE":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+        return "bg-primary/15 text-primary dark:bg-primary/20/20 dark:text-primary"
       case "ADVANCED":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
+        return "bg-primary/15 text-primary dark:bg-primary/20/20 dark:text-primary"
       case "EXPERT":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+        return "bg-destructive/15 text-destructive dark:bg-destructive/20/20 dark:text-destructive"
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+        return "bg-muted text-foreground dark:bg-card/20 dark:text-muted-foreground"
     }
   }
 
@@ -130,196 +133,54 @@ export default function CourseOverviewPage() {
     return `${price.toLocaleString()} RWF`
   }
 
-  const CourseCard = ({ course, index }: { course: Course; index: number }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.1 }}
-      whileHover={{ y: -5 }}
-      className="group h-full"
-    >
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-primary/20 relative pt-0 flex flex-col h-full">
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-          <Badge className={`${
-            course.status === "PUBLISHED" 
-              ? "bg-green-500 hover:bg-green-600 animate-pulse" 
-              : course.status === "DRAFT" 
-                ? "bg-yellow-500 hover:bg-yellow-600" 
-                : "bg-gray-500 hover:bg-gray-600"
-          }`}>
-            {course.status === "PUBLISHED" ? (
-              <>
-                <Zap className="w-3 h-3 mr-1" />
-                Live
-              </>
-            ) : course.status}
-          </Badge>
+  const renderCourseCard = (course: any, index: number) => {
+    const avgRating = typeof course.average_rating === 'string'
+      ? parseFloat(course.average_rating) || 0
+      : course.average_rating || 0
 
-          <Badge variant="outline" className="flex items-center gap-1">
-            {course.course_type === "MOOC" ? (
-              <>
-                <Globe className="w-3 h-3" />
-                MOOC
-              </>
-            ) : (
-              <>
-                <Lock className="w-3 h-3" />
-                SPOC
-              </>
-            )}
-          </Badge>
-
-          {course.average_rating >= 4.8 && (
-            <Badge className="bg-yellow-500 hover:bg-yellow-600">
-              <Trophy className="w-3 h-3 mr-1" />
-              Top Rated
-            </Badge>
-          )}
-
-          {(course.enrollment_count || 0) > 200 && (
-            <Badge className="bg-purple-500 hover:bg-purple-600">
-              <Award className="w-3 h-3 mr-1" />
-              Popular
-            </Badge>
-          )}
-        </div>
-
-        <div className="relative overflow-hidden">
-          <img
-            src={course.thumbnail_url || "/placeholder.svg"}
-            alt={course.title}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button size="sm" className="bg-white/90 text-gray-900 hover:bg-white" asChild>
-              <Link href={`/institution-admin/courses/${course.id}`}>
-                <Eye className="w-4 h-4 mr-2" />
-                View
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-white/90 border-white/90 text-gray-900 hover:bg-white"
-              asChild
-            >
-              <Link href={`/institution-admin/courses/${course.id}/analytics`}>
-                <BarChart className="w-4 h-4 mr-2" />
-                Analytics
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <Badge className={getLevelColor(course.level)}>
-              {course.level.charAt(0).toUpperCase() + course.level.slice(1).toLowerCase()}
-            </Badge>
-            <div className="text-right">
-              <div className="text-lg font-bold text-primary">
-                {formatPrice(course.price || 0)}
-              </div>
-
-
-              {course.status === "PUBLISHED" && course.average_rating && (
-  <div className="flex items-center gap-1 text-sm">
-    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-    <span className="font-medium">
-      {typeof course.average_rating === 'string' 
-        ? parseFloat(course.average_rating).toFixed(1) 
-        : course.average_rating.toFixed(1)}
-    </span>
-    <span className="text-muted-foreground">({course.total_reviews || 0})</span>
-  </div>
-)}
-            </div>
-          </div>
-
-          <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-            {course.title}
-          </CardTitle>
-          <CardDescription className="line-clamp-2 min-h-[2.5rem]">
-            {course.short_description || course.description}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="pt-0 flex-1 flex flex-col">
-          <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>{course.enrollment_count || 0}</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <BookOpen className="w-4 h-4" />
-              <span>{course.modules?.length || 0} modules</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>{course.duration_minutes ? formatDuration(course.duration_minutes) : "Not Set"}</span>
-            </div>
-          </div>
-
-          {course.tags && course.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-4">
-              {course.tags.slice(0, 3).map((tag, tagIndex) => (
-                <Badge key={tagIndex} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {course.tags.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{course.tags.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {course.institution && (
-            <div className="flex items-center gap-2 mb-4 text-sm">
-              <div className="w-6 h-6 rounded-full overflow-hidden">
-                {course.institution.logo_url ? (
-                  <img
-                    src={course.institution.logo_url}
-                    alt={course.institution.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <Globe className="w-3 h-3 text-gray-500" />
-                  </div>
-                )}
-              </div>
-              <span className="text-muted-foreground truncate">{course.institution.name}</span>
-            </div>
-          )}
-
-          <div className="flex gap-2 mt-auto">
-            <Button className="flex-1" asChild>
-              <Link href={`/dashboard/institution-admin/courses/${course.id}`}>
-                <Play className="w-4 h-4 mr-2" />
-                Manage
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/institution-admin/courses/${course.id}/analytics`}>
-                <TrendingUp className="w-4 h-4" />
-              </Link>
-            </Button>
-            {course.status === "DRAFT" && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/institution-admin/courses/${course.id}`}>
-                  <Edit className="w-4 h-4" />
-                </Link>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
+    return (
+      <BwengeCourseCard3D
+        key={course.id}
+        id={course.id}
+        title={course.title}
+        description={course.description}
+        short_description={course.short_description}
+        thumbnail_url={course.thumbnail_url || undefined}
+        instructor={course.instructor ? {
+          id: course.instructor.id,
+          first_name: course.instructor.first_name,
+          last_name: course.instructor.last_name,
+          profile_picture_url: course.instructor.profile_picture_url || undefined,
+        } : undefined}
+        level={course.level}
+        course_type={course.course_type}
+        price={course.price || 0}
+        average_rating={avgRating}
+        total_reviews={course.total_reviews || 0}
+        enrollment_count={course.enrollment_count || 0}
+        duration_minutes={course.duration_minutes || 0}
+        total_lessons={course.modules?.reduce((s: number, m: any) => s + (m.lessons?.length || 0), 0) || 0}
+        tags={course.tags}
+        is_certificate_available={course.is_certificate_available}
+        is_popular={(course.enrollment_count || 0) > 200}
+        institution={course.institution ? {
+          id: course.institution.id,
+          name: course.institution.name,
+          logo_url: course.institution.logo_url || undefined,
+        } : undefined}
+        category={course.course_category ? {
+          id: course.course_category.id,
+          name: course.course_category.name,
+        } : undefined}
+        status={course.status}
+        variant="admin"
+        showActions={true}
+        showInstitution={!!course.institution}
+        index={index}
+        onLearnMoreClick={(id) => router.push(`/dashboard/institution-admin/courses/${id}`)}
+      />
+    )
+  }
 
   if (loading) {
     return (
@@ -334,11 +195,11 @@ export default function CourseOverviewPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700" />
+              <div className="w-full h-48 bg-secondary dark:bg-secondary" />
               <CardHeader>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                <div className="h-4 bg-secondary dark:bg-secondary rounded w-3/4" />
+                <div className="h-3 bg-secondary dark:bg-secondary rounded w-full" />
+                <div className="h-3 bg-secondary dark:bg-secondary rounded w-2/3" />
               </CardHeader>
             </Card>
           ))}
@@ -378,7 +239,7 @@ export default function CourseOverviewPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Users className="w-8 h-8 text-green-500" />
+              <Users className="w-8 h-8 text-success" />
               <div>
                 <div className="text-2xl font-bold">
                   {courses.reduce((acc, c) => acc + (c.enrollment_count || 0), 0)}
@@ -393,7 +254,7 @@ export default function CourseOverviewPage() {
 <Card>
   <CardContent className="p-4">
     <div className="flex items-center gap-2">
-      <Star className="w-8 h-8 text-yellow-500" />
+      <Star className="w-8 h-8 text-warning" />
       <div>
         <div className="text-2xl font-bold">
           {courses.filter((c) => c.status === "PUBLISHED" && c.average_rating).length > 0
@@ -419,7 +280,7 @@ export default function CourseOverviewPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Target className="w-8 h-8 text-purple-500" />
+              <Target className="w-8 h-8 text-primary" />
               <div>
                 <div className="text-2xl font-bold">
                   {courses.filter((c) => c.status === "PUBLISHED").length}
@@ -516,9 +377,9 @@ export default function CourseOverviewPage() {
         {paginatedCourses.length > 0 ? (
           <>
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {paginatedCourses.map((course, index) => (
-                  <CourseCard key={course.id} course={course} index={index} />
+                  renderCourseCard(course, index)
                 ))}
               </div>
             ) : (

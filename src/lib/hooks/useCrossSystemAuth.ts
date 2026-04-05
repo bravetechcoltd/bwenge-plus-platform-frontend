@@ -20,7 +20,6 @@ export function useCrossSystemAuth() {
       return;
     }
 
-    console.log('🔍 [useCrossSystemAuth] Started monitoring Ongera session');
 
     // Track user activity
     const updateActivity = () => {
@@ -41,16 +40,13 @@ export function useCrossSystemAuth() {
 
       // Skip if user inactive for 10+ minutes
       if (timeSinceActivity > TEN_MINUTES) {
-        console.log('⏸️ [useCrossSystemAuth] User inactive, skipping check');
         return;
       }
 
       try {
-        console.log('🔍 [useCrossSystemAuth] Checking Ongera session...');
         const result = await dispatch(checkOngeraSession()).unwrap();
 
         if (!result.has_ongera_session) {
-          console.log('❌ [useCrossSystemAuth] Ongera session expired');
           
           if (!hasShownExpiredToast.current) {
             toast.error(
@@ -69,10 +65,8 @@ export function useCrossSystemAuth() {
             window.location.href = '/login?reason=session_expired';
           }, 2000);
         } else {
-          console.log('✅ [useCrossSystemAuth] Ongera session is valid');
         }
       } catch (error: any) {
-        console.error('❌ [useCrossSystemAuth] Error checking session:', error);
         
         // If 401, Ongera session is definitely invalid
         if (error.response?.status === 401) {
@@ -95,7 +89,6 @@ export function useCrossSystemAuth() {
 
     // Cleanup
     return () => {
-      console.log('🛑 [useCrossSystemAuth] Stopped monitoring');
       
       clearTimeout(initialTimer);
       

@@ -114,7 +114,6 @@ export default function ExportEnrollmentPage() {
         setCourses(data.data?.courses || []);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
     }
   };
 
@@ -149,7 +148,6 @@ export default function ExportEnrollmentPage() {
         setEnrollmentCount(data.data?.count || 0);
       }
     } catch (error) {
-      console.error("Error fetching count:", error);
     } finally {
       setLoading(false);
     }
@@ -172,7 +170,6 @@ export default function ExportEnrollmentPage() {
         setExportHistory(data.data || []);
       }
     } catch (error) {
-      console.error("Error fetching export history:", error);
     }
   };
 
@@ -203,7 +200,6 @@ export default function ExportEnrollmentPage() {
         setShowPreview(true);
       }
     } catch (error) {
-      console.error("Error fetching preview:", error);
       toast.error("Failed to load preview data");
     } finally {
       setLoading(false);
@@ -285,7 +281,6 @@ export default function ExportEnrollmentPage() {
       toast.success(`Export successful: ${enrollmentCount} records exported`);
       fetchExportHistory(); // Refresh history
     } catch (error) {
-      console.error("Error exporting data:", error);
       toast.error("Failed to export enrollment data");
     } finally {
       setExporting(false);
@@ -316,13 +311,13 @@ export default function ExportEnrollmentPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+        return <Badge className="bg-success/15 text-success">Active</Badge>;
       case "COMPLETED":
-        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>;
+        return <Badge className="bg-primary/15 text-primary">Completed</Badge>;
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <Badge className="bg-warning/15 text-warning">Pending</Badge>;
       case "DROPPED":
-        return <Badge className="bg-red-100 text-red-800">Dropped</Badge>;
+        return <Badge className="bg-destructive/15 text-destructive">Dropped</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -333,8 +328,8 @@ export default function ExportEnrollmentPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Export Enrollment Data</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Export Enrollment Data</h1>
+          <p className="text-muted-foreground">
             Export enrollment records for reporting and analysis
           </p>
         </div>
@@ -536,9 +531,9 @@ export default function ExportEnrollmentPage() {
               </div>
 
               {/* Export Summary */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">Export Summary</h4>
-                <div className="space-y-1 text-sm text-blue-700">
+              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                <h4 className="font-semibold text-primary mb-2">Export Summary</h4>
+                <div className="space-y-1 text-sm text-primary">
                   <p>• Format: {options.format.toUpperCase()}</p>
                   <p>• Records to export: {loading ? "Loading..." : enrollmentCount}</p>
                   <p>• Date range: {options.dateRange === "all" ? "All time" : options.dateRange}</p>
@@ -610,20 +605,20 @@ export default function ExportEnrollmentPage() {
                               <p className="font-medium">
                                 {item.user?.first_name} {item.user?.last_name}
                               </p>
-                              <p className="text-sm text-gray-500">{item.user?.email}</p>
+                              <p className="text-sm text-muted-foreground">{item.user?.email}</p>
                             </div>
                           </TableCell>
                           <TableCell>
                             <p className="font-medium">{item.course?.title}</p>
-                            <p className="text-sm text-gray-500">{item.course?.course_type}</p>
+                            <p className="text-sm text-muted-foreground">{item.course?.course_type}</p>
                           </TableCell>
                           <TableCell>{getStatusBadge(item.status)}</TableCell>
                           <TableCell>{format(new Date(item.enrolled_at), "MMM d, yyyy")}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-blue-600"
+                                  className="h-full bg-primary"
                                   style={{ width: `${item.progress_percentage}%` }}
                                 />
                               </div>
@@ -652,11 +647,11 @@ export default function ExportEnrollmentPage() {
             <CardContent>
               {exportHistory.length === 0 ? (
                 <div className="text-center py-8">
-                  <DownloadCloud className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  <DownloadCloud className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">
                     No Exports Yet
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Your export history will appear here
                   </p>
                 </div>
@@ -668,14 +663,14 @@ export default function ExportEnrollmentPage() {
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <FileText className="w-4 h-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-primary/15 rounded-full flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-primary" />
                         </div>
                         <div>
                           <p className="font-medium text-sm">
                             {export_.filename}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {export_.record_count} records • {format(new Date(export_.exported_at), "MMM d, yyyy")}
                           </p>
                         </div>
@@ -704,31 +699,31 @@ export default function ExportEnrollmentPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
+                  <Users className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">Total Students</span>
                 </div>
                 <span className="font-semibold">{enrollmentCount}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-gray-400" />
+                  <BookOpen className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">Total Courses</span>
                 </div>
                 <span className="font-semibold">{courses.length}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-gray-400" />
+                  <CheckCircle className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">Active Enrollments</span>
                 </div>
-                <span className="font-semibold text-green-600">1,234</span>
+                <span className="font-semibold text-success">1,234</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
+                  <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">Pending</span>
                 </div>
-                <span className="font-semibold text-yellow-600">56</span>
+                <span className="font-semibold text-warning">56</span>
               </div>
             </CardContent>
           </Card>

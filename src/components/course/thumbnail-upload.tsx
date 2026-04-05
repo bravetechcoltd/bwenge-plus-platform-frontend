@@ -100,10 +100,10 @@ export function ThumbnailUpload({
         className={cn(
           "relative border-2 border-dashed rounded-lg transition-colors cursor-pointer",
           uploadStatus === "error"
-            ? "border-red-300 bg-red-50"
+            ? "border-destructive/40 bg-destructive/10"
             : uploadStatus === "success"
-              ? "border-green-300 bg-green-50"
-              : "border-gray-300 hover:border-blue-400 bg-gray-50",
+              ? "border-success/40 bg-success/10"
+              : "border-border hover:border-primary/60 bg-muted/50",
         )}
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
@@ -117,7 +117,7 @@ export function ThumbnailUpload({
               className="w-full h-48 object-cover rounded-lg"
             />
             <button
-              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-md p-2 transition-colors"
+              className="absolute top-2 right-2 bg-destructive/100 hover:bg-destructive text-white rounded-md p-2 transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
                 removeThumbnail()
@@ -127,7 +127,7 @@ export function ThumbnailUpload({
               <X className="w-4 h-4" />
             </button>
             {uploadStatus === "success" && (
-              <div className="absolute top-2 left-2 bg-green-500 text-white rounded-full p-1">
+              <div className="absolute top-2 left-2 bg-success/100 text-white rounded-full p-1">
                 <CheckCircle className="w-4 h-4" />
               </div>
             )}
@@ -140,19 +140,19 @@ export function ThumbnailUpload({
         ) : (
           <div className="p-8 text-center">
             {uploadStatus === "error" ? (
-              <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+              <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
             ) : (
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             )}
-            <p className="text-gray-700 font-medium mb-2">
+            <p className="text-muted-foreground font-medium mb-2">
               {uploadStatus === "error" ? "Upload failed" : "Click to upload or drag and drop"}
             </p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               PNG, JPG, WebP up to 5MB<br />
               (1280x720 recommended)
             </p>
             <button
-              className="px-4 py-2 border-2 border-gray-300 rounded-lg bg-white hover:bg-gray-100 transition-colors font-medium text-gray-700"
+              className="px-4 py-2 border-2 border-border rounded-lg bg-card hover:bg-muted transition-colors font-medium text-muted-foreground"
               onClick={(e) => {
                 e.stopPropagation()
                 fileInputRef.current?.click()
@@ -174,7 +174,7 @@ export function ThumbnailUpload({
       />
       
       {uploadStatus === "error" && (
-        <p className="text-sm text-red-600 text-center">
+        <p className="text-sm text-destructive text-center">
           Please try again with a different image file.
         </p>
       )}

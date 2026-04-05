@@ -79,15 +79,15 @@ export default function SSOCallbackPage() {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full text-center"
+        className="bg-card rounded-xl shadow-xl p-8 max-w-md w-full text-center"
       >
         {status === 'loading' && (
           <>
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+            <div className="w-16 h-16 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Verifying SSO</h2>
-            <p className="text-gray-600">{message}</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">Verifying SSO</h2>
+            <p className="text-muted-foreground">{message}</p>
           </>
         )}
 
@@ -96,13 +96,13 @@ export default function SSOCallbackPage() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-4"
             >
-              <Check className="w-8 h-8 text-green-600" />
+              <Check className="w-8 h-8 text-success" />
             </motion.div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Success!</h2>
-            <p className="text-gray-600">{message}</p>
-            <p className="text-sm text-gray-500 mt-2">Redirecting to dashboard...</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">Success!</h2>
+            <p className="text-muted-foreground">{message}</p>
+            <p className="text-sm text-muted-foreground mt-2">Redirecting to dashboard...</p>
           </>
         )}
 
@@ -111,15 +111,15 @@ export default function SSOCallbackPage() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              className="w-16 h-16 bg-destructive/15 rounded-full flex items-center justify-center mx-auto mb-4"
             >
-              <X className="w-8 h-8 text-red-600" />
+              <X className="w-8 h-8 text-destructive" />
             </motion.div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">SSO Failed</h2>
-            <p className="text-gray-600">{message}</p>
+            <h2 className="text-xl font-bold text-foreground mb-2">SSO Failed</h2>
+            <p className="text-muted-foreground">{message}</p>
             <button
               onClick={() => router.push('/login')}
-              className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary"
             >
               Back to Login
             </button>

@@ -197,7 +197,7 @@ export function VideoPlayer({
     } else {
       navigator.clipboard.writeText(window.location.href)
         .then(() => alert('Link copied to clipboard!'))
-        .catch(err => console.error('Failed to copy:', err))
+        .catch(() => {})
     }
   }
 
@@ -235,7 +235,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-card/20"
               onClick={skipBackward}
             >
               <SkipBack className="w-4 h-4" />
@@ -243,7 +243,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-card/20"
               onClick={togglePlay}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -251,7 +251,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-card/20"
               onClick={skipForward}
             >
               <SkipForward className="w-4 h-4" />
@@ -259,7 +259,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-card/20"
               onClick={toggleMute}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -278,7 +278,7 @@ export function VideoPlayer({
 
           <div className="flex items-center gap-2">
             {showCaptions && (
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-card/20">
                 <Captions className="w-4 h-4" />
               </Button>
             )}
@@ -286,7 +286,7 @@ export function VideoPlayer({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-card/20"
                 onClick={handleDownload}
               >
                 <Download className="w-4 h-4" />
@@ -296,7 +296,7 @@ export function VideoPlayer({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-card/20"
                 onClick={handleShare}
               >
                 <Share2 className="w-4 h-4" />
@@ -306,13 +306,13 @@ export function VideoPlayer({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-card/20"
                 onClick={() => setShowSettings(!showSettings)}
               >
                 <Settings className="w-4 h-4" />
               </Button>
               {showSettings && (
-                <div className="absolute bottom-10 right-0 bg-gray-900 rounded-lg p-2 min-w-32 z-10">
+                <div className="absolute bottom-10 right-0 bg-card rounded-lg p-2 min-w-32 z-10">
                   <div className="space-y-1">
                     <p className="text-xs text-white font-medium px-2 py-1">Playback Speed</p>
                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
@@ -320,8 +320,8 @@ export function VideoPlayer({
                         key={rate}
                         onClick={() => changePlaybackRate(rate)}
                         className={cn(
-                          "block w-full text-left px-2 py-1 text-sm rounded hover:bg-gray-700",
-                          playbackRate === rate ? "text-primary font-medium" : "text-gray-300"
+                          "block w-full text-left px-2 py-1 text-sm rounded hover:bg-secondary",
+                          playbackRate === rate ? "text-primary font-medium" : "text-muted-foreground"
                         )}
                       >
                         {rate}x
@@ -334,7 +334,7 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-card/20"
               onClick={toggleFullscreen}
             >
               {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
@@ -347,7 +347,7 @@ export function VideoPlayer({
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
           <div className="text-center text-white">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="w-16 h-16 bg-card/20 rounded-full flex items-center justify-center mb-4 mx-auto">
               <Play className="w-8 h-8 ml-1" />
             </div>
             <p className="text-lg font-medium">{title}</p>

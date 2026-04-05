@@ -246,7 +246,6 @@ export default function LearnerSubmittedAssignmentsPage() {
       const stats = calculateSubmittedStats(submissions);
       setStats(stats);
     } catch (error) {
-      console.error("Error fetching submitted assignments:", error);
       toast.error("Failed to load submitted assignments");
     } finally {
       setLoading(false);
@@ -335,21 +334,21 @@ export default function LearnerSubmittedAssignmentsPage() {
     switch (status) {
       case "PENDING_GRADING":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+          <Badge className="bg-warning/15 text-warning border-warning/30">
             <Clock className="w-3 h-3 mr-1" />
             Pending Grading
           </Badge>
         );
       case "GRADED":
         return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
+          <Badge className="bg-success/15 text-success border-success/30">
             <CheckCircle className="w-3 h-3 mr-1" />
             Graded
           </Badge>
         );
       case "AUTO_GRADED":
         return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+          <Badge className="bg-primary/15 text-primary border-primary/30">
             <Award className="w-3 h-3 mr-1" />
             Auto-graded
           </Badge>
@@ -364,13 +363,13 @@ export default function LearnerSubmittedAssignmentsPage() {
     
     if (passed) {
       return (
-        <Badge className="bg-green-100 text-green-800 border-green-200">
+        <Badge className="bg-success/15 text-success border-success/30">
           Passed: {percentage.toFixed(1)}%
         </Badge>
       );
     } else {
       return (
-        <Badge className="bg-red-100 text-red-800 border-red-200">
+        <Badge className="bg-destructive/15 text-destructive border-destructive/30">
           Failed: {percentage.toFixed(1)}%
         </Badge>
       );
@@ -405,10 +404,10 @@ export default function LearnerSubmittedAssignmentsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Submitted Assignments
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Track the status of your submitted assignments
           </p>
         </div>
@@ -432,11 +431,11 @@ export default function LearnerSubmittedAssignmentsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Submitted</p>
+                  <p className="text-sm text-muted-foreground">Total Submitted</p>
                   <p className="text-3xl font-bold">{stats.total_submitted}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -446,25 +445,11 @@ export default function LearnerSubmittedAssignmentsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Pending Grading</p>
-                  <p className="text-3xl font-bold text-yellow-600">{stats.pending_grading}</p>
+                  <p className="text-sm text-muted-foreground">Pending Grading</p>
+                  <p className="text-3xl font-bold text-warning">{stats.pending_grading}</p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Average Score</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.average_score.toFixed(1)}%</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -474,11 +459,25 @@ export default function LearnerSubmittedAssignmentsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Pass Rate</p>
-                  <p className="text-3xl font-bold text-purple-600">{stats.pass_rate.toFixed(1)}%</p>
+                  <p className="text-sm text-muted-foreground">Average Score</p>
+                  <p className="text-3xl font-bold text-success">{stats.average_score.toFixed(1)}%</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-success" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Pass Rate</p>
+                  <p className="text-3xl font-bold text-primary">{stats.pass_rate.toFixed(1)}%</p>
+                </div>
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -489,7 +488,7 @@ export default function LearnerSubmittedAssignmentsPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search submitted assignments..."
             value={searchTerm}
@@ -541,11 +540,11 @@ export default function LearnerSubmittedAssignmentsPage() {
       {filteredAssignments.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Submitted Assignments
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm
                 ? "No assignments match your search criteria"
                 : "You haven't submitted any assignments yet."}
@@ -594,19 +593,19 @@ export default function LearnerSubmittedAssignmentsPage() {
               <CardContent className="pb-2 space-y-3">
                 {/* Course Info */}
                 <div className="flex items-center gap-2 text-sm">
-                  <BookOpen className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600 line-clamp-1">{assignment.course.title}</span>
+                  <BookOpen className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground line-clamp-1">{assignment.course.title}</span>
                 </div>
 
                 {/* Submission Info */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 bg-gray-50 rounded-lg text-center">
+                  <div className="p-2 bg-muted/50 rounded-lg text-center">
                     <div className="font-semibold">{safeFormatDate(assignment.submitted_at, "MMM d")}</div>
-                    <div className="text-gray-500">Submitted</div>
+                    <div className="text-muted-foreground">Submitted</div>
                   </div>
-                  <div className="p-2 bg-gray-50 rounded-lg text-center">
+                  <div className="p-2 bg-muted/50 rounded-lg text-center">
                     <div className="font-semibold">{assignment.attempt_number}/{assignment.total_attempts}</div>
-                    <div className="text-gray-500">Attempt</div>
+                    <div className="text-muted-foreground">Attempt</div>
                   </div>
                 </div>
 
@@ -623,8 +622,8 @@ export default function LearnerSubmittedAssignmentsPage() {
 
                 {/* Feedback Preview */}
                 {assignment.feedback && (
-                  <div className="bg-blue-50 rounded-lg p-2">
-                    <p className="text-xs text-blue-700 italic line-clamp-2">
+                  <div className="bg-primary/10 rounded-lg p-2">
+                    <p className="text-xs text-primary italic line-clamp-2">
                       "{assignment.feedback}"
                     </p>
                   </div>
@@ -672,28 +671,28 @@ export default function LearnerSubmittedAssignmentsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-semibold">{selectedAssignment.title}</h3>
-                  <p className="text-sm text-gray-500">{selectedAssignment.course.title}</p>
+                  <p className="text-sm text-muted-foreground">{selectedAssignment.course.title}</p>
                 </div>
                 {getStatusBadge(selectedAssignment.status)}
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <div className="text-sm font-semibold">{safeFormatDate(selectedAssignment.submitted_at, "MMM d, yyyy")}</div>
-                  <div className="text-xs text-gray-500">Submitted</div>
+                  <div className="text-xs text-muted-foreground">Submitted</div>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <div className="text-sm font-semibold">{selectedAssignment.attempt_number}</div>
-                  <div className="text-xs text-gray-500">Attempt</div>
+                  <div className="text-xs text-muted-foreground">Attempt</div>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <div className="text-sm font-semibold">{selectedAssignment.answers_count}/{selectedAssignment.questions_count}</div>
-                  <div className="text-xs text-gray-500">Questions</div>
+                  <div className="text-xs text-muted-foreground">Questions</div>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <div className="text-sm font-semibold">{selectedAssignment.total_points}</div>
-                  <div className="text-xs text-gray-500">Total Points</div>
+                  <div className="text-xs text-muted-foreground">Total Points</div>
                 </div>
               </div>
 
@@ -702,12 +701,12 @@ export default function LearnerSubmittedAssignmentsPage() {
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">Your Score</h4>
-                    <Badge className={selectedAssignment.passed ? "bg-green-500" : "bg-red-500"}>
+                    <Badge className={selectedAssignment.passed ? "bg-success/100" : "bg-destructive/100"}>
                       {selectedAssignment.passed ? "Passed" : "Failed"}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="text-4xl font-bold text-blue-600">
+                    <div className="text-4xl font-bold text-primary">
                       {selectedAssignment.percentage.toFixed(1)}%
                     </div>
                     <div className="flex-1">
@@ -721,10 +720,10 @@ export default function LearnerSubmittedAssignmentsPage() {
               {selectedAssignment.feedback && (
                 <div className="space-y-2">
                   <h4 className="font-semibold">Instructor Feedback</h4>
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="bg-muted/50 rounded-lg p-4">
                     <p className="text-sm">{selectedAssignment.feedback}</p>
                     {selectedAssignment.graded_at && (
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         Graded on {safeFormatDate(selectedAssignment.graded_at, "MMM d, yyyy 'at' h:mm a")}
                       </p>
                     )}

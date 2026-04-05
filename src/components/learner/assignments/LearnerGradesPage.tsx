@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/hooks";
+import { useRealtimeEvents } from "@/hooks/use-realtime";
 import {
   Card,
   CardContent,
@@ -134,6 +135,12 @@ export default function LearnerGradesPage() {
       fetchGrades();
     }
   }, [user]);
+
+  // Real-time: refresh grades when new grades are released
+  useRealtimeEvents({
+    "grade-released": () => fetchGrades(),
+    "progress-updated": () => fetchGrades(),
+  });
 
   const fetchGrades = async () => {
     setLoading(true);
@@ -275,7 +282,6 @@ export default function LearnerGradesPage() {
       const stats = calculateGradeStats(gradesArray);
       setStats(stats);
     } catch (error) {
-      console.error("Error fetching grades:", error);
       toast.error("Failed to load grades");
     } finally {
       setLoading(false);
@@ -385,7 +391,6 @@ export default function LearnerGradesPage() {
         toast.error("Failed to export grades");
       }
     } catch (error) {
-      console.error("Error exporting grades:", error);
       toast.error("Failed to export grades");
     }
   };
@@ -430,10 +435,10 @@ export default function LearnerGradesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             My Grades
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Track your academic performance across all courses
           </p>
         </div>
@@ -461,11 +466,11 @@ export default function LearnerGradesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Overall GPA</p>
+                  <p className="text-sm text-muted-foreground">Overall GPA</p>
                   <p className="text-3xl font-bold">{stats.overall_gpa.toFixed(2)}</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -475,11 +480,11 @@ export default function LearnerGradesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Average Score</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.average_score.toFixed(1)}%</p>
+                  <p className="text-sm text-muted-foreground">Average Score</p>
+                  <p className="text-3xl font-bold text-primary">{stats.average_score.toFixed(1)}%</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -489,11 +494,11 @@ export default function LearnerGradesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Assignments</p>
+                  <p className="text-sm text-muted-foreground">Assignments</p>
                   <p className="text-3xl font-bold">{stats.graded_assignments}/{stats.total_assignments}</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -503,11 +508,11 @@ export default function LearnerGradesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Credits</p>
+                  <p className="text-sm text-muted-foreground">Total Credits</p>
                   <p className="text-3xl font-bold">{stats.total_credits}</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -584,7 +589,7 @@ export default function LearnerGradesPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search courses..."
             value={searchTerm}
@@ -610,11 +615,11 @@ export default function LearnerGradesPage() {
       {filteredGrades.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Award className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               No Grades Available
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm
                 ? "No courses match your search criteria"
                 : "You don't have any graded assignments yet."}
@@ -652,10 +657,10 @@ export default function LearnerGradesPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600">
+                    <div className="text-3xl font-bold text-primary">
                       {courseGrade.letter_grade}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       GPA: {courseGrade.gpa_points?.toFixed(2)}
                     </div>
                   </div>
@@ -679,7 +684,7 @@ export default function LearnerGradesPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">{assignment.title}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               Attempt {assignment.attempt}
                             </p>
                           </div>
@@ -691,9 +696,9 @@ export default function LearnerGradesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-600"
+                                className="h-full bg-primary"
                                 style={{ width: `${assignment.percentage}%` }}
                               />
                             </div>
@@ -723,11 +728,11 @@ export default function LearnerGradesPage() {
                 </Table>
               </CardContent>
 
-              <CardFooter className="bg-gray-50 flex justify-between">
-                <div className="text-sm text-gray-600">
+              <CardFooter className="bg-muted/50 flex justify-between">
+                <div className="text-sm text-muted-foreground">
                   <span className="font-medium">Course Average:</span> {courseGrade.overall_percentage.toFixed(1)}%
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <span className="font-medium">Letter Grade:</span> {courseGrade.letter_grade}
                 </div>
               </CardFooter>

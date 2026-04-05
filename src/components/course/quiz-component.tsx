@@ -79,12 +79,12 @@ export function QuizComponent({ quiz, onComplete, isPreview = false }: QuizCompo
         <CardHeader className="text-center">
           <div
             className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              passed ? "bg-green-100" : "bg-red-100"
+              passed ? "bg-success/15" : "bg-destructive/15"
             }`}
           >
-            {passed ? <CheckCircle className="w-8 h-8 text-green-600" /> : <XCircle className="w-8 h-8 text-red-600" />}
+            {passed ? <CheckCircle className="w-8 h-8 text-success" /> : <XCircle className="w-8 h-8 text-destructive" />}
           </div>
-          <CardTitle className={passed ? "text-green-600" : "text-red-600"}>
+          <CardTitle className={passed ? "text-success" : "text-destructive"}>
             {passed ? "Congratulations!" : "Keep Trying!"}
           </CardTitle>
           <CardDescription>
@@ -99,18 +99,18 @@ export function QuizComponent({ quiz, onComplete, isPreview = false }: QuizCompo
           </div>
 
           {passed && !isPreview && (
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="font-medium text-green-800">Quiz Completed Successfully!</p>
-              <p className="text-sm text-green-600">You've earned points</p>
+            <div className="text-center p-4 bg-success/10 rounded-lg">
+              <Award className="w-8 h-8 text-success mx-auto mb-2" />
+              <p className="font-medium text-success">Quiz Completed Successfully!</p>
+              <p className="text-sm text-success">You've earned points</p>
             </div>
           )}
 
           {isPreview && (
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-              <p className="font-medium text-blue-800">Preview Mode</p>
-              <p className="text-sm text-blue-600">This is how students will see the quiz results</p>
+            <div className="text-center p-4 bg-primary/10 rounded-lg">
+              <AlertCircle className="w-8 h-8 text-primary mx-auto mb-2" />
+              <p className="font-medium text-primary">Preview Mode</p>
+              <p className="text-sm text-primary">This is how students will see the quiz results</p>
             </div>
           )}
 
@@ -178,7 +178,7 @@ export function QuizComponent({ quiz, onComplete, isPreview = false }: QuizCompo
                   index === currentQuestionIndex
                     ? "bg-primary"
                     : answers[quiz.questions![index].id] !== undefined
-                      ? "bg-green-500"
+                      ? "bg-success/100"
                       : "bg-muted"
                 }`}
               />

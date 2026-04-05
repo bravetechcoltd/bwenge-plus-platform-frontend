@@ -1,10 +1,10 @@
 // @ts-nocheck
 "use client"
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDispatch, useSelector } from 'react-redux'
-import type { AppDispatch, RootState } from '@/lib/store'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/lib/store'
 import { toast } from 'sonner'
 import api from '@/lib/api'
 import Cookies from 'js-cookie'
@@ -26,21 +26,15 @@ declare global {
           initialize: (config: any) => void
           prompt: (callback?: (notification: any) => void) => void
           cancel: () => void
+          renderButton: (element: HTMLElement, options: any) => void
         }
       }
     }
-    __googleOneTapInitialized?: boolean
-    __googleOneTapScriptLoaded?: boolean
-    __googleOneTapPrompted?: boolean
   }
 }
 
-/**
- * Helper function to determine dashboard path based on user role
- */
 function getRoleDashboardPath(role: string | undefined): string {
   if (!role) return '/dashboard/learner'
-  
   const roleMap: Record<string, string> = {
     'SYSTEM_ADMIN': '/dashboard/system-admin',
     'INSTITUTION_ADMIN': '/dashboard/institution-admin',
@@ -48,104 +42,53 @@ function getRoleDashboardPath(role: string | undefined): string {
     'INSTRUCTOR': '/dashboard/instructor',
     'LEARNER': '/dashboard/learner',
   }
-  
   return roleMap[role] || '/dashboard/learner'
 }
 
-/**
- * Store authentication data properly
- */
 const storeAuthData = (user: any, token: string) => {
-  // Store in cookies
-  Cookies.set("bwenge_token", token, { 
-    expires: 7, 
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' 
-  });
-  Cookies.set("bwenge_user", JSON.stringify(user), { 
-    expires: 7, 
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' 
-  });
+  Cookies.set("bwenge_token", token, { expires: 7, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+  Cookies.set("bwenge_user", JSON.stringify(user), { expires: 7, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
   
-  // Store in localStorage
   if (typeof window !== 'undefined') {
-    localStorage.setItem("bwengeplus_token", token);
-    localStorage.setItem("bwengeplus_user", JSON.stringify(user));
-    
-    if (user.institution) {
-      localStorage.setItem("bwengeplus_institution", JSON.stringify(user.institution));
-      Cookies.set("bwenge_institution", JSON.stringify(user.institution), { 
-        expires: 7,
-        secure: process.env.NODE_ENV === 'production'
-      });
-    }
-    
-    if (user.primary_institution_id) {
-      localStorage.setItem("bwengeplus_primary_institution_id", user.primary_institution_id);
-      Cookies.set("bwenge_primary_institution_id", user.primary_institution_id, { 
-        expires: 7,
-        secure: process.env.NODE_ENV === 'production'
-      });
-    }
-    
-    if (user.institution_role) {
-      localStorage.setItem("bwengeplus_institution_role", user.institution_role);
-      Cookies.set("bwenge_institution_role", user.institution_role, { 
-        expires: 7,
-        secure: process.env.NODE_ENV === 'production'
-      });
-    }
+    localStorage.setItem("bwengeplus_token", token)
+    localStorage.setItem("bwengeplus_user", JSON.stringify(user))
   }
-};
+}
 
 /**
- * Google One Tap Login Component
- * Displays the Google One Tap prompt automatically when conditions are met
+ * Custom Google One Tap implementation that completely bypasses FedCM
+ * by using a hidden div with renderButton method
  */
 export function GoogleOneTapLogin({
   onSuccess,
   autoSelect = false,
-  cancelOnTapOutside = false,
+  cancelOnTapOutside = true,
   context = 'signin',
   disabled = false,
   forceDisplay = false
 }: GoogleOneTapProps) {
   const router = useRouter()
-  const dispatch = useDispatch<AppDispatch>()
   const { isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
-  const initializationAttempted = useRef(false)
-  const promptAttempted = useRef(false)
+  const initialized = useRef(false)
+  const hasShown = useRef(false)
+  const hiddenDivRef = useRef<HTMLDivElement | null>(null)
 
   const handleCredentialResponse = useCallback(async (response: any) => {
-    if (!response.credential) {
-      return
-    }
+    if (!response?.credential) return
 
     try {
-      const result = await api.post('/auth/google-one-tap', {
-        credential: response.credential
-      })
+      const result = await api.post('/auth/google-one-tap', { credential: response.credential })
 
       if (result.data.success) {
         const user = result.data.data.user
         const token = result.data.data.token
-
         storeAuthData(user, token)
 
-        toast.success(`Welcome ${user.first_name}!`, {
-          description: 'You have been logged in successfully'
-        })
-
-        if (onSuccess) {
-          onSuccess(user)
-        }
+        toast.success(`Welcome ${user.first_name}!`, { description: 'You have been logged in successfully' })
+        if (onSuccess) onSuccess(user)
 
         const dashboardPath = getRoleDashboardPath(user.bwenge_role)
-
-        setTimeout(() => {
-          window.location.href = dashboardPath
-        }, 500)
+        setTimeout(() => { window.location.href = dashboardPath }, 500)
       }
     } catch (error: any) {
       const errData = error.response?.data
@@ -153,167 +96,182 @@ export function GoogleOneTapLogin({
       const message = errData?.message || 'Google One Tap login failed'
 
       if (code === 'NO_ACCOUNT') {
-        toast.error('No BwengePlus account found', {
-          description: 'Please apply to join BwengePlus first. You will be redirected.',
-          duration: 4000,
-        })
-        setTimeout(() => {
-          window.location.href = '/register'
-        }, 2500)
-        return
+        toast.error('No BwengePlus account found', { description: 'Please apply to join BwengePlus first.', duration: 4000 })
+        setTimeout(() => { window.location.href = '/register' }, 2500)
+      } else if (code === 'PENDING_APPROVAL') {
+        toast.error('Application under review', { description: message, duration: 5000 })
+      } else if (code === 'APPLICATION_REJECTED') {
+        toast.error('Application not approved', { description: message, duration: 5000 })
+      } else {
+        toast.error('Authentication Failed', { description: message })
       }
-
-      if (code === 'PENDING_APPROVAL') {
-        toast.error('Application under review', {
-          description: message,
-          duration: 5000,
-        })
-        return
-      }
-
-      if (code === 'APPLICATION_REJECTED') {
-        toast.error('Application not approved', {
-          description: message,
-          duration: 5000,
-        })
-        return
-      }
-
-      toast.error('Authentication Failed', {
-        description: message
-      })
     }
-  }, [router, onSuccess, dispatch])
+  }, [router, onSuccess])
 
   useEffect(() => {
-    // Determine if we should show One Tap
-    const shouldShow = forceDisplay || (!isAuthenticated && !disabled)
+    // Don't show if authenticated or disabled
+    if (isAuthenticated || disabled) return
+    if (!forceDisplay && hasShown.current) return
+    if (initialized.current) return
     
-    if (!shouldShow) {
-      return
-    }
-
-    // Prevent multiple initializations
-    if (initializationAttempted.current || window.__googleOneTapInitialized) {
-      return
-    }
-
-    initializationAttempted.current = true
+    initialized.current = true
 
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) return
 
-    if (!clientId) {
-      return
-    }
-
-    // Function to initialize Google One Tap
-    const initializeGoogleOneTap = () => {
-      if (!window.google) {
-        return
-      }
-
-      if (window.__googleOneTapInitialized) {
-        return
-      }
+    // Function to trigger One Tap without FedCM
+    const triggerOneTap = () => {
+      if (!window.google?.accounts?.id) return
 
       try {
+        // Create hidden div for One Tap if not exists
+        if (!hiddenDivRef.current) {
+          const hiddenDiv = document.createElement('div')
+          hiddenDiv.style.position = 'fixed'
+          hiddenDiv.style.top = '-9999px'
+          hiddenDiv.style.left = '-9999px'
+          hiddenDiv.style.opacity = '0'
+          hiddenDiv.style.pointerEvents = 'none'
+          hiddenDiv.style.zIndex = '-9999'
+          document.body.appendChild(hiddenDiv)
+          hiddenDivRef.current = hiddenDiv
+        }
+
+        // Initialize with minimal configuration
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleCredentialResponse,
           auto_select: autoSelect,
           cancel_on_tap_outside: cancelOnTapOutside,
           context: context,
-          itp_support: true,
-          ux_mode: 'popup',
-          state_cookie_domain: window.location.hostname,
+          // CRITICAL: Disable FedCM
+          use_fedcm_for_prompt: false,
         })
 
-        window.__googleOneTapInitialized = true
+        // Use renderButton on hidden div - this bypasses FedCM completely
+        window.google.accounts.id.renderButton(hiddenDivRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'rectangular',
+          width: '1',
+        })
 
-        // Display the One Tap prompt
-        if (!window.__googleOneTapPrompted && !promptAttempted.current) {
-          promptAttempted.current = true
-          window.__googleOneTapPrompted = true
-          
-          window.google.accounts.id.prompt((notification: any) => {
-            // Silently handle notifications without logging
-            if (notification.isNotDisplayed?.()) {
-              // Prompt not displayed - try again after a delay
-              setTimeout(() => {
-                if (window.google?.accounts?.id && !isAuthenticated) {
-                  window.google.accounts.id.prompt()
-                }
-              }, 3000)
-            }
-          })
-        }
+        // Trigger the One Tap by simulating a click on the hidden button
+        setTimeout(() => {
+          const iframe = hiddenDivRef.current?.querySelector('iframe')
+          if (iframe && !hasShown.current) {
+            hasShown.current = true
+            // Dispatch click event to show One Tap
+            const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true })
+            iframe.dispatchEvent(clickEvent)
+          }
+        }, 100)
       } catch (error) {
         // Silent fail
-        window.__googleOneTapInitialized = false
       }
     }
 
-    // Load or reuse Google One Tap script
-    if (window.__googleOneTapScriptLoaded && window.google) {
-      initializeGoogleOneTap()
-    } else {
+    // Load Google script
+    const loadGoogleScript = () => {
+      if (window.google?.accounts?.id) {
+        triggerOneTap()
+        return
+      }
+
       const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]')
-      
       if (existingScript) {
-        existingScript.addEventListener('load', () => {
-          window.__googleOneTapScriptLoaded = true
-          initializeGoogleOneTap()
-        })
-      } else {
-        const script = document.createElement('script')
-        script.src = 'https://accounts.google.com/gsi/client'
-        script.async = true
-        script.defer = true
-        
-        script.onload = () => {
-          window.__googleOneTapScriptLoaded = true
-          initializeGoogleOneTap()
-        }
-
-        document.body.appendChild(script)
+        existingScript.addEventListener('load', triggerOneTap, { once: true })
+        return
       }
+
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = triggerOneTap
+      document.body.appendChild(script)
     }
 
-    // Cleanup function
+    // Delay to ensure page is fully loaded
+    const timer = setTimeout(loadGoogleScript, 500)
+
     return () => {
-      if (window.google?.accounts?.id && window.__googleOneTapInitialized) {
-        try {
-          window.google.accounts.id.cancel()
-          window.__googleOneTapInitialized = false
-          window.__googleOneTapPrompted = false
-        } catch (error) {
-          // Silent cleanup
-        }
+      clearTimeout(timer)
+      // Clean up hidden div
+      if (hiddenDivRef.current && document.body.contains(hiddenDivRef.current)) {
+        document.body.removeChild(hiddenDivRef.current)
+        hiddenDivRef.current = null
       }
-      
-      initializationAttempted.current = false
-      promptAttempted.current = false
     }
   }, [handleCredentialResponse, autoSelect, cancelOnTapOutside, context, isAuthenticated, disabled, forceDisplay])
 
-  // This component doesn't render anything visible
   return null
 }
 
 /**
- * Debug component - only used for development
+ * Alternative: Simple Google Sign-In Button (No One Tap)
+ * Use this if One Tap continues to have issues
  */
-export function GoogleOneTapDebug() {
+export function GoogleSignInButton({ 
+  onSuccess, 
+  className = "",
+  buttonText = "Sign in with Google"
+}: { 
+  onSuccess?: (credential: string) => void
+  className?: string
+  buttonText?: string
+}) {
+  const buttonRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId || !buttonRef.current) return
 
-    // Silent debug - no console logs
-    const checkStatus = setInterval(() => {
-      // No logging - just for development tools
-    }, 5000)
+    const loadGoogleScript = () => {
+      if (window.google?.accounts?.id) {
+        initializeButton()
+        return
+      }
 
-    return () => clearInterval(checkStatus)
-  }, [])
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = initializeButton
+      document.body.appendChild(script)
+    }
 
-  return null
+    const initializeButton = () => {
+      if (!buttonRef.current || !window.google?.accounts?.id) return
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: any) => {
+          if (response.credential && onSuccess) {
+            onSuccess(response.credential)
+          }
+        },
+        use_fedcm_for_prompt: false,
+      })
+
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        width: '100%',
+      })
+    }
+
+    loadGoogleScript()
+  }, [onSuccess])
+
+  return (
+    <div className={className}>
+      <div ref={buttonRef} className="w-full" />
+    </div>
+  )
 }
