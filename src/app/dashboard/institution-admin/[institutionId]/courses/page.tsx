@@ -42,6 +42,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  DeleteCourseDialog,
+  type DeleteMode,
+} from "@/components/courses/delete-course-dialog";
+import { courseDeletionApi, summariseBulk } from "@/lib/courses/deletion-api";
 
 interface InstitutionCourse {
   id: string;
@@ -165,6 +171,20 @@ function InstitutionCoursesPageBody() {
     }
   };
 
+  /**
+   * A bulk action waiting to be confirmed.
+   *
+   * `skipped` is how many of the selection the action does not apply to —
+   * drafts in an unpublish, published courses in a publish — which the native
+   * confirm explained in a sentence nobody could style, read twice, or copy.
+   */
+  const [bulkAction, setBulkAction] = useState<
+    | { kind: "publish" | "unpublish" | "delete"; count: number; skipped: number; ids: string[] }
+    | null
+  >(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+
   // ==================== FIXED: Bulk operations with PATCH ====================
   const handleBulkPublish = async () => {
     // Get only draft courses from selection
@@ -178,16 +198,17 @@ function InstitutionCoursesPageBody() {
       return;
     }
 
-    // Show warning if some selected courses are not draft
-    if (draftCourses.length < selectedCourses.length) {
-      const publishedCount = selectedCourses.length - draftCourses.length;
-      if (!confirm(`${publishedCount} selected course(s) are already published and will be skipped. Continue publishing ${draftCourses.length} draft course(s)?`)) {
-        return;
-      }
-    } else {
-      if (!confirm(`Are you sure you want to publish ${draftCourses.length} course(s)?`)) return;
-    }
+    const skipped = selectedCourses.length - draftCourses.length;
+    setBulkAction({
+      kind: "publish",
+      count: draftCourses.length,
+      skipped,
+      ids: draftCourses,
+    });
+  };
 
+  /** Runs after the confirmation dialog, not before it. */
+  const runBulkPublish = async (draftCourses: string[]) => {
     try {
       const promises = draftCourses.map(courseId =>
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/publish`, {
@@ -231,16 +252,16 @@ function InstitutionCoursesPageBody() {
       return;
     }
 
-    // Show warning if some selected courses are not published
-    if (publishedCourses.length < selectedCourses.length) {
-      const draftCount = selectedCourses.length - publishedCourses.length;
-      if (!confirm(`${draftCount} selected course(s) are drafts and will be skipped. Continue unpublishing ${publishedCourses.length} published course(s)?`)) {
-        return;
-      }
-    } else {
-      if (!confirm(`Are you sure you want to unpublish ${publishedCourses.length} course(s)?`)) return;
-    }
+    const skipped = selectedCourses.length - publishedCourses.length;
+    setBulkAction({
+      kind: "unpublish",
+      count: publishedCourses.length,
+      skipped,
+      ids: publishedCourses,
+    });
+  };
 
+  const runBulkUnpublish = async (publishedCourses: string[]) => {
     try {
       const promises = publishedCourses.map(courseId =>
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/unpublish`, {
@@ -272,31 +293,24 @@ function InstitutionCoursesPageBody() {
     }
   };
 
-  const handleDelete = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+  /*
+   * Opens the dialog rather than doing the work.
+   *
+   * The native confirm this replaced said "this action cannot be undone" over
+   * an endpoint that archived the course, so the sentence was false and the
+   * administrator had no way to tell. The dialog offers both, and says which
+   * is which.
+   */
+  const handleDelete = (course: { id: string; title: string }) => {
+    setDeleteTarget(course);
+  };
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Course deleted successfully!");
-        fetchInstitutionCourses();
-      } else {
-        toast.error(data.message || "Failed to delete course");
-      }
-    } catch (error) {
-      toast.error("Failed to delete course");
-    }
+  const runDelete = async (courseId: string, mode: DeleteMode) => {
+    await courseDeletionApi.remove(courseId, mode === "permanent");
+    toast.success(
+      mode === "permanent" ? "Course permanently deleted" : "Course archived"
+    );
+    fetchInstitutionCourses();
   };
 
   const handleBulkDelete = async () => {
@@ -305,27 +319,45 @@ function InstitutionCoursesPageBody() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${selectedCourses.length} courses? This action cannot be undone.`)) return;
+    setBulkAction({
+      kind: "delete",
+      count: selectedCourses.length,
+      skipped: 0,
+      ids: [...selectedCourses],
+    });
+  };
 
+  const runBulkDelete = async (ids: string[], permanent: boolean) => {
     try {
-      const promises = selectedCourses.map(courseId =>
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then(res => res.json())
+      /*
+       * Reported per course rather than as one number.
+       *
+       * This counted successes and said nothing about the rest, so a
+       * selection where two of six were refused still read as a success. A
+       * refusal names the course it applies to.
+       */
+      const results = await Promise.all(
+        ids.map(async (courseId) => {
+          const title = courses.find((c: any) => c.id === courseId)?.title ?? "a course";
+          try {
+            await courseDeletionApi.remove(courseId, permanent);
+            return { ok: true, title };
+          } catch (e) {
+            return { ok: false, title, error: e instanceof Error ? e.message : undefined };
+          }
+        })
       );
 
-      const results = await Promise.all(promises);
-      const successCount = results.filter(r => r.success).length;
-
-      if (successCount > 0) {
-        toast.success(`${successCount} courses deleted successfully!`);
+      const summary = summariseBulk(results, permanent ? "deleted" : "archived");
+      if (summary.succeeded > 0) {
+        // react-hot-toast has no `warning`; a partial result is reported as
+        // an error so it is not mistaken for a clean run.
+        if (summary.failed > 0) toast.error(summary.message);
+        else toast.success(summary.message);
         setSelectedCourses([]);
         fetchInstitutionCourses();
       } else {
-        toast.error("Failed to delete courses");
+        toast.error(summary.message);
       }
     } catch (error) {
       toast.error("Failed to delete courses");
@@ -712,7 +744,7 @@ function InstitutionCoursesPageBody() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               className="text-destructive"
-                              onClick={() => handleDelete(course.id)}
+                              onClick={() => handleDelete({ id: course.id, title: course.title })}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete Course
@@ -742,6 +774,105 @@ function InstitutionCoursesPageBody() {
           )}
         </CardContent>
       </Card>
+
+      {/*
+        Confirmations, as dialogs rather than as native `confirm()`.
+
+        The six calls these replaced blocked the browser, could not be styled
+        or read twice, and in the delete case stated something that was not
+        true of the endpoint behind them.
+      */}
+      <ConfirmDialog
+        open={!!bulkAction && bulkAction.kind !== "delete"}
+        onOpenChange={(open) => !open && setBulkAction(null)}
+        pending={bulkBusy}
+        title={
+          bulkAction?.kind === "publish"
+            ? `Publish ${bulkAction.count} course${bulkAction.count === 1 ? "" : "s"}?`
+            : `Unpublish ${bulkAction?.count ?? 0} course${(bulkAction?.count ?? 0) === 1 ? "" : "s"}?`
+        }
+        confirmLabel={bulkAction?.kind === "publish" ? "Publish" : "Unpublish"}
+        description={
+          bulkAction && (
+            <span className="space-y-2">
+              <span className="block">
+                {bulkAction.kind === "publish"
+                  ? "They become visible to learners straight away."
+                  : "They are hidden from learners. Enrolments and progress are kept."}
+              </span>
+              {bulkAction.skipped > 0 && (
+                <span className="block font-medium text-foreground">
+                  {bulkAction.skipped} of the selected course
+                  {bulkAction.skipped === 1 ? " is" : "s are"} already{" "}
+                  {bulkAction.kind === "publish" ? "published" : "drafts"} and will be left
+                  alone.
+                </span>
+              )}
+            </span>
+          )
+        }
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          setBulkBusy(true);
+          try {
+            if (bulkAction.kind === "publish") await runBulkPublish(bulkAction.ids);
+            else await runBulkUnpublish(bulkAction.ids);
+            setBulkAction(null);
+          } finally {
+            setBulkBusy(false);
+          }
+        }}
+      />
+
+      {/*
+        Bulk delete archives rather than destroys.
+
+        Permanent removal of several courses at once, each with its own
+        enrolments and issued certificates, is not something to offer behind a
+        single confirmation — the per-course dialog states what goes with each
+        one, and that is where it belongs.
+      */}
+      <ConfirmDialog
+        open={bulkAction?.kind === "delete"}
+        onOpenChange={(open) => !open && setBulkAction(null)}
+        destructive
+        pending={bulkBusy}
+        confirmLabel="Archive them"
+        title={`Archive ${bulkAction?.count ?? 0} course${(bulkAction?.count ?? 0) === 1 ? "" : "s"}?`}
+        description={
+          <span className="space-y-2">
+            <span className="block">
+              They are hidden from learners and kept in the database, with their enrolments,
+              progress and certificates intact.
+            </span>
+            <span className="block">
+              To remove a course and everything attached to it, delete it on its own — that
+              dialog lists what would go with it first.
+            </span>
+          </span>
+        }
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          setBulkBusy(true);
+          try {
+            await runBulkDelete(bulkAction.ids, false);
+            setBulkAction(null);
+          } finally {
+            setBulkBusy(false);
+          }
+        }}
+      />
+
+      <DeleteCourseDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        courseId={deleteTarget?.id ?? null}
+        courseTitle={deleteTarget?.title ?? ""}
+        onConfirm={async (mode) => {
+          if (!deleteTarget) return;
+          await runDelete(deleteTarget.id, mode);
+        }}
+      />
     </div>
   );
 }
