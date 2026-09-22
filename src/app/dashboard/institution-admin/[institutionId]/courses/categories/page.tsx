@@ -80,6 +80,7 @@ import {
   MoreVertical,
   ChevronDown,
   ChevronRight,
+  FolderInput,
   GripVertical,
   BookOpen,
   CheckCircle,
@@ -111,6 +112,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { CategoryCoursesDialog } from "@/components/categories/category-courses-dialog";
 
 // ==================== COMPONENTS ====================
 
@@ -119,6 +121,8 @@ interface SortableCategoryItemProps {
   onEdit: (category: CourseCategory) => void;
   onDelete: (category: CourseCategory) => void;
   onToggleStatus: (categoryId: string) => void;
+  /** Opens the list of courses filed under this category. */
+  onViewCourses: (category: CourseCategory) => void;
   viewMode: "list" | "grid" | "tree";
 }
 
@@ -127,6 +131,7 @@ function SortableCategoryItem({
   onEdit,
   onDelete,
   onToggleStatus,
+  onViewCourses,
   viewMode,
 }: SortableCategoryItemProps) {
   const {
@@ -186,6 +191,12 @@ function SortableCategoryItem({
                     </>
                   )}
                 </DropdownMenuItem>
+                {(category.course_count || 0) > 0 && (
+                  <DropdownMenuItem onClick={() => onViewCourses(category)}>
+                    <FolderInput className="h-4 w-4 mr-2" />
+                    View &amp; move courses
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive"
@@ -206,10 +217,25 @@ function SortableCategoryItem({
             >
               {category.is_active ? "Active" : "Inactive"}
             </Badge>
-            <Badge variant="outline" className="text-xs">
-              <BookOpen className="h-3 w-3 mr-1" />
-              {category.course_count || 0} courses
-            </Badge>
+            {(category.course_count || 0) > 0 ? (
+              <button
+                type="button"
+                onClick={() => onViewCourses(category)}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-xs
+                  font-medium text-foreground transition-colors hover:border-primary hover:text-primary
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`View the ${category.course_count} courses in ${category.name}`}
+              >
+                <BookOpen className="h-3 w-3" />
+                {category.course_count} courses
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            ) : (
+              <Badge variant="outline" className="text-xs">
+                <BookOpen className="h-3 w-3 mr-1" />
+                No courses
+              </Badge>
+            )}
           </div>
           {category.subcategories && category.subcategories.length > 0 && (
             <div className="mt-3 text-xs text-muted-foreground">
@@ -244,10 +270,21 @@ function SortableCategoryItem({
         </Badge>
       </TableCell>
       <TableCell className="text-center">
-        <Badge variant="outline">
-          <BookOpen className="h-3 w-3 mr-1" />
-          {category.course_count || 0}
-        </Badge>
+        {(category.course_count || 0) > 0 ? (
+          <button
+            type="button"
+            onClick={() => onViewCourses(category)}
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-xs
+              font-medium text-foreground transition-colors hover:border-primary hover:text-primary
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`View the ${category.course_count} courses in ${category.name}`}
+          >
+            <BookOpen className="h-3 w-3" />
+            {category.course_count}
+          </button>
+        ) : (
+          <span className="text-xs text-muted-foreground">0</span>
+        )}
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -313,6 +350,8 @@ export default function InstitutionCategoriesPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [coursesDialogFor, setCoursesDialogFor] = useState<CourseCategory | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [categoryFormData, setCategoryFormData] = useState({
     name: "",
     description: "",
@@ -529,9 +568,35 @@ export default function InstitutionCategoriesPage() {
     setShowEditDialog(true);
   };
 
+  /*
+   * Opening the course list.
+   *
+   * Reachable from the count badge and from the card menu, and from inside the
+   * delete dialog — which is where an administrator finds out they need it.
+   */
+  const openCoursesDialog = (category: CourseCategory) => {
+    setCoursesDialogFor(category);
+  };
+
+  /*
+   * Whether the delete may go ahead: empty, and the name typed back.
+   *
+   * Compared case-insensitively and trimmed, because the requirement is that
+   * the administrator read which category they are deleting, not that they
+   * reproduce its capitalisation.
+   */
+  const canDelete =
+    !!selectedCategory &&
+    (selectedCategory.course_count || 0) === 0 &&
+    deleteConfirmation.trim().toLowerCase() === selectedCategory.name.trim().toLowerCase();
+
   // Open delete dialog
   const openDeleteDialog = (category: CourseCategory) => {
     setSelectedCategory(category);
+    // Cleared here rather than on close: reopening for a different category
+    // would otherwise arrive with the previous name already typed in, and the
+    // confirmation would be satisfied by something nobody read.
+    setDeleteConfirmation("");
     setShowDeleteDialog(true);
   };
 
@@ -909,6 +974,7 @@ export default function InstitutionCategoriesPage() {
                       onEdit={openEditDialog}
                       onDelete={openDeleteDialog}
                       onToggleStatus={handleToggleStatus}
+                      onViewCourses={openCoursesDialog}
                       viewMode={viewMode}
                     />
                   ))}
@@ -943,6 +1009,7 @@ export default function InstitutionCategoriesPage() {
                         onEdit={openEditDialog}
                         onDelete={openDeleteDialog}
                         onToggleStatus={handleToggleStatus}
+                        onViewCourses={openCoursesDialog}
                         viewMode={viewMode}
                       />
                     ))}
@@ -1195,10 +1262,29 @@ export default function InstitutionCategoriesPage() {
                       </h4>
                       
                       {(selectedCategory.course_count || 0) > 0 && (
-                        <p className="text-destructive text-sm mb-2">
-                          ⚠️ This category has {selectedCategory.course_count || 0} courses assigned to it.
-                          {(selectedCategory.course_count || 0) > 0 && " These courses will need to be reassigned."}
-                        </p>
+                        <>
+                          <p className="text-destructive text-sm mb-2">
+                            {selectedCategory.course_count} course
+                            {(selectedCategory.course_count || 0) === 1 ? " is" : "s are"} filed under it.
+                            A category has to be empty before it can be deleted, or those courses would
+                            be left pointing at nothing.
+                          </p>
+                          {/*
+                            The button below used to read "Reassign Courses First" and do nothing,
+                            which named the next step without offering it. This is that step.
+                          */}
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setShowDeleteDialog(false);
+                              openCoursesDialog(selectedCategory);
+                            }}
+                          >
+                            <FolderInput className="h-4 w-4 mr-2" />
+                            Move {selectedCategory.course_count} course
+                            {(selectedCategory.course_count || 0) === 1 ? "" : "s"}
+                          </Button>
+                        </>
                       )}
                       
                       {selectedCategory.subcategories && selectedCategory.subcategories.length > 0 && (
@@ -1211,18 +1297,27 @@ export default function InstitutionCategoriesPage() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-delete">
-                    Type <span className="font-mono text-destructive">"{selectedCategory.name}"</span> to confirm
-                  </Label>
-                  <Input
-                    id="confirm-delete"
-                    placeholder="Enter category name to confirm"
-                    onChange={(e) => {
-                      // You can add confirmation logic here
-                    }}
-                  />
-                </div>
+                {/*
+                  The typed name is now required rather than decorative. This
+                  input had an empty onChange with a comment saying confirmation
+                  logic could be added here, so the instruction was real and the
+                  check was not: anything typed, or nothing at all, deleted the
+                  category just the same.
+                */}
+                {(selectedCategory.course_count || 0) === 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-delete">
+                      Type <span className="font-mono text-destructive">{selectedCategory.name}</span> to confirm
+                    </Label>
+                    <Input
+                      id="confirm-delete"
+                      value={deleteConfirmation}
+                      placeholder="Enter category name to confirm"
+                      autoComplete="off"
+                      onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -1236,13 +1331,35 @@ export default function InstitutionCategoriesPage() {
             <Button
               variant="destructive"
               onClick={handleDeleteCategory}
-              disabled={(selectedCategory?.course_count ?? 0) > 0}
+              disabled={!canDelete}
             >
-              {(selectedCategory?.course_count ?? 0) > 0 ? "Reassign Courses First" : "Delete Category"}
+              Delete Category
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/*
+        The courses inside a category, and where each one goes next.
+
+        Reloading the categories after a move is what turns the delete from
+        refused into available: the count it is gated on comes from the server,
+        so the screen has to hear that the courses left.
+      */}
+      <CategoryCoursesDialog
+        open={!!coursesDialogFor}
+        onOpenChange={(open) => !open && setCoursesDialogFor(null)}
+        categoryId={coursesDialogFor?.id ?? null}
+        categoryName={coursesDialogFor?.name ?? ""}
+        onMoved={(moved, remaining) => {
+          toast.success(
+            `${moved} course${moved === 1 ? "" : "s"} moved${
+              remaining === 0 ? ` — "${coursesDialogFor?.name}" is now empty` : ""
+            }`
+          );
+          fetchCategories();
+        }}
+      />
     </div>
   );
 }
