@@ -884,6 +884,15 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         ]
       },
       {
+        // The registration questionnaire is rows in the database and the
+        // server already had the whole administration API for it, but nothing
+        // in this menu reached it — so changing a career category meant a SQL
+        // statement against production.
+        title: "Registration Questionnaire",
+        icon: ClipboardList,
+        href: "/dashboard/system-admin/onboarding",
+      },
+      {
         title: "Assign Course",
         icon: BookOpen,
         href: "/dashboard/system-admin/courses/assign-public",
