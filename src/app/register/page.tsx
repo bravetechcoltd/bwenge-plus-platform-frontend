@@ -100,24 +100,6 @@ function SelectInput({ id, name, value, onChange, placeholder, required, disable
   )
 }
 
-/* ── Date input ── */
-function DateInput({ id, name, value, onChange, placeholder, disabled }: {
-  id: string; name: string; value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  placeholder: string; disabled?: boolean
-}) {
-  return (
-    <input
-      id={id} name={name} type="date" value={value} onChange={onChange}
-      disabled={disabled} placeholder={placeholder}
-      className="w-full pl-3 pr-3 py-2 text-sm bg-white/80 dark:bg-white/5
-        border border-border rounded-lg outline-none transition-colors
-        focus:border-primary text-foreground disabled:opacity-50
-        placeholder:text-muted-foreground/60"
-    />
-  )
-}
-
 /* ══ Main ══ */
 export default function RegisterPage() {
   const router = useRouter()
@@ -152,9 +134,9 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "",
     phone_number: "", country: "",
-    date_of_birth: "", gender: "",
+    gender: "",
     password: "", confirm_password: "",
-    education_level: "", motivation: "", linkedin_url: "",
+    education_level: "", linkedin_url: "",
   })
 
   useEffect(() => () => { dispatch(clearError()) }, [dispatch])
@@ -199,7 +181,10 @@ export default function RegisterPage() {
 
   const step1Valid = !!(form.first_name.trim() && form.last_name.trim() && form.email.trim() && form.phone_number.trim() && form.country.trim())
   const step2Valid = form.password.length >= 8 && !!pwMatch
-  const step3Valid = !!(form.education_level && form.motivation.trim().length >= 20)
+  // Education level alone. The motivation textarea used to gate this step on
+  // twenty characters, which was the only thing standing between an applicant
+  // and the questionnaire that follows.
+  const step3Valid = !!form.education_level
 
   const canNext = () => step === 1 ? step1Valid : step === 2 ? step2Valid : true
   const handleNext = () => { if (step < 3) setStep((s) => s + 1) }
@@ -219,8 +204,8 @@ export default function RegisterPage() {
         first_name: form.first_name.trim(), last_name: form.last_name.trim(),
         email: form.email.trim(), password: form.password, confirm_password: form.confirm_password,
         phone_number: form.phone_number || undefined, country: form.country || undefined,
-        date_of_birth: form.date_of_birth || undefined, gender: form.gender || undefined,
-        education_level: form.education_level || undefined, motivation: form.motivation,
+        gender: form.gender || undefined,
+        education_level: form.education_level || undefined,
         linkedin_url: form.linkedin_url || undefined,
         onboarding,
       } as any)).unwrap()
@@ -443,10 +428,7 @@ export default function RegisterPage() {
                         <Input id="phone_number" name="phone_number" type="tel" value={form.phone_number} onChange={handleChange} placeholder="Phone number *" required disabled={isLoading} />
                         <Input id="country" name="country" value={form.country} onChange={handleChange} placeholder="Country *" required disabled={isLoading} />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <DateInput id="date_of_birth" name="date_of_birth" value={form.date_of_birth} onChange={handleChange} placeholder="Date of birth" disabled={isLoading} />
-                        <SelectInput id="gender" name="gender" value={form.gender} onChange={handleChange} placeholder="Gender" disabled={isLoading} options={GENDERS} />
-                      </div>
+                      <SelectInput id="gender" name="gender" value={form.gender} onChange={handleChange} placeholder="Gender" disabled={isLoading} options={GENDERS} />
                       <button type="button" onClick={handleNext} disabled={!canNext()}
                         className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold
                           hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
@@ -558,25 +540,6 @@ export default function RegisterPage() {
                         placeholder="LinkedIn profile URL (optional)"
                         disabled={isLoading}
                       />
-
-                      {/* Motivation */}
-                      <div>
-                        <textarea
-                          id="motivation" name="motivation" value={form.motivation} onChange={handleChange}
-                          required rows={3} disabled={isLoading}
-                          placeholder="Your motivation for joining BwengePlus *"
-                          className="w-full pl-3 pr-3 pt-2.5 pb-2 text-sm
-                            bg-white/80 dark:bg-white/5 border border-border rounded-lg outline-none resize-none
-                            focus:border-primary transition-colors text-foreground disabled:opacity-50
-                            placeholder:text-muted-foreground/60"
-                        />
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold">Min. 20 characters</span>
-                          <span className={`text-[9px] font-bold tabular-nums ${form.motivation.length >= 20 ? "text-emerald-500" : "text-muted-foreground"}`}>
-                            {form.motivation.length}
-                          </span>
-                        </div>
-                      </div>
 
                       {/* Terms */}
                       <label className="flex items-start gap-2 cursor-pointer group/terms select-none">

@@ -341,10 +341,8 @@ export const registerBwenge = createAsyncThunk(
       confirm_password: string;
       country?: string;
       phone_number?: string;
-      date_of_birth?: string;
       gender?: string;
       education_level?: string;
-      motivation?: string;
       linkedin_url?: string;
       /**
        * Onboarding answers collected in the same wizard (ONB-001 §5).
