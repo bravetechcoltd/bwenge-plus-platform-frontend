@@ -1,0 +1,676 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAppSelector } from "@/lib/hooks";
+import { useRealtimeEvent } from "@/hooks/use-realtime";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Award,
+  Download,
+  Eye,
+  Search,
+  Filter,
+  Calendar,
+  BookOpen,
+  Trophy,
+  CheckCircle,
+  AlertCircle,
+  GraduationCap,
+  Clock,
+  Target,
+  Crown,
+  Copy,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import {
+  CertificateModal,
+  describeCertificateError,
+  downloadCertificate,
+  formatCertificateScore,
+  type CanonicalCertificate,
+} from "@/components/certificate";
+
+interface Certificate {
+  id: string;
+  certificate_number: string;
+  verification_code: string;
+  issue_date: string;
+  final_score: number;
+  is_valid: boolean;
+  expires_at: string | null;
+  certificate_url: string;
+  course: {
+    id: string;
+    title: string;
+    description: string;
+    thumbnail_url: string | null;
+    level: string;
+    duration_minutes: number;
+    language: string;
+    category: string | null;
+    tags: string[];
+    instructor: {
+      id: string;
+      name: string;
+      profile_picture_url: string | null;
+    } | null;
+    institution: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+    } | null;
+  };
+  status: string;
+  shareable_links: {
+    public_verification: string;
+    api_verification: string;
+  };
+  /**
+   * The canonical record (CERT-CONS-001 §3.3). Every field this page displays
+   * or acts on comes from here; the keys above are the legacy shape, retained
+   * by the API for older consumers.
+   */
+  canonical: CanonicalCertificate;
+}
+
+interface CertificateData {
+  certificates: Certificate[];
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    certificates_earned: number;
+  };
+  statistics: {
+    total_certificates: number;
+    valid_certificates: number;
+    current_page_count: number;
+  };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export default function MyCertificatesPage() {
+  const { user } = useAppSelector((state) => state.bwengeAuth);
+  
+  const [certificatesData, setCertificatesData] = useState<CertificateData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterYear, setFilterYear] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [showCertificateDialog, setShowCertificateDialog] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchCertificates(currentPage);
+    }
+  }, [user, currentPage]);
+
+  // Real-time: refresh when a new certificate is issued
+  useRealtimeEvent("certificate-issued", () => fetchCertificates(currentPage));
+
+  const fetchCertificates = async (page: number) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("bwengeplus_token");
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/certificates/user/my-certificates?page=${page}&limit=12`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setCertificatesData(result.data);
+        }
+      } else {
+        throw new Error("Failed to fetch certificates");
+      }
+    } catch (error) {
+      toast.error("Failed to load certificates");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchCertificates(currentPage);
+    setRefreshing(false);
+    toast.success("Certificates refreshed");
+  };
+
+  const handleViewCertificate = (certificate: Certificate) => {
+    setSelectedCertificate(certificate);
+    setShowCertificateDialog(true);
+  };
+
+  /**
+   * Download from this page was broken outright.
+   *
+   * It built `…/pdf/download?download=true` and attached no token — `download`
+   * is a Content-Disposition flag, not an authorization mode — so the endpoint
+   * refused every request with `INVALID_TOKEN` (C-19, C-20). It read the auth
+   * token out of localStorage first and then never used it, which it could not
+   * have: an `<a href>` carries no headers. And it reported success either way,
+   * so the refusal landed as raw JSON in a new tab while the UI said the
+   * download had started (C-32).
+   *
+   * The shared helper mints a signed grant and then navigates to it.
+   */
+  const handleDownloadPDF = async (certificateId: string) => {
+    setDownloadingId(certificateId);
+    try {
+      await downloadCertificate(certificateId);
+      toast.success("Download started");
+    } catch (error) {
+      toast.error(describeCertificateError(error));
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  // LinkedIn, X, Facebook, email, copy-link, verify and print all moved into
+  // <CertificateActions>, which the modal renders. That is a superset of what
+  // this page offered — and the Print button here opened
+  // `/certificates/:id/print`, a route that did not exist (C-28) and now does.
+  const handleCopyLink = (certificate: Certificate) => {
+    navigator.clipboard.writeText(certificate.canonical.links.verification_url);
+    toast.success("Certificate link copied to clipboard");
+  };
+
+  const filteredCertificates = certificatesData?.certificates.filter((cert) => {
+    const matchesSearch = 
+      cert.course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cert.certificate_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cert.course.instructor?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cert.course.institution?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = 
+      filterStatus === "all" || 
+      (filterStatus === "valid" && cert.status === "VALID") ||
+      (filterStatus === "expired" && cert.status === "EXPIRED") ||
+      (filterStatus === "revoked" && cert.status === "REVOKED");
+    
+    const matchesYear = 
+      filterYear === "all" || 
+      new Date(cert.issue_date).getFullYear().toString() === filterYear;
+    
+    return matchesSearch && matchesStatus && matchesYear;
+  }) || [];
+
+  const sortedCertificates = [...filteredCertificates].sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime();
+      case "oldest":
+        return new Date(a.issue_date).getTime() - new Date(b.issue_date).getTime();
+      case "title":
+        return a.course.title.localeCompare(b.course.title);
+      case "score_desc":
+        return b.final_score - a.final_score;
+      case "score_asc":
+        return a.final_score - b.final_score;
+      default:
+        return 0;
+    }
+  });
+
+  const years = certificatesData?.certificates
+    ? [...new Set(certificatesData.certificates.map(c => new Date(c.issue_date).getFullYear().toString()))].sort().reverse()
+    : [];
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "VALID":
+        return (
+          <Badge className="bg-success/15 text-success border-success/30">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Valid
+          </Badge>
+        );
+      case "EXPIRED":
+        return (
+          <Badge className="bg-warning/15 text-warning border-warning/30">
+            <Clock className="w-3 h-3 mr-1" />
+            Expired
+          </Badge>
+        );
+      case "REVOKED":
+        return (
+          <Badge className="bg-destructive/15 text-destructive border-destructive/30">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Revoked
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getLevelIcon = (level: string) => {
+    switch (level?.toUpperCase()) {
+      case "BEGINNER":
+        return <Target className="w-4 h-4" />;
+      case "INTERMEDIATE":
+        return <Trophy className="w-4 h-4" />;
+      case "ADVANCED":
+      case "EXPERT":
+        return <Crown className="w-4 h-4" />;
+      default:
+        return <Target className="w-4 h-4" />;
+    }
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level?.toUpperCase()) {
+      case "BEGINNER":
+        return "bg-success/100";
+      case "INTERMEDIATE":
+        return "bg-primary";
+      case "ADVANCED":
+      case "EXPERT":
+        return "bg-primary/100";
+      default:
+        return "bg-muted/500";
+    }
+  };
+
+  const formatTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
+  if (loading && !certificatesData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            My Certificates
+          </h1>
+          <p className="text-muted-foreground">
+            View and manage all your earned certificates
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <Loader2 className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      {certificatesData && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Certificates</p>
+                  <p className="text-3xl font-bold text-primary">
+                    {certificatesData.statistics.total_certificates}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Valid Certificates</p>
+                  <p className="text-3xl font-bold text-success">
+                    {certificatesData.statistics.valid_certificates}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-success" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Average Score</p>
+                  <p className="text-3xl font-bold text-primary">
+                    {certificatesData.certificates.length > 0
+                      ? Math.round(
+                          certificatesData.certificates.reduce(
+                            (sum, cert) => sum + cert.final_score,
+                            0
+                          ) / certificatesData.certificates.length
+                        )
+                      : 0}
+                    %
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Courses Completed</p>
+                  <p className="text-3xl font-bold text-warning">
+                    {certificatesData.statistics.total_certificates}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-warning" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search by course, certificate number, instructor..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-full md:w-40">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="valid">Valid</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="revoked">Revoked</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterYear} onValueChange={setFilterYear}>
+          <SelectTrigger className="w-full md:w-40">
+            <Calendar className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Year" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Years</SelectItem>
+            {years.map(year => (
+              <SelectItem key={year} value={year}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full md:w-40">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">Most Recent</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="title">Course Title</SelectItem>
+            <SelectItem value="score_desc">Highest Score</SelectItem>
+            <SelectItem value="score_asc">Lowest Score</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Certificates Grid */}
+      {sortedCertificates.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <Award className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+              No Certificates Found
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery || filterStatus !== "all" || filterYear !== "all"
+                ? "No certificates match your search or filter criteria."
+                : "You haven't earned any certificates yet. Complete a course to earn your first certificate!"}
+            </p>
+            <Button asChild>
+              <Link href="/dashboard/learner/browse/all">
+                Browse Courses
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedCertificates.map((certificate) => (
+            <Card key={certificate.id} className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group">
+              {/* Header with gradient */}
+              <div className="relative h-32 bg-gradient-to-r from-blue-600 to-purple-600">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-2 right-2">
+                  {getStatusBadge(certificate.status)}
+                </div>
+                <div className="absolute bottom-2 left-2">
+                  <Badge className="bg-card/90 text-foreground">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    {format(new Date(certificate.issue_date), "MMM d, yyyy")}
+                  </Badge>
+                </div>
+                <div className="absolute bottom-2 right-2">
+                  <Badge className={`${getLevelColor(certificate.course.level)} text-white`}>
+                    <span className="flex items-center gap-1">
+                      {getLevelIcon(certificate.course.level)}
+                      {certificate.course.level}
+                    </span>
+                  </Badge>
+                </div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <Trophy className="w-12 h-12 text-warning opacity-80" />
+                </div>
+              </div>
+
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base line-clamp-1 group-hover:text-primary transition-colors">
+                  {certificate.course.title}
+                </CardTitle>
+                <CardDescription className="line-clamp-2 text-xs">
+                  {certificate.course.description || "Certificate of Completion"}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="pb-2 space-y-3">
+                {/* Score */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Final Score</span>
+                  <span className="text-lg font-bold text-primary">
+                    {formatCertificateScore(certificate.canonical.final_score) ?? "—"}
+                  </span>
+                </div>
+
+                {/* Course Details */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-1 p-2 bg-muted/50 rounded">
+                    <BookOpen className="w-3 h-3 text-primary" />
+                    <span className="truncate">{certificate.course.language}</span>
+                  </div>
+                  <div className="flex items-center gap-1 p-2 bg-muted/50 rounded">
+                    <Clock className="w-3 h-3 text-primary" />
+                    <span>{formatTime(certificate.course.duration_minutes)}</span>
+                  </div>
+                </div>
+
+                {/* Instructor */}
+                {certificate.course.instructor && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                      {certificate.course.instructor.profile_picture_url ? (
+                        <img
+                          src={certificate.course.instructor.profile_picture_url}
+                          alt={certificate.course.instructor.name}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <GraduationCap className="w-3 h-3 text-muted-foreground" />
+                      )}
+                    </div>
+                    <span className="text-muted-foreground truncate">
+                      {certificate.course.instructor.name}
+                    </span>
+                  </div>
+                )}
+
+                {/* Certificate Number (truncated) */}
+                <div className="bg-muted/50 rounded-lg p-2">
+                  <p className="text-xs text-muted-foreground">Certificate #</p>
+                  <p className="text-xs font-mono truncate">
+                    {certificate.certificate_number}
+                  </p>
+                </div>
+              </CardContent>
+
+              <CardFooter className="flex gap-2 pt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleViewCertificate(certificate)}
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  View
+                </Button>
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleDownloadPDF(certificate.id)}
+                  disabled={downloadingId === certificate.id}
+                >
+                  {downloadingId === certificate.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  PDF
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="w-10 p-0"
+                  onClick={() => handleCopyLink(certificate)}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {certificatesData && certificatesData.pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {certificatesData.pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === certificatesData.pagination.totalPages}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+
+      {/*
+        The certificate preview.
+
+        This used to be ~200 lines of bespoke markup — a yellow gradient card
+        with a lucide Trophy, a double border and hand-placed text — one of
+        seven distinct certificate designs in the product, and nothing like the
+        one the learner actually downloads (C-02). The recipient's name came
+        from the session rather than the record (C-09) and the score was
+        printed raw, so a `numeric` arrived as "100.00%" here and "100%" in the
+        Learning Space (C-10).
+
+        It is the shared modal now: the same document, from the same endpoint,
+        that the PDF is built from.
+      */}
+      <CertificateModal
+        certificate={selectedCertificate?.canonical ?? null}
+        open={showCertificateDialog}
+        onOpenChange={setShowCertificateDialog}
+        title="Certificate"
+      />
+    </div>
+  );
+}

@@ -1,0 +1,308 @@
+// components/auth/LoginModal.tsx
+"use client"
+
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { useDispatch } from 'react-redux'
+import { X, Mail, Lock, Eye, EyeOff, Loader2, Shield } from 'lucide-react'
+import { GoogleLogin } from '@react-oauth/google'
+import type { AppDispatch } from '@/lib/store'
+import { loginBwenge, loginWithGoogle } from '@/lib/features/auth/auth-slice'
+import { toast } from 'sonner'
+import Link from 'next/link'
+
+interface LoginModalProps {
+  isOpen: boolean
+  onClose: () => void
+  redirectTo: string
+  message?: string
+}
+
+export function LoginModal({ isOpen, onClose, redirectTo, message }: LoginModalProps) {
+  const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) {
+      toast.error('Google login failed - no credential received')
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      const result = await dispatch(loginWithGoogle(credentialResponse.credential)).unwrap()
+      
+      toast.success(`Welcome ${result.user.first_name}!`)
+      
+      // Close modal and redirect to course
+      onClose()
+      
+      // Small delay to ensure state updates
+      setTimeout(() => {
+        router.push(redirectTo)
+      }, 300)
+      
+    } catch (error: any) {
+      toast.error(error || 'Google login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    toast.error('Google login failed. Please try again.')
+  }
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    setIsLoading(true)
+    
+    try {
+      const result = await dispatch(loginBwenge(formData)).unwrap()
+      
+      toast.success(`Welcome back, ${result.user.first_name}!`)
+      
+      onClose()
+      
+      setTimeout(() => {
+        router.push(redirectTo)
+      }, 300)
+      
+    } catch (error: any) {
+      toast.error(error || 'Login failed. Please check your credentials.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  /*
+   * Rendered into `document.body`, not where it is mounted.
+   *
+   * `position: fixed` is only relative to the viewport while no ancestor
+   * establishes a containing block — and `backdrop-filter` does, which the
+   * catalogue header uses for its blur. Mounted inside that header, this
+   * modal's `inset-0` resolved against the 64px header box instead of the
+   * screen, so it appeared as a clipped sliver with the page drawn over it.
+   * The same would happen under any `transform`, `filter` or `will-change`
+   * ancestor, so the fix belongs here rather than in each caller.
+   */
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  /*
+   * The page behind does not scroll while this is open, and Escape closes it.
+   *
+   * Both are what makes a modal read as dominant rather than as something
+   * floating over a page that is still live underneath it.
+   */
+  useEffect(() => {
+    if (!isOpen) return
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+
+    // Restored to whatever it was, not hard-coded back to a value: another
+    // overlay may have set it, and clobbering that would unlock the page
+    // underneath something still open.
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen, onClose])
+
+  // There is no document during server rendering, and nothing to show until
+  // the modal is actually open.
+  if (!mounted) return null
+
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop - Higher z-index to cover everything */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100]"
+          />
+
+          {/* Modal - Centered with proper spacing and higher z-index */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed inset-0 z-[101] flex items-center justify-center p-4 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-card rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              {/* Header with top padding */}
+              <div className="relative p-8 pb-4 border-b border-border">
+                <button
+                  onClick={onClose}
+                  className="absolute right-4 top-4 p-2 hover:bg-muted rounded-lg transition-colors z-10"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+                
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 bg-primary/15 rounded-xl flex items-center justify-center">
+                    <Shield className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {message || "Sign in to continue"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body with proper vertical spacing */}
+              <div className="p-8 pt-4 space-y-6">
+                {/* Google Login */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-muted-foreground text-center">
+                    Continue with
+                  </p>
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      type="standard"
+                      theme="outline"
+                      size="large"
+                      text="continue_with"
+                      shape="rectangular"
+                      logo_alignment="left"
+                      width="280"
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-4 bg-card text-muted-foreground">OR</span>
+                  </div>
+                </div>
+
+                {/* Email Login Form */}
+                <form onSubmit={handleEmailLogin} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="your@email.com"
+                        required
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full pl-10 pr-12 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="••••••••"
+                        required
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-primary hover:text-primary"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      'Sign in with Email'
+                    )}
+                  </button>
+                </form>
+
+                {/* Register Link */}
+                <p className="text-center text-sm text-muted-foreground pt-2">
+                  Don't have an account?{' '}
+                  <Link
+                    href={`/register?redirect=${encodeURIComponent(redirectTo)}`}
+                    className="text-primary hover:text-primary font-medium"
+                    onClick={onClose}
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+
+              {/* Footer with bottom padding */}
+              <div className="p-8 pt-4 bg-muted/50 border-t border-border rounded-b-2xl">
+                <p className="text-xs text-muted-foreground text-center">
+                  By signing in, you agree to our{' '}
+                  <Link href="/terms" className="text-primary hover:underline">Terms</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body
+  )
+}

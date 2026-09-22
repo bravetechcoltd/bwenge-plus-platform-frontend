@@ -1,0 +1,592 @@
+
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useAppSelector } from "@/lib/hooks";
+import { useInstitutionCapability } from "@/lib/auth/use-access";
+import { ErrorState, ResolvingState } from "@/components/system/error-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  SmartDetailsModal,
+  DetailSection,
+  DetailRow,
+  DetailBadge,
+  DetailsIdentity,
+} from "@/components/ui/smart-details-modal";
+import { useSearchParams } from "next/navigation";
+import Cookies from "js-cookie";
+import {
+  GraduationCap, Search, MoreVertical, Trash2, Eye, RefreshCw,
+  Building2, Loader2, ChevronLeft, ChevronRight, BookOpen,
+  CheckCircle2, XCircle, Filter, TrendingUp, Clock, Award,
+  Download, BarChart3, X,
+  Mail,
+} from "lucide-react";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { AnimatePresence, motion } from "framer-motion";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const PAGE_SIZE = 15;
+
+interface StudentMember {
+  member_id: string;
+  role: string;
+  is_active: boolean;
+  joined_at: string;
+  additional_permissions?: any;
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone_number?: string;
+    profile_picture_url?: string;
+    bio?: string;
+    account_type: string;
+    bwenge_role: string | null;
+    institution_role: string | null;
+    is_verified: boolean;
+    is_active: boolean;
+    date_joined: string;
+    last_login?: string;
+    country?: string;
+    city?: string;
+    enrolled_courses_count: number;
+    completed_courses_count: number;
+    total_learning_hours: number;
+    certificates_earned: number;
+  };
+}
+
+// Helper to calculate average progress from enrolled vs completed
+const calculateAvgProgress = (enrolled: number, completed: number): number => {
+  if (enrolled === 0) return 0;
+  return Math.round((completed / enrolled) * 100);
+};
+
+export default function StudentsPage() {
+  const searchParams = useSearchParams();
+  const { user: authUser, isLoading: authLoading, token: reduxToken } = useAppSelector(
+    (state) => state.bwengeAuth
+  );
+
+  const urlInstitutionId = searchParams.get("institution");
+  const institutionId = urlInstitutionId || authUser?.primary_institution_id || undefined;
+
+  const [students, setStudents] = useState<StudentMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [stats, setStats] = useState({
+    total: 0, active: 0, total_enrollments: 0,
+    avg_completion: 0, total_hours: 0, certificates: 0,
+  });
+
+  const [viewStudent, setViewStudent] = useState<StudentMember | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<StudentMember | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getToken = useCallback(() => reduxToken || Cookies.get("bwenge_token") || "", [reduxToken]);
+
+  // AXM-CONS-001 A-06 #5 — the predicate replaced here required the
+  // institution to appear in `institution_ids`, never accepted
+  // `primary_institution_id`, and could not see `institution_members` at
+  // all. The shared check is the union of every rule the system honours,
+  // resolved against the server's own membership answer, and it reports
+  // `resolving` rather than a refusal while that answer is in flight.
+  const {
+    granted: hasAccess,
+    resolving: accessResolving,
+    decision: accessDecision,
+  } = useInstitutionCapability(institutionId, "manage-members");
+
+  const fetchStudents = useCallback(async () => {
+    if (!institutionId || !hasAccess) return;
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({ role: "MEMBER" });
+      if (statusFilter !== "ALL") params.set("is_active", statusFilter === "ACTIVE" ? "true" : "false");
+      if (search) params.set("search", search);
+      params.set("page", String(page));
+      params.set("limit", String(PAGE_SIZE));
+
+      const res = await fetch(`${API_URL}/institutions/${institutionId}/members?${params}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        const list: StudentMember[] = data.data?.members || data.data || [];
+        setStudents(list);
+        setTotalCount(data.data?.total || list.length);
+        setTotalPages(Math.ceil((data.data?.total || list.length) / PAGE_SIZE));
+        
+        // Calculate stats from the nested user data
+        const totalEnrollments = list.reduce((a, s) => a + (s.user.enrolled_courses_count || 0), 0);
+        const totalCompleted = list.reduce((a, s) => a + (s.user.completed_courses_count || 0), 0);
+        const avgProgress = list.length > 0 
+          ? Math.round(list.reduce((a, s) => {
+              const progress = calculateAvgProgress(s.user.enrolled_courses_count || 0, s.user.completed_courses_count || 0);
+              return a + progress;
+            }, 0) / list.length)
+          : 0;
+        
+        setStats({
+          total: data.data?.total || list.length,
+          active: list.filter(s => s.is_active).length,
+          total_enrollments: totalEnrollments,
+          avg_completion: avgProgress,
+          total_hours: list.reduce((a, s) => a + (s.user.total_learning_hours || 0), 0),
+          certificates: list.reduce((a, s) => a + (s.user.certificates_earned || 0), 0),
+        });
+      } else {
+        toast.error(data.message || "Failed to load students");
+      }
+    } catch (error) {
+      toast.error("Failed to load students");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [institutionId, hasAccess, statusFilter, search, page, getToken]);
+
+  useEffect(() => { fetchStudents(); }, [fetchStudents]);
+
+  const handleRemove = async () => {
+    if (!removeTarget || !institutionId) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/institutions/${institutionId}/members/${removeTarget.user.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (data.success || res.ok) {
+        toast.success("Student removed successfully!");
+        setRemoveTarget(null);
+        fetchStudents();
+      } else {
+        toast.error(data.message || "Failed to remove student");
+      }
+    } catch {
+      toast.error("Failed to remove student");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const exportCSV = () => {
+    const headers = ["Name", "Email", "Enrolled Courses", "Completed", "Avg Progress", "Hours", "Certificates", "Status", "Joined Date", "Last Login"];
+    const rows = students.map(s => {
+      const enrolled = s.user.enrolled_courses_count || 0;
+      const completed = s.user.completed_courses_count || 0;
+      const progress = calculateAvgProgress(enrolled, completed);
+      return [
+        `"${s.user.first_name} ${s.user.last_name}"`,
+        `"${s.user.email}"`,
+        enrolled,
+        completed,
+        `${progress}%`,
+        s.user.total_learning_hours || 0,
+        s.user.certificates_earned || 0,
+        s.is_active ? "Active" : "Inactive",
+        new Date(s.joined_at).toLocaleDateString(),
+        s.user.last_login ? new Date(s.user.last_login).toLocaleDateString() : "Never",
+      ];
+    });
+    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `students-${institutionId}-${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Export completed!");
+  };
+
+  // An unresolved session is not a refusal (AXM-CONS-001 §6.1).
+  if (accessResolving) {
+    return <ResolvingState variant="page" label="Checking your access…" />;
+  }
+
+  if (!hasAccess) {
+    return (
+      <ErrorState
+        variant="page"
+        kind="access-denied"
+        reason={
+          accessDecision.state === "denied" ? accessDecision.reason : undefined
+        }
+      />
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+            <GraduationCap className="w-7 h-7 text-warning" /> Students
+          </h1>
+          <p className="text-muted-foreground mt-1">Track and manage your institution's learners</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="w-4 h-4 mr-2" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={fetchStudents} disabled={isLoading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+          <Button size="sm" asChild>
+            <Link href={`/dashboard/institution-admin/users/invite${institutionId ? `?institution=${institutionId}` : ""}`}>
+              Invite Students
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: "Total", value: stats.total, icon: GraduationCap, color: "text-warning bg-warning/10" },
+          { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-success bg-success/10" },
+          { label: "Enrollments", value: stats.total_enrollments, icon: BookOpen, color: "text-primary bg-primary/10" },
+          { label: "Avg Progress", value: `${stats.avg_completion}%`, icon: TrendingUp, color: "text-primary bg-primary/10" },
+          { label: "Learning Hours", value: stats.total_hours.toFixed(1), icon: Clock, color: "text-primary bg-primary/10" },
+          { label: "Certificates", value: stats.certificates, icon: Award, color: "text-rose-600 bg-rose-50" },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <Card key={label} className="border-0 shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xl font-bold">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Students Table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input 
+                  placeholder="Search students..." 
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }} 
+                  className="pl-9" 
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
+                <SelectTrigger className="w-36"><Filter className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Status</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">{totalCount} students</p>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+          ) : students.length === 0 ? (
+            <div className="text-center py-16">
+              <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No students found</p>
+              <p className="text-sm text-muted-foreground mt-1">Invite students to join your institution.</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="pl-6">Student</TableHead>
+                      <TableHead>Courses</TableHead>
+                      <TableHead>Progress</TableHead>
+                      <TableHead>Hours</TableHead>
+                      <TableHead>Certificates</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right pr-6">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {students.map(student => {
+                      const enrolled = student.user.enrolled_courses_count || 0;
+                      const completed = student.user.completed_courses_count || 0;
+                      const progress = calculateAvgProgress(enrolled, completed);
+                      
+                      return (
+                        <TableRow key={student.member_id} className="hover:bg-muted/50">
+                          <TableCell className="pl-6">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-9 h-9">
+                                <AvatarImage src={student.user.profile_picture_url || undefined} />
+                                <AvatarFallback className="text-xs font-semibold bg-warning/10 text-warning">
+                                  {student.user.first_name?.[0]}{student.user.last_name?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-semibold text-sm">{student.user.first_name} {student.user.last_name}</p>
+                                <p className="text-xs text-muted-foreground">{student.user.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                <BookOpen className="w-3 h-3 mr-1" />
+                                {enrolled} enrolled
+                              </Badge>
+                              {completed > 0 && (
+                                <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  {completed} done
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="w-24 space-y-1">
+                              <Progress value={progress} className="h-2" />
+                              <p className="text-xs text-muted-foreground">{progress}%</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {student.user.total_learning_hours?.toFixed(1) || 0}h
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {(student.user.certificates_earned || 0) > 0 ? (
+                              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs">
+                                <Award className="w-3 h-3 mr-1" />{student.user.certificates_earned}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">None</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {student.is_active
+                              ? <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Active</Badge>
+                              : <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>
+                            }
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(student.joined_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-right pr-6">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><MoreVertical className="w-4 h-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => setViewStudent(student)}>
+                                  <Eye className="w-4 h-4 mr-2" /> View Profile
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive" onClick={() => setRemoveTarget(student)}>
+                                  <Trash2 className="w-4 h-4 mr-2" /> Remove
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="flex items-center justify-between px-6 py-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages} · {totalCount} students
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setPage(p => Math.max(1, p - 1))} 
+                    disabled={page <= 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                    disabled={page >= totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Student — the shared Smart Details Modal (AXM-CONS-001 §6.6).
+          Every field the previous popup showed is preserved; only the shell,
+          the tokens and the states are now the project-wide ones. */}
+      <SmartDetailsModal
+        open={!!viewStudent}
+        onOpenChange={(open) => !open && setViewStudent(null)}
+        size="lg"
+        title={
+          viewStudent
+            ? `${viewStudent.user.first_name ?? ""} ${viewStudent.user.last_name ?? ""}`.trim()
+            : "Student"
+        }
+        description="Student profile and learning progress"
+        header={
+          viewStudent ? (
+            <DetailsIdentity
+              name={`${viewStudent.user.first_name ?? ""} ${viewStudent.user.last_name ?? ""}`.trim() || "Student"}
+              subtitle={viewStudent.user.email}
+              avatarUrl={viewStudent.user.profile_picture_url || undefined}
+            />
+          ) : undefined
+        }
+      >
+        {viewStudent && (
+          <>
+            <DetailSection title="Identity">
+              <DetailRow
+                label="Full Name"
+                value={`${viewStudent.user.first_name ?? ""} ${viewStudent.user.last_name ?? ""}`.trim()}
+              />
+              <DetailRow label="Email" value={viewStudent.user.email} />
+              <DetailRow label="Phone" value={viewStudent.user.phone_number} />
+              <DetailRow label="Country" value={viewStudent.user.country} />
+              <DetailRow
+                label="Status"
+                value={
+                  <DetailBadge tone={viewStudent.is_active ? "success" : "danger"}>
+                    {viewStudent.is_active ? "Active" : "Inactive"}
+                  </DetailBadge>
+                }
+              />
+            </DetailSection>
+
+            <DetailSection title="Institution Membership">
+              <DetailRow
+                label="Role"
+                value={<DetailBadge tone="warning">{viewStudent.role}</DetailBadge>}
+              />
+              <DetailRow
+                label="Joined Date"
+                value={new Date(viewStudent.joined_at).toLocaleDateString()}
+              />
+              <DetailRow
+                label="Last Login"
+                value={
+                  viewStudent.user.last_login
+                    ? new Date(viewStudent.user.last_login).toLocaleDateString()
+                    : "Never"
+                }
+              />
+            </DetailSection>
+
+            <DetailSection title="Learning Progress">
+              <DetailRow
+                label="Enrolled Courses"
+                value={viewStudent.user.enrolled_courses_count || 0}
+              />
+              <DetailRow
+                label="Completed Courses"
+                value={viewStudent.user.completed_courses_count || 0}
+              />
+              <DetailRow
+                label="Learning Hours"
+                value={viewStudent.user.total_learning_hours?.toFixed(1) || 0}
+              />
+              <DetailRow
+                label="Certificates"
+                value={viewStudent.user.certificates_earned || 0}
+              />
+              <DetailRow
+                label="Overall Progress"
+                value={
+                  <span className="flex items-center justify-end gap-2">
+                    <Progress
+                      value={calculateAvgProgress(
+                        viewStudent.user.enrolled_courses_count || 0,
+                        viewStudent.user.completed_courses_count || 0
+                      )}
+                      className="h-1.5 w-24"
+                    />
+                    {calculateAvgProgress(
+                      viewStudent.user.enrolled_courses_count || 0,
+                      viewStudent.user.completed_courses_count || 0
+                    )}
+                    %
+                  </span>
+                }
+              />
+            </DetailSection>
+
+            {viewStudent.user.bio && (
+              <DetailSection title="Bio">
+                <p className="py-2 text-xs leading-relaxed text-muted-foreground">
+                  {viewStudent.user.bio}
+                </p>
+              </DetailSection>
+            )}
+          </>
+        )}
+      </SmartDetailsModal>
+
+      {/* Remove Student Dialog */}
+      {/* Shared confirmation shell (AXM-CONS-001 F10). */}
+      <ConfirmDialog
+        open={!!removeTarget}
+        onOpenChange={(next) => !next && setRemoveTarget(null)}
+        destructive
+        pending={isSubmitting}
+        title="Remove Student"
+        description={
+          <>
+            Are you sure you want to remove <strong>{removeTarget?.user.first_name} {removeTarget?.user.last_name}</strong> from the institution?
+            This action can be undone by re-adding the student.
+          </>
+        }
+        confirmLabel="Remove"
+        onConfirm={handleRemove}
+      />
+    </div>
+  );
+}
