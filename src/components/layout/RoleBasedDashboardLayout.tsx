@@ -403,157 +403,17 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         ]
       }
     ],
-    CONTENT_CREATOR: [
-      {
-        title: "Dashboard",
-        href: "/dashboard/content-creator",
-        icon: Home,
-        exact: true
-      },
-      {
-        title: "My Courses",
-        icon: BookOpen,
-        subItems: [
-          {
-            title: "All Courses",
-            href: "/dashboard/content-creator/courses",
-            icon: BookOpen
-          },
-          {
-            title: "Create Course",
-            href: "/dashboard/content-creator/courses/create",
-            icon: PlusCircle,
-            action: "create_spoc_course"
-          },
-          {
-            title: "Drafts",
-            href: "/dashboard/content-creator/courses/drafts",
-            icon: FileText
-          },
-          {
-            title: "Published",
-            href: "/dashboard/content-creator/courses/published",
-            icon: BookCheck
-          },
-          {
-            title: "Archived",
-            href: "/dashboard/content-creator/courses/archived",
-            icon: BookX
-          },
-        ]
-      },
-      {
-        title: "Course Builder",
-        icon: Edit,
-        subItems: [
-          {
-            title: "Modules & Lessons",
-            href: "/dashboard/content-creator/builder/modules",
-            icon: Layers
-          },
-          {
-            title: "Content Library",
-            href: "/dashboard/content-creator/builder/content",
-            icon: Folder
-          },
-          {
-            title: "Assessments",
-            href: "/dashboard/content-creator/builder/assessments",
-            icon: FileQuestion
-          },
-          {
-            title: "Certificates",
-            href: "/dashboard/content-creator/builder/certificates",
-            icon: Award
-          },
-          {
-            title: "Course Settings",
-            href: "/dashboard/content-creator/builder/settings",
-            icon: Settings
-          },
-        ]
-      },
-      {
-        title: "Instructor Management",
-        icon: Users,
-        subItems: [
-          {
-            title: "Co-Instructors",
-            href: "/dashboard/content-creator/instructors",
-            icon: UserCog,
-            action: "invite_co_instructor"
-          },
-          {
-            title: "Teaching Assistants",
-            href: "/dashboard/content-creator/instructors/tas",
-            icon: Users2
-          },
-          {
-            title: "Permissions",
-            href: "/dashboard/content-creator/instructors/permissions",
-            icon: Shield
-          },
-        ]
-      },
-      {
-        title: "Student Management",
-        icon: GraduationCap,
-        subItems: [
-          {
-            title: "Enrolled Students",
-            href: "/dashboard/content-creator/students",
-            icon: Users
-          },
-          {
-            title: "Grading Assessments",
-            href: "/dashboard/content-creator/students/grading",
-            icon: CheckCircle
-          },
-          {
-            title: "Feedback",
-            href: "/dashboard/content-creator/students/feedback",
-            icon: MessageSquare
-          },
-          {
-            title: "Progress Tracking",
-            href: "/dashboard/content-creator/students/progress",
-            icon: TrendingUp
-          },
-          {
-            title: "Certificate Issuance",
-            href: "/dashboard/content-creator/students/certificates",
-            icon: Award,
-            action: "issue_certificates"
-          },
-        ]
-      },
-      {
-        title: "Analytics",
-        icon: BarChart3,
-        subItems: [
-          {
-            title: "Course Analytics",
-            href: "/dashboard/content-creator/analytics/course",
-            icon: PieChart
-          },
-          {
-            title: "Student Analytics",
-            href: "/dashboard/content-creator/analytics/students",
-            icon: LineChart
-          },
-          {
-            title: "Engagement",
-            href: "/dashboard/content-creator/analytics/engagement",
-            icon: Activity
-          },
-          {
-            title: "Completion Rates",
-            href: "/dashboard/content-creator/analytics/completion",
-            icon: BarChart
-          },
-        ]
-      }
-    ],
+    /*
+     * CONTENT_CREATOR had a menu here: twenty-four entries across courses,
+     * a content builder, instructors, students and analytics. Every one of
+     * them pointed under /dashboard/content-creator, and that directory
+     * contains no pages — so the whole section was dead links, and no
+     * account on the platform carries the role to have followed one.
+     *
+     * getSidebarConfig falls back to the learner menu for a role it does
+     * not list, so an account that somehow had this role still gets a
+     * working sidebar rather than an empty one.
+     */
     INSTRUCTOR: [
       {
         title: "Dashboard",

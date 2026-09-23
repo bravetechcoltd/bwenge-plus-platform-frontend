@@ -64,12 +64,20 @@ interface ImportJob {
   completed_at?: string;
 }
 
-const VALID_ROLES = ["MEMBER", "INSTRUCTOR", "CONTENT_CREATOR", "ADMIN"];
+/*
+ * The roles a spreadsheet may assign.
+ *
+ * CONTENT_CREATOR is no longer one of them, so a file still carrying it is
+ * refused with the row named rather than imported into a role nothing on the
+ * platform offers. The message already lists what is accepted, so the refusal
+ * says what to change it to.
+ */
+const VALID_ROLES = ["MEMBER", "INSTRUCTOR", "ADMIN"];
 
 const TEMPLATE_CSV = `email,first_name,last_name,role,phone,country
 alice@example.com,Alice,Johnson,MEMBER,+250788000001,Rwanda
 bob@example.com,Bob,Smith,INSTRUCTOR,+250788000002,Rwanda
-carol@example.com,Carol,White,CONTENT_CREATOR,,Uganda
+carol@example.com,Carol,White,ADMIN,,Uganda
 david@example.com,David,Brown,MEMBER,,Kenya`;
 
 const parseCSV = (text: string): { headers: string[]; rows: CSVRow[] } => {
@@ -423,7 +431,6 @@ export default function BulkImportPage() {
                         <SelectContent>
                           <SelectItem value="MEMBER">Member / Student</SelectItem>
                           <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                          <SelectItem value="CONTENT_CREATOR">Content Creator</SelectItem>
                           <SelectItem value="ADMIN">Admin</SelectItem>
                         </SelectContent>
                       </Select>
@@ -587,7 +594,7 @@ export default function BulkImportPage() {
                   <div className="space-y-1">
                     {[
                       ["last_name", "Family name"],
-                      ["role", "MEMBER, INSTRUCTOR, CONTENT_CREATOR, or ADMIN"],
+                      ["role", "MEMBER, INSTRUCTOR, or ADMIN"],
                       ["phone", "Phone number"],
                       ["country", "Country name"],
                     ].map(([col, desc]) => (
