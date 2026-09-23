@@ -136,12 +136,40 @@ export function CourseDetailsStep({
   const userInstitution = user?.institution
   const userInstitutionId = user?.primary_institution_id
 
-  const getAvailableInstructors = () => {
-    if (isSystemAdmin) return instructors
-    if ((isInstitutionAdmin || isInstitutionInstructor) && userInstitutionId) {
-      return instructors.filter(i => i.institution_ids?.includes(userInstitutionId))
-    }
-    return []
+  /**
+   * Everyone who may be set as the primary instructor.
+   *
+   * Two things were wrong. The filter matched on `institution_ids`, a
+   * denormalised column that is not populated for every member, so real
+   * instructors of the institution were dropped from a list that had been
+   * fetched for that institution in the first place — the server already
+   * answered the question the filter was re-asking, and answered it from the
+   * membership table.
+   *
+   * And the caller is always in it. An institution administrator creating a
+   * course may well be teaching it, and an instructor creating their own
+   * course certainly is; they were offered as a hard-coded option appended
+   * after the list, which put them there twice once the list arrived and gave
+   * two options the same value.
+   */
+  const getAvailableInstructors = (): User[] => {
+    const fromInstitution = isSystemAdmin
+      ? instructors
+      : // Already scoped by the request that fetched them.
+        instructors
+
+    const seen = new Set(fromInstitution.map(i => i.id))
+    const withMe =
+      user && !seen.has(user.id) && (isInstitutionAdmin || isInstitutionInstructor)
+        ? [...fromInstitution, user as unknown as User]
+        : fromInstitution
+
+    // Alphabetical, so a list of twenty is something a person can scan.
+    return [...withMe].sort((a, b) =>
+      `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim().localeCompare(
+        `${b.first_name ?? ""} ${b.last_name ?? ""}`.trim()
+      )
+    )
   }
 
   const getInstitutionIdForCategories = () => {
@@ -411,16 +439,18 @@ export function CourseDetailsStep({
               disabled={inLoading}
               className={sel}
             >
-              <option value="">Select instructor</option>
+              <option value="">
+                {inLoading ? "Loading instructors…" : "Select instructor"}
+              </option>
               {getAvailableInstructors().map((instructor) => (
                 <option key={instructor.id} value={instructor.id}>
                   {instructor.first_name} {instructor.last_name}
-                  {(isInstitutionAdmin || isInstitutionInstructor) && ` (${instructor.email})`}
+                  {instructor.id === user?.id ? " (me)" : ""}
+                  {(isInstitutionAdmin || isInstitutionInstructor) && instructor.email
+                    ? ` — ${instructor.email}`
+                    : ""}
                 </option>
               ))}
-              {(isInstitutionAdmin || isInstitutionInstructor) && (
-                <option value={user?.id}>{user?.first_name} {user?.last_name} (Myself)</option>
-              )}
             </select>
           </div>
 

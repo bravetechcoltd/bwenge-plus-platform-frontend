@@ -77,6 +77,13 @@ interface Stats {
   active: number;
   admins: number;
   instructors: number;
+  /**
+   * Still counted, and no longer shown.
+   *
+   * The role is not offered by this page any more, but the number is what
+   * would reveal a member who has it — and a field quietly deleted is a field
+   * nobody notices is missing.
+   */
   content_creators: number;
   members: number;
 }
@@ -305,7 +312,6 @@ export default function AllMembersPage() {
           { label: "Active", value: stats.active, icon: UserCheck, color: "text-success bg-success/10" },
           { label: "Admins", value: stats.admins, icon: Crown, color: "text-primary bg-primary/10" },
           { label: "Instructors", value: stats.instructors, icon: UserCog, color: "text-success bg-success/10" },
-          { label: "Creators", value: stats.content_creators, icon: Users2, color: "text-primary bg-primary/10" },
           { label: "Learners", value: stats.members, icon: GraduationCap, color: "text-muted-foreground bg-muted/50" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
@@ -345,7 +351,6 @@ export default function AllMembersPage() {
                   <SelectItem value="ALL">All Roles</SelectItem>
                   <SelectItem value="ADMIN">Admin</SelectItem>
                   <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                  <SelectItem value="CONTENT_CREATOR">Content Creator</SelectItem>
                   <SelectItem value="MEMBER">Member</SelectItem>
                 </SelectContent>
               </Select>
@@ -533,7 +538,6 @@ export default function AllMembersPage() {
               <SelectContent>
                 <SelectItem value="ADMIN">Admin</SelectItem>
                 <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                <SelectItem value="CONTENT_CREATOR">Content Creator</SelectItem>
                 <SelectItem value="MEMBER">Member</SelectItem>
               </SelectContent>
             </Select>

@@ -310,6 +310,41 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             setInstitutions(data.data || [])
           }
         }
+
+        /*
+         * The institution's instructors.
+         *
+         * `instructors` was declared, passed to the details step, and never
+         * filled — so the Primary Instructor list was always empty and the
+         * only name in it was the hard-coded "(Myself)" option underneath.
+         * An institution with eight instructors offered a choice of one.
+         *
+         * The same endpoint the instructors page reads, with the same filter,
+         * so the two screens cannot disagree about who is an instructor.
+         */
+        const targetInstitution = institutionId || user.primary_institution_id
+        if (targetInstitution) {
+          const params = new URLSearchParams({
+            role: "INSTRUCTOR",
+            is_active: "true",
+            limit: "200",
+          })
+          const instructorsResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/institutions/${targetInstitution}/members?${params}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          if (instructorsResponse.ok) {
+            const data = await instructorsResponse.json()
+            const members = data.data?.members || data.data || []
+            // The endpoint returns membership rows; the select needs the
+            // people inside them.
+            setInstructors(
+              members
+                .map((m: any) => m.user ?? m)
+                .filter((u: any) => u && u.id)
+            )
+          }
+        }
       } catch (error) {
         toast.error("Failed to load initial data")
       } finally {
@@ -317,7 +352,7 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       }
     }
     if (user && token) fetchData()
-  }, [user, token])
+  }, [user, token, institutionId])
 
   // ==================== STEPS ====================
 

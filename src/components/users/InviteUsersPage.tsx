@@ -38,16 +38,58 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
+type InviteStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
+
 interface PendingInvitation {
   id: string;
-  email: string;
+  /** Null on a link invitation, which is issued to nobody in particular. */
+  email: string | null;
   role: string;
-  status: "PENDING" | "ACCEPTED" | "EXPIRED" | "CANCELLED";
-  invited_by?: string;
-  invited_by_name?: string;
+  status: InviteStatus;
+  type: "EMAIL" | "LINK";
+  invited_by?: string | null;
+  invited_by_name?: string | null;
   created_at: string;
-  expires_at?: string;
-  message?: string;
+  expires_at?: string | null;
+  accepted_at?: string | null;
+  /**
+   * The account that answered the invitation.
+   *
+   * The invitation stores the address it was sent to; this is who joined, and
+   * the only place their real name lives. Null while pending, and on accepted
+   * rows from before the server recorded it.
+   */
+  accepted_user?: { id: string; name: string | null; email: string } | null;
+  /** Decided by the server against its own clock, not the viewer's. */
+  is_expired?: boolean;
+  /**
+   * The joinable URL, for a link invitation that is still live.
+   *
+   * Sent by the server only while the token would actually work. A link is
+   * shown once when it is generated and then the dialog closes over it, so
+   * the history is the only place left to find it.
+   */
+  invite_link?: string | null;
+  message?: string | null;
+}
+
+/**
+ * The status this row should be read as.
+ *
+ * Two corrections in one. The stored values are lower case — `pending`,
+ * `accepted` — and every comparison in this component was written against the
+ * upper-case names of the enum, so the pending count read zero, the status
+ * cell rendered nothing, and the actions menu, which was gated on
+ * `status === "PENDING"`, never appeared for any row at all.
+ *
+ * And a row can be stored as pending long after its expiry date, because
+ * nothing sweeps the table. The server says which those are; showing them as
+ * live invitations is how someone waits for a reply that can no longer come.
+ */
+function readStatus(invite: PendingInvitation): InviteStatus {
+  const stored = String(invite.status ?? "").toUpperCase() as InviteStatus;
+  if (stored === "PENDING" && invite.is_expired) return "EXPIRED";
+  return stored;
 }
 
 interface InviteFormEntry {
@@ -65,7 +107,7 @@ const ROLE_OPTIONS = [
 ];
 
 const getStatusBadge = (status: string) => {
-  switch (status) {
+  switch (String(status).toUpperCase()) {
     case "PENDING": return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
     case "ACCEPTED": return <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs"><CheckCircle2 className="w-3 h-3 mr-1" />Accepted</Badge>;
     case "EXPIRED": return <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border text-xs"><XCircle className="w-3 h-3 mr-1" />Expired</Badge>;
@@ -107,6 +149,7 @@ export default function InviteUsersPage() {
 
   // Cancel invite
   const [cancelTarget, setCancelTarget] = useState<PendingInvitation | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PendingInvitation | null>(null);
 
   const getToken = useCallback(() => reduxToken || Cookies.get("bwenge_token") || "", [reduxToken]);
 
@@ -131,7 +174,16 @@ export default function InviteUsersPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setPendingInvites(data.data?.invitations || data.data || []);
+        const rows: PendingInvitation[] = data.data?.invitations || data.data || [];
+        // Case is settled once, here, rather than at each of the eight places
+        // that compare it.
+        setPendingInvites(
+          rows.map((row) => ({
+            ...row,
+            status: String(row.status ?? "").toUpperCase() as InviteStatus,
+            type: (String(row.type ?? "EMAIL").toUpperCase() as "EMAIL" | "LINK"),
+          }))
+        );
       }
     } catch {
       // silently fail if invitations endpoint doesn't exist yet
@@ -276,6 +328,37 @@ export default function InviteUsersPage() {
     }
   };
 
+  /**
+   * Removes the record, which is not the same as withdrawing the invitation.
+   *
+   * The server refuses this on a live one: its token is what the link in
+   * somebody's inbox resolves against, and deleting the row would turn a live
+   * invitation into a dead link with nothing left to explain it. That refusal
+   * is shown rather than swallowed, because it names the next step.
+   */
+  const handleDeleteRecord = async () => {
+    if (!deleteTarget || !institutionId) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(
+        `${API_URL}/institutions/${institutionId}/invitations/${deleteTarget.id}/record`,
+        { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Removed from the history");
+        setDeleteTarget(null);
+        fetchInvitations();
+      } else {
+        toast.error(data.message || "Could not remove it");
+      }
+    } catch {
+      toast.error("Could not remove it");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // An unresolved session is not a refusal (AXM-CONS-001 §6.1).
   if (accessResolving) {
     return <ResolvingState variant="page" label="Checking your access…" />;
@@ -293,8 +376,8 @@ export default function InviteUsersPage() {
     );
   }
 
-  const pendingCount = pendingInvites.filter(i => i.status === "PENDING").length;
-  const acceptedCount = pendingInvites.filter(i => i.status === "ACCEPTED").length;
+  const pendingCount = pendingInvites.filter(i => readStatus(i) === "PENDING").length;
+  const acceptedCount = pendingInvites.filter(i => readStatus(i) === "ACCEPTED").length;
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -319,7 +402,7 @@ export default function InviteUsersPage() {
           { label: "Total Sent", value: pendingInvites.length, icon: Mail, color: "text-primary bg-primary/10" },
           { label: "Pending", value: pendingCount, icon: Clock, color: "text-warning bg-warning/10" },
           { label: "Accepted", value: acceptedCount, icon: CheckCircle2, color: "text-success bg-success/10" },
-          { label: "Expired", value: pendingInvites.filter(i => i.status === "EXPIRED").length, icon: XCircle, color: "text-muted-foreground bg-muted/50" },
+          { label: "Expired", value: pendingInvites.filter(i => readStatus(i) === "EXPIRED").length, icon: XCircle, color: "text-muted-foreground bg-muted/50" },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="border-0 shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -582,12 +665,97 @@ export default function InviteUsersPage() {
                 <TableBody>
                   {pendingInvites.map(invite => (
                     <TableRow key={invite.id} className="hover:bg-muted/50">
+                      {/*
+                        Who this row is about.
+
+                        Three cases the old cell collapsed into one. A link
+                        invitation has no address at all and rendered blank.
+                        An accepted invitation has an account behind it, whose
+                        real name and address were never shown — the cell
+                        printed the address the invitation was sent to and
+                        stopped, so a member who had joined weeks ago still
+                        read as an email nobody had matched to a person. And
+                        where the two addresses differ, because the account was
+                        registered under another one, both are worth seeing.
+                      */}
                       <TableCell className="pl-6">
-                        <div>
-                          <p className="font-semibold text-sm">{invite.email}</p>
-                          {invite.invited_by_name && (
-                            <p className="text-xs text-muted-foreground">Invited by {invite.invited_by_name}</p>
-                          )}
+                        <div className="flex items-start gap-2.5">
+                          <span
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                              invite.accepted_user
+                                ? "bg-success/15 text-success"
+                                : invite.type === "LINK"
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {invite.accepted_user
+                              ? (invite.accepted_user.name ?? invite.accepted_user.email)
+                                  .charAt(0)
+                                  .toUpperCase()
+                              : invite.type === "LINK"
+                                ? <LinkIcon className="h-3.5 w-3.5" />
+                                : (invite.email ?? "?").charAt(0).toUpperCase()}
+                          </span>
+
+                          <div className="min-w-0">
+                            {invite.accepted_user ? (
+                              <>
+                                <p className="truncate text-sm font-semibold">
+                                  {invite.accepted_user.name ?? invite.accepted_user.email}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {invite.accepted_user.email}
+                                </p>
+                                {invite.email &&
+                                  invite.email.toLowerCase() !==
+                                    invite.accepted_user.email.toLowerCase() && (
+                                    <p className="truncate text-xs text-muted-foreground">
+                                      Invited as {invite.email}
+                                    </p>
+                                  )}
+                              </>
+                            ) : invite.type === "LINK" ? (
+                              <>
+                                <p className="text-sm font-semibold">Invite link</p>
+                                {invite.invite_link ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(invite.invite_link!);
+                                      toast.success("Invite link copied");
+                                    }}
+                                    title={invite.invite_link}
+                                    className="group/link mt-0.5 flex max-w-[22rem] items-center gap-1.5 rounded-md
+                                      border border-border bg-muted/40 px-2 py-1 text-left transition-colors
+                                      hover:border-primary hover:bg-primary/5
+                                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  >
+                                    <span className="truncate font-mono text-[11px] text-muted-foreground group-hover/link:text-primary">
+                                      {invite.invite_link}
+                                    </span>
+                                    <Copy className="h-3 w-3 shrink-0 text-muted-foreground group-hover/link:text-primary" />
+                                  </button>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground">
+                                    {readStatus(invite) === "PENDING"
+                                      ? "Open to anyone who has it"
+                                      : "This link no longer works"}
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="truncate text-sm font-semibold">
+                                {invite.email ?? "No address recorded"}
+                              </p>
+                            )}
+
+                            {invite.invited_by_name && (
+                              <p className="truncate text-xs text-muted-foreground">
+                                Invited by {invite.invited_by_name}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -595,32 +763,109 @@ export default function InviteUsersPage() {
                           {invite.role.replace(/_/g, " ")}
                         </Badge>
                       </TableCell>
-                      <TableCell>{getStatusBadge(invite.status)}</TableCell>
+                      <TableCell>{getStatusBadge(readStatus(invite))}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(invite.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString() : "—"}
-                      </TableCell>
-                      <TableCell className="text-right pr-6">
-                        {invite.status === "PENDING" && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44">
-                              <DropdownMenuItem onClick={() => resendInvite(invite)}>
-                                <RefreshCw className="w-4 h-4 mr-2" /> Resend
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive" onClick={() => setCancelTarget(invite)}>
-                                <Trash2 className="w-4 h-4 mr-2" /> Cancel
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        {readStatus(invite) === "ACCEPTED" ? (
+                          <span className="text-success">
+                            {invite.accepted_at
+                              ? `Joined ${new Date(invite.accepted_at).toLocaleDateString()}`
+                              : "Joined"}
+                          </span>
+                        ) : invite.expires_at ? (
+                          <span className={invite.is_expired ? "text-destructive" : undefined}>
+                            {new Date(invite.expires_at).toLocaleDateString()}
+                          </span>
+                        ) : (
+                          "—"
                         )}
+                      </TableCell>
+                      {/*
+                        Every row has something to do, which was the other half
+                        of the case mismatch: this was gated on
+                        `status === "PENDING"` against a stored `pending`, so
+                        the menu never rendered for any row in the table.
+
+                        What is offered depends on where the invitation got to.
+                        A live one can be resent or withdrawn. One that is
+                        finished — accepted, cancelled, or past its date — can
+                        be taken out of the history, which is a different act
+                        from withdrawing it and is why both exist.
+                      */}
+                      <TableCell className="text-right pr-6">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              aria-label={`Actions for ${invite.email ?? "this invite link"}`}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            {readStatus(invite) === "PENDING" && invite.type === "EMAIL" && (
+                              <DropdownMenuItem onClick={() => resendInvite(invite)}>
+                                <RefreshCw className="w-4 h-4 mr-2" /> Resend email
+                              </DropdownMenuItem>
+                            )}
+
+                            {readStatus(invite) === "EXPIRED" && invite.type === "EMAIL" && (
+                              <DropdownMenuItem onClick={() => resendInvite(invite)}>
+                                <RefreshCw className="w-4 h-4 mr-2" /> Send again
+                              </DropdownMenuItem>
+                            )}
+
+                            {invite.invite_link && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  navigator.clipboard.writeText(invite.invite_link!);
+                                  toast.success("Invite link copied");
+                                }}
+                              >
+                                <Copy className="w-4 h-4 mr-2" /> Copy invite link
+                              </DropdownMenuItem>
+                            )}
+
+                            {invite.accepted_user && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  navigator.clipboard.writeText(invite.accepted_user!.email);
+                                  toast.success("Email address copied");
+                                }}
+                              >
+                                <Copy className="w-4 h-4 mr-2" /> Copy member email
+                              </DropdownMenuItem>
+                            )}
+
+                            {readStatus(invite) === "PENDING" && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={() => setCancelTarget(invite)}
+                                >
+                                  <XCircle className="w-4 h-4 mr-2" /> Withdraw invitation
+                                </DropdownMenuItem>
+                              </>
+                            )}
+
+                            {readStatus(invite) !== "PENDING" && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={() => setDeleteTarget(invite)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" /> Remove from history
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -649,6 +894,37 @@ export default function InviteUsersPage() {
         cancelLabel="Keep"
         confirmLabel="Cancel Invitation"
         onConfirm={handleCancelInvite}
+      />
+
+      {/* Removing the record. Says which of the two it is, because the page
+          now offers both and they are easy to confuse. */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(next) => !next && setDeleteTarget(null)}
+        destructive
+        pending={isSubmitting}
+        title="Remove from history"
+        description={
+          deleteTarget && (
+            <>
+              Delete the record of the invitation to{" "}
+              <strong>
+                {deleteTarget.accepted_user?.email ??
+                  deleteTarget.email ??
+                  "this invite link"}
+              </strong>
+              ?
+              {deleteTarget.accepted_user ? (
+                <> Their membership is not affected — only this row goes.</>
+              ) : (
+                <> This only removes the row; nothing is sent.</>
+              )}
+            </>
+          )
+        }
+        cancelLabel="Keep"
+        confirmLabel="Remove"
+        onConfirm={handleDeleteRecord}
       />
     </div>
   );
