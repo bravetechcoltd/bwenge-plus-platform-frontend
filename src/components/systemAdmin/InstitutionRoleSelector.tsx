@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Shield, Edit, GraduationCap, User, AlertCircle, Building2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { NO_VALUE, fromSentinel, toSentinel } from "./select-sentinels";
 
 interface InstitutionRoleSelectorProps {
   value: string | null;
@@ -27,21 +28,20 @@ const institutionRoleOptions = [
     description: "Full administrative access to the institution",
     compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN"],
   },
-  {
-    value: "CONTENT_CREATOR",
-    label: "Content Creator",
-    icon: Edit,
-    color: "text-primary bg-primary/10",
-    description: "Can create and manage course content",
-    compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR"],
-  },
+  /*
+   * CONTENT_CREATOR was here, and is gone from the platform: it is no longer
+   * a value of `users.bwenge_role`, `users.institution_role` or
+   * `institution_members.role`, so offering it would produce a choice the
+   * database now rejects. It is removed from the compatibility lists for the
+   * same reason — a role nothing can hold cannot make another role available.
+   */
   {
     value: "INSTRUCTOR",
     label: "Instructor",
     icon: GraduationCap,
     color: "text-success bg-success/10",
     description: "Teaches courses, manages enrollments",
-    compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR"],
+    compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "INSTRUCTOR"],
   },
   {
     value: "MEMBER",
@@ -49,7 +49,7 @@ const institutionRoleOptions = [
     icon: User,
     color: "text-muted-foreground bg-muted/50",
     description: "Basic access to institution resources",
-    compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "CONTENT_CREATOR", "INSTRUCTOR", "LEARNER"],
+    compatibleWith: ["SYSTEM_ADMIN", "INSTITUTION_ADMIN", "INSTRUCTOR", "LEARNER"],
   },
 ];
 
@@ -81,8 +81,6 @@ export default function InstitutionRoleSelector({
         return "ADMIN";
       case "INSTITUTION_ADMIN":
         return "ADMIN";
-      case "CONTENT_CREATOR":
-        return "CONTENT_CREATOR";
       case "INSTRUCTOR":
         return "INSTRUCTOR";
       case "LEARNER":
@@ -109,9 +107,15 @@ export default function InstitutionRoleSelector({
         )}
       </div>
       
+      {/*
+        `value=""` on the item below threw as soon as this menu opened, which
+        is why the error appeared on switching role in the create-user dialog
+        rather than on opening it. The empty string is reserved for clearing
+        the Select, so "None" carries a sentinel and is converted back here.
+      */}
       <Select
-        value={value || ""}
-        onValueChange={(value) => onChange(value || null)}
+        value={toSentinel(value, NO_VALUE)}
+        onValueChange={(next) => onChange(fromSentinel(next) ?? null)}
         disabled={disabled}
       >
         <SelectTrigger className={`w-full ${!isCurrentValueCompatible ? 'border-warning/40' : ''}`}>
@@ -133,7 +137,7 @@ export default function InstitutionRoleSelector({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">None (Not assigned to institution)</SelectItem>
+          <SelectItem value={NO_VALUE}>None (Not assigned to institution)</SelectItem>
           {compatibleRoles.map((role) => (
             <SelectItem key={role.value} value={role.value} className="py-3">
               <div className="flex flex-col gap-1">

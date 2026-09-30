@@ -23,17 +23,20 @@ interface UserFilterBarProps {
   onClearFilters: () => void;
 }
 
+/*
+ * CONTENT_CREATOR is absent from both lists on purpose: it is no longer a
+ * value of any role enum on the server, so filtering by it would ask the
+ * database for rows that cannot exist and quietly return none.
+ */
 const roleOptions = [
   { value: "SYSTEM_ADMIN", label: "System Admin" },
   { value: "INSTITUTION_ADMIN", label: "Institution Admin" },
-  { value: "CONTENT_CREATOR", label: "Content Creator" },
   { value: "INSTRUCTOR", label: "Instructor" },
   { value: "LEARNER", label: "Learner" },
 ];
 
 const institutionRoleOptions = [
   { value: "ADMIN", label: "Admin" },
-  { value: "CONTENT_CREATOR", label: "Content Creator" },
   { value: "INSTRUCTOR", label: "Instructor" },
   { value: "MEMBER", label: "Member" },
 ];
@@ -70,6 +73,19 @@ export default function UserFilterBar({
   // Handle input changes
   const handleInputChange = (key: string, value: any) => {
     onFilterChange({ [key]: value });
+  };
+
+  /*
+   * A Select choice becoming a filter value.
+   *
+   * Every "All …" / "Any" option here used `value=""`, which Radix refuses —
+   * the empty string is how a Select is told to clear itself, so an item
+   * claiming it asks the component to mean two things at once. They carry a
+   * sentinel now, and it is turned back into "no filter" here so nothing
+   * outside this component ever sees it.
+   */
+  const handleSelectChange = (key: string, value: string) => {
+    onFilterChange({ [key]: fromSentinel(value) ?? null });
   };
   
   // Remove specific filter
@@ -190,14 +206,14 @@ export default function UserFilterBar({
             <div className="space-y-2">
               <Label htmlFor="bwenge_role">BwengePlus Role</Label>
               <Select
-                value={filters.bwenge_role || ''}
-                onValueChange={(value) => handleInputChange('bwenge_role', value)}
+                value={toSentinel(filters.bwenge_role)}
+                onValueChange={(value) => handleSelectChange('bwenge_role', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All roles" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All roles</SelectItem>
+                  <SelectItem value={ANY_VALUE}>All roles</SelectItem>
                   {roleOptions.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
@@ -211,14 +227,14 @@ export default function UserFilterBar({
             <div className="space-y-2">
               <Label htmlFor="institution_role">Institution Role</Label>
               <Select
-                value={filters.institution_role || ''}
-                onValueChange={(value) => handleInputChange('institution_role', value)}
+                value={toSentinel(filters.institution_role)}
+                onValueChange={(value) => handleSelectChange('institution_role', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All institution roles" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All institution roles</SelectItem>
+                  <SelectItem value={ANY_VALUE}>All institution roles</SelectItem>
                   {institutionRoleOptions.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
@@ -232,14 +248,14 @@ export default function UserFilterBar({
             <div className="space-y-2">
               <Label htmlFor="account_type">Account Type</Label>
               <Select
-                value={filters.account_type || ''}
-                onValueChange={(value) => handleInputChange('account_type', value)}
+                value={toSentinel(filters.account_type)}
+                onValueChange={(value) => handleSelectChange('account_type', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All account types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All account types</SelectItem>
+                  <SelectItem value={ANY_VALUE}>All account types</SelectItem>
                   {accountTypeOptions.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
@@ -290,14 +306,14 @@ export default function UserFilterBar({
               <div className="flex items-center justify-between">
                 <Label htmlFor="is_institution_member">Institution Member</Label>
                 <Select
-                  value={filters.is_institution_member || ''}
-                  onValueChange={(value) => handleInputChange('is_institution_member', value)}
+                  value={toSentinel(filters.is_institution_member)}
+                  onValueChange={(value) => handleSelectChange('is_institution_member', value)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value={ANY_VALUE}>Any</SelectItem>
                     <SelectItem value="true">Yes</SelectItem>
                     <SelectItem value="false">No</SelectItem>
                   </SelectContent>
@@ -309,14 +325,14 @@ export default function UserFilterBar({
               <div className="flex items-center justify-between">
                 <Label htmlFor="is_active">Active Status</Label>
                 <Select
-                  value={filters.is_active || ''}
-                  onValueChange={(value) => handleInputChange('is_active', value)}
+                  value={toSentinel(filters.is_active)}
+                  onValueChange={(value) => handleSelectChange('is_active', value)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value={ANY_VALUE}>Any</SelectItem>
                     <SelectItem value="true">Active</SelectItem>
                     <SelectItem value="false">Inactive</SelectItem>
                   </SelectContent>
@@ -328,14 +344,14 @@ export default function UserFilterBar({
               <div className="flex items-center justify-between">
                 <Label htmlFor="is_verified">Verification Status</Label>
                 <Select
-                  value={filters.is_verified || ''}
-                  onValueChange={(value) => handleInputChange('is_verified', value)}
+                  value={toSentinel(filters.is_verified)}
+                  onValueChange={(value) => handleSelectChange('is_verified', value)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value={ANY_VALUE}>Any</SelectItem>
                     <SelectItem value="true">Verified</SelectItem>
                     <SelectItem value="false">Unverified</SelectItem>
                   </SelectContent>
@@ -348,14 +364,14 @@ export default function UserFilterBar({
           <div className="space-y-2">
             <Label htmlFor="institution_id">Institution</Label>
             <Select
-              value={filters.institution_id || ''}
-              onValueChange={(value) => handleInputChange('institution_id', value)}
+              value={toSentinel(filters.institution_id)}
+              onValueChange={(value) => handleSelectChange('institution_id', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by institution..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All institutions</SelectItem>
+                <SelectItem value={ANY_VALUE}>All institutions</SelectItem>
                 <SelectItem value="inst-1">University of Rwanda</SelectItem>
                 <SelectItem value="inst-2">Rwanda Polytechnic</SelectItem>
                 <SelectItem value="inst-3">AIMS Rwanda</SelectItem>
