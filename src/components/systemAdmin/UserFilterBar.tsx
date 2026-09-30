@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ANY_VALUE, fromSentinel, toSentinel } from "./select-sentinels";
 
 interface UserFilterBarProps {
   filters: any;
