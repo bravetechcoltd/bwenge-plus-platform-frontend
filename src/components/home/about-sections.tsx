@@ -659,19 +659,28 @@ function VisionSection() {
         knowledge-based economy in Rwanda.
       </p>
 
-      <ol className="mt-8 flex flex-wrap items-start gap-y-5">
+      {/*
+        Five across, on one line.
+
+        The nodes were a fixed 76px in a wrapping flex row, which overflowed the
+        column and dropped Impact onto a second line — behind an arrow pointing
+        at nothing, because the arrow belongs to Skills. The row is a five-column
+        grid now, so the nodes divide whatever width the column has and the
+        sequence cannot break. The arrows sit in the gaps rather than in the
+        flow, which is also what keeps them centred on the chips instead of
+        riding above them.
+      */}
+      <ol className="mt-8 grid grid-cols-5">
         {VISION_FLOW.map((node, index) => (
-          <li key={node.label} className="flex items-start">
-            <div className="flex w-[76px] flex-col items-center gap-2.5 text-center">
-              <Chip icon={node.icon} tint={node.tint} />
-              <span className="text-[11px] font-semibold leading-tight text-foreground">
-                {node.label}
-              </span>
-            </div>
+          <li key={node.label} className="relative flex flex-col items-center gap-2.5 text-center">
+            <Chip icon={node.icon} tint={node.tint} size={42} />
+            <span className="text-[10.5px] font-semibold leading-tight text-foreground">
+              {node.label}
+            </span>
             {index < VISION_FLOW.length - 1 && (
               <ArrowRight
                 aria-hidden
-                className="mt-[16px] h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
+                className="absolute -right-[7px] top-[13px] h-3.5 w-3.5 text-muted-foreground/50"
               />
             )}
           </li>
@@ -739,22 +748,39 @@ function MissionSection() {
  */
 function VisionAndMission() {
   return (
-    <section className="relative overflow-hidden py-14 sm:py-16" style={{ ...BRAND, backgroundColor: "#FFFFFF" }}>
+    <section
+      className="relative overflow-hidden py-14 sm:py-16"
+      style={{ ...BRAND, backgroundColor: "#FFFFFF" }}
+    >
       {/*
-        Kigali, cut from the reference with the chevron it is already set in.
-        No clip-path and no overlay: the shape is in the image, and clipping a
-        shape onto a shape is what produced the ragged edge before.
-      */}
-      <Figure
-        src="/about/kigali.png"
-        alt="Kigali"
-        className="absolute left-0 top-1/2 hidden h-[240px] w-[170px] -translate-y-1/2 object-contain lg:block"
-      />
+        All three columns in one grid, inside the same max-w-7xl container every
+        other band uses.
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:pl-[12rem]">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-10">
+        Kigali was positioned absolutely against the viewport, with the text
+        pushed clear of it by a fixed `pl-[12rem]`. Two things were wrong with
+        that. The indent was a guess rather than a measurement, so the vision
+        heading started at a different x from every other heading on the page —
+        the inconsistency in the screenshot. And an absolute element is out of
+        the flow, so the band's height came from the text alone and the
+        photograph floated inside it instead of sitting level with the columns
+        beside it.
+
+        As a grid column it aligns to the same container as everything else. The
+        negative margin is the one deliberate exception: it is exactly the
+        container's own padding, so the image still reaches the viewport edge —
+        the reference's bleed — without the text losing the page's left margin.
+      */}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.92fr)_minmax(0,1.3fr)] lg:gap-8">
+          <Figure
+            src="/about/kigali.png"
+            alt="Kigali"
+            className="hidden h-[260px] w-full object-contain object-left lg:-ml-6 lg:block"
+          />
+
           <VisionSection />
-          <div className="lg:border-l lg:pl-10" style={{ borderColor: "var(--bw-line)" }}>
+
+          <div className="lg:border-l lg:pl-8" style={{ borderColor: "var(--bw-line)" }}>
             <MissionSection />
           </div>
         </div>
