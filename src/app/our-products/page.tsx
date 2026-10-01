@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ArrowLeft, ArrowRight, Check, PackageOpen } from "lucide-react"
+import { ArrowRight, Check, PackageOpen } from "lucide-react"
+
+import HomeNavigation from "@/components/layout/home-navigation"
 
 import { ProductIcon } from "@/components/products/product-icon"
 import { accentStyle, listProducts, type Product } from "@/lib/products/products-api"
@@ -52,32 +52,20 @@ export default function OurProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* A plain bar: this page is reached from the homepage and goes back to it. */}
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image
-              src="/BwengePlusLogo.png"
-              alt="BwengePlus"
-              width={72}
-              height={72}
-              priority
-              className="h-9 w-9 object-contain"
-            />
-            <span className="text-base font-bold text-foreground sm:text-lg">BwengePlus</span>
-          </Link>
+      {/*
+        NAV-002. The same bar as the homepage, not a copy of it.
 
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
-        </div>
-      </header>
+        This page had a reduced header of its own — logo and a back link — which
+        meant arriving here dropped the search, the About menu, the theme toggle
+        and the account controls, so the site appeared to lose half its chrome
+        on one route.
 
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+        The bar is fixed, so the padding below clears it: 64px for the nav row,
+        plus the search row at lg where that row exists.
+      */}
+      <HomeNavigation />
+
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 lg:pt-[9rem]">
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
             Our Products

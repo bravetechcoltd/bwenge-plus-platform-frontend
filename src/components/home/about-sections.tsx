@@ -912,31 +912,31 @@ export default function AboutSections() {
 export const ABOUT_NAV_ITEMS = [
   {
     label: "About BWENGE+",
-    href: "#about",
+    href: "/#about",
     description: "Learn about the platform and what we are building.",
     icon: Layers,
   },
   {
     label: "Who We Are",
-    href: "#who-we-are",
+    href: "/#who-we-are",
     description: "The community behind BWENGE+.",
     icon: Users2,
   },
   {
     label: "Our Vision",
-    href: "#our-vision",
+    href: "/#our-vision",
     description: "Our long-term direction for education and knowledge sharing.",
     icon: Target,
   },
   {
     label: "Our Mission",
-    href: "#our-mission",
+    href: "/#our-mission",
     description: "How BWENGE+ connects people and institutions.",
     icon: Network,
   },
   {
     label: "Core Values",
-    href: "#core-values",
+    href: "/#core-values",
     description: "The principles that guide our work.",
     icon: Award,
   },
