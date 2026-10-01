@@ -357,7 +357,7 @@ function Navigation() {
   const navLinks = [
     { label: "Courses", href: "#courses" },
     { label: "Instructors", href: "#instructors" },
-    { label: "Our Products", href: "#products" },
+    { label: "Our Products", href: "/our-products" },
   ]
 
   const handleLogout = async () => {
@@ -1981,102 +1981,6 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
   )
 }
 /**
- * Our Products (HP-001).
- *
- * The organisation runs more than this platform, and a visitor who lands
- * here had no way to reach any of it. The cards are driven by the array
- * below rather than written out three times, so adding the next product is
- * one entry and nothing else.
- *
- * Each link leaves the application, so each carries rel=noopener noreferrer:
- * without it the opened tab keeps a handle on this one through window.opener.
- */
-const BWENGE_PRODUCTS = [
-  {
-    name: "Bwenge Plus",
-    tagline: "Learning platform",
-    description:
-      "Courses, assessments and verifiable certificates for institutions and independent learners. This platform.",
-    href: "https://bwenge.com/",
-    icon: GraduationCap,
-    action: "Visit Bwenge Plus",
-    highlights: ["Institution and public courses", "Proctored assessments", "Verifiable certificates"],
-    isCurrent: true,
-  },
-  {
-    name: "Bwenge Consultancy",
-    tagline: "Advisory and research",
-    description:
-      "Data, statistics and capacity-building consultancy for public institutions and private organisations.",
-    href: "https://consult.bwenge.com/",
-    icon: Building2,
-    action: "Visit Bwenge Consultancy",
-    highlights: ["Statistical advisory", "Research and analysis", "Institutional capacity building"],
-    isCurrent: false,
-  },
-]
-
-function ProductCard({ product }: { product: (typeof BWENGE_PRODUCTS)[number] }) {
-  const Icon = product.icon
-  return (
-    <motion.a
-      href={product.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      whileHover={{ y: -4 }}
-      className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-6 w-6 text-primary" />
-        </div>
-        {product.isCurrent && (
-          <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
-            You are here
-          </span>
-        )}
-      </div>
-
-      <h3 className="text-base font-bold text-foreground">{product.name}</h3>
-      <p className="text-xs font-medium text-primary">{product.tagline}</p>
-      <p className="mt-2 flex-1 text-sm text-muted-foreground">{product.description}</p>
-
-      <ul className="mt-3 space-y-1">
-        {product.highlights.map((item) => (
-          <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
-            <CheckCircle className="mt-0.5 h-3 w-3 shrink-0 text-success" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-
-      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-        {product.action}
-        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-      </span>
-    </motion.a>
-  )
-}
-
-function OurProducts() {
-  return (
-    <section id="products" className="scroll-mt-20 py-6 bg-background lg:scroll-mt-[8rem]">
-      <div className="max-w-7xl mx-auto px-3">
-        <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold mb-1">Our Products</h2>
-          <p className="text-sm text-muted-foreground">Everything Bwenge builds, in one place</p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {BWENGE_PRODUCTS.map((product) => (
-            <ProductCard key={product.name} product={product} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-/**
  * The homepage instructor section (HP-001).
  *
  * It used to render three people who do not exist — Dr. Sarah Johnson, Prof.
@@ -2570,13 +2474,16 @@ export default function BwengePlusPage() {
         />
         <FeaturedCourses key={activeCategory} activeCategory={activeCategory} />
         <TopInstructors />
-        <OurProducts />
         {/*
           HP-002. About BWENGE+ → Who We Are → Vision + Mission → Core Values,
-          placed after the existing homepage content rather than above it: the
-          hero and the course sections are what a returning visitor comes for,
-          and the institutional reading belongs below them. Every existing
-          section keeps its position and its content.
+          after the existing homepage content rather than above it: the hero
+          and the course sections are what a returning visitor comes for, and
+          the institutional reading belongs below them.
+
+          PR-001. The products used to sit here as a band. They are a page of
+          their own now (/our-products): as a section they competed with the
+          catalogue for the same scroll and had nowhere to grow, and a page
+          can be linked to, shared and bookmarked.
         */}
         <AboutSections />
         <PlatformFeatures />

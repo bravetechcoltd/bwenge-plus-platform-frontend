@@ -81,6 +81,7 @@ import {
   Network,
   Database,
   ClipboardList,
+  Package,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
@@ -760,6 +761,13 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         title: "Registration Questionnaire",
         icon: ClipboardList,
         href: "/dashboard/system-admin/onboarding",
+      },
+      {
+        // PR-001. The products listed at /our-products. They were a constant
+        // in the homepage source, so adding one or fixing a URL was a deploy.
+        title: "Our Products",
+        icon: Package,
+        href: "/dashboard/system-admin/products",
       },
       {
         title: "Assign Course",
