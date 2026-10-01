@@ -478,7 +478,7 @@ function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden shrink-0 items-center gap-1 pl-2 xl:flex">
+          <nav className="hidden shrink-0 items-center gap-1 pl-2 lg:flex">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -507,9 +507,11 @@ function Navigation() {
                 onClick={() => setAboutOpen((open) => !open)}
                 aria-expanded={aboutOpen}
                 aria-haspopup="true"
-                className={`flex items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground ${
-                  aboutOpen ? "bg-accent text-foreground" : "text-muted-foreground"
-                }`}
+                className="flex items-center gap-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: aboutOpen ? "rgba(91,78,150,0.10)" : "transparent",
+                  color: aboutOpen ? "#5B4E96" : undefined,
+                }}
               >
                 About BWENGE+
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
@@ -544,8 +546,14 @@ function Navigation() {
                             key={item.href}
                             href={item.href}
                             onClick={() => setAboutOpen(false)}
-                            className="flex items-start gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-accent focus:bg-accent focus:outline-none"
+                            className="group/item relative flex items-start gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-[rgba(91,78,150,0.07)] focus:bg-[rgba(91,78,150,0.07)] focus:outline-none"
                           >
+                            {/* The left accent the reference draws on the active row. */}
+                            <span
+                              aria-hidden
+                              className="absolute inset-y-1.5 left-0 w-[3px] rounded-full opacity-0 transition-opacity group-hover/item:opacity-100"
+                              style={{ backgroundColor: "#5B4E96" }}
+                            />
                             <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: "rgba(91,78,150,0.10)", color: "#5B4E96" }}>
                               <item.icon className="h-4 w-4" strokeWidth={1.9} />
                             </span>
