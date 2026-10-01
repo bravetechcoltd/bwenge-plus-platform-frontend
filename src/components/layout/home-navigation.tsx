@@ -130,7 +130,7 @@ const getActualUser = () => {
 }
 
 // ==================== FIXED: Determine actual role ====================
-const determineActualRole = (reduxUser: any): string => {
+export const determineActualRole = (reduxUser: any): string => {
   const { cookieUser, localStorageUser, crossSystemContext } = getActualUser()
 
   // Priority: Redux > Cookies > localStorage > cross-system context
@@ -170,7 +170,7 @@ function getRoleDisplayName(role: string | undefined): string {
 }
 
 // ==================== FIXED: Get role dashboard path ====================
-function getRoleDashboardPath(role: string | undefined): string {
+export function getRoleDashboardPath(role: string | undefined): string {
   if (!role) return '/dashboard/learner/learning/courses'
 
   const roleMap: Record<string, string> = {
@@ -202,7 +202,7 @@ function isLearnerRole(role: string | undefined): boolean {
 }
 
 // ==================== FIXED: Google Login Button ====================
-function GoogleLoginButton() {
+export function GoogleLoginButton() {
   const dispatch = useDispatch<AppDispatch>()
   const router = useRouter()
   const [isLoggingIn, setIsLoggingIn] = useState(false)

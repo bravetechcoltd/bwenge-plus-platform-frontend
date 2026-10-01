@@ -3,7 +3,11 @@
 "use client"
 
 import { CourseSearch } from "@/components/courses/course-search"
-import HomeNavigation from "@/components/layout/home-navigation"
+import HomeNavigation, {
+  determineActualRole,
+  getRoleDashboardPath,
+  GoogleLoginButton,
+} from "@/components/layout/home-navigation"
 import Image from "next/image"
 import api from "@/lib/api"
 import AboutSections, {
@@ -1357,102 +1361,183 @@ function NewsletterCTA() {
 }
 
 // Final CTA (Preserved 100%)
+/**
+ * The closing call to action (FT-001).
+ *
+ * It carried three figures that nothing in this platform can support: a
+ * 30-day money-back guarantee, 24/7 support, and 1000+ reviews. The first is
+ * a refund policy — a commitment to a customer, made on a page, by a block of
+ * markup nobody checked against what the organisation actually offers. The
+ * other two were invented the same way, and the subtitle promised thousands
+ * of transformed careers on no evidence at all.
+ *
+ * They are replaced by three statements this platform can stand behind,
+ * because they describe what it does rather than how much of it has happened:
+ * courses from institutions, assessments that are proctored, certificates
+ * that verify. If real figures exist, they belong here — but they have to
+ * come from somewhere.
+ */
 function FinalCTA() {
   const { isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
 
+  const assurances = [
+    {
+      icon: Building2,
+      title: "Institution-backed",
+      body: "Courses published by Rwandan institutions.",
+    },
+    {
+      icon: Shield,
+      title: "Proctored assessments",
+      body: "Results that mean what they say.",
+    },
+    {
+      icon: Award,
+      title: "Verifiable certificates",
+      body: "Every certificate checkable by its code.",
+    },
+  ]
+
   return (
-    <section className="py-8 bg-card text-card-foreground text-center">
-      <div className="max-w-7xl mx-auto px-3">
-        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
-          <Rocket className="w-6 h-6 text-primary-foreground" />
+    <section className="border-t border-border bg-muted/30 py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Rocket className="h-6 w-6 text-primary" />
+          </span>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Start Learning Today
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Courses, assessments and certificates from institutions across Rwanda.
+          </p>
+
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href={isAuthenticated ? "/dashboard" : "/register"}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-md"
+            >
+              <Zap className="h-4 w-4" />
+              {isAuthenticated ? "Continue learning" : "Create an account"}
+            </Link>
+            <Link
+              href="/courses"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+            >
+              <BookOpen className="h-4 w-4" />
+              Browse courses
+            </Link>
+          </div>
         </div>
 
-        <h2 className="text-2xl font-bold mb-2">Start Learning Today</h2>
-        <p className="text-base mb-4 text-muted-foreground">Join thousands transforming careers</p>
-
-        <div className="flex gap-2 justify-center mb-4">
-          <Link
-            href={isAuthenticated ? "/dashboard" : "/register"}
-            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground font-semibold py-2 px-4 rounded-lg text-sm transition-colors hover:bg-primary/90"
-          >
-            <Zap className="w-4 h-4" />
-            {isAuthenticated ? "Continue" : "Start Free"}
-          </Link>
-          <Link
-            href="/courses"
-            className="inline-flex items-center gap-1.5 border-2 border-border text-foreground font-semibold py-2 px-4 rounded-lg text-sm transition-colors hover:bg-accent"
-          >
-            <BookOpen className="w-4 h-4" />
-            Browse
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
-          <div>
-            <div className="text-xl font-bold">30-Day</div>
-            <div className="text-xs text-muted-foreground">Money Back</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold">24/7</div>
-            <div className="text-xs text-muted-foreground">Support</div>
-          </div>
-          <div>
-            <div className="text-xl font-bold">1000+</div>
-            <div className="text-xs text-muted-foreground">Reviews</div>
-          </div>
+        <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
+          {assurances.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-xl border border-border bg-card p-4 text-center"
+            >
+              <span className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <item.icon className="h-[18px] w-[18px] text-primary" />
+              </span>
+              <p className="text-[13px] font-bold text-foreground">{item.title}</p>
+              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{item.body}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
-// Footer (Preserved 100%)
+/**
+ * The footer (FT-001).
+ *
+ * Two things were wrong with it. It sat on the page background, so it did not
+ * close the page — it read as one more white band after a white band, which is
+ * the screenshot. And its social icons were `text-muted-foreground` on a `bg-card`
+ * square: grey on white, all but invisible.
+ *
+ * It is the deep brand purple now, and everything on it is white or a
+ * translucent white, icons included. That is also what makes the contrast
+ * correct rather than merely darker: one surface, one foreground, no greys
+ * inherited from a light theme.
+ *
+ * The link columns changed too. They pointed at /paths/web, /blog, /careers
+ * and six other routes that do not exist in this application — every one a 404
+ * dressed as a destination. What remains are the pages that are really there.
+ */
 function Footer() {
   const footerLinks = {
-    Learning: [
-      { label: "Web Dev", href: "/paths/web" },
-      { label: "Data Science", href: "/paths/data" },
-      { label: "Design", href: "/paths/design" },
-      { label: "Business", href: "/paths/business" },
+    Learn: [
+      { label: "Browse courses", href: "/courses" },
+      { label: "Institutions", href: "/institutions" },
+      { label: "Verify a certificate", href: "/verify-certificate" },
     ],
-    Resources: [
-      { label: "Blog", href: "/blog" },
-      { label: "Help", href: "/help" },
-      { label: "Community", href: "/community" },
+    Discover: [
+      { label: "About BWENGE+", href: "/#about" },
+      { label: "Who we are", href: "/#who-we-are" },
+      { label: "Our products", href: "/our-products" },
     ],
-    Company: [
-      { label: "About", href: "/about" },
-      { label: "Careers", href: "/careers" },
-      { label: "Contact", href: "/contact" },
-    ],
-    Legal: [
-      { label: "Terms", href: "/terms" },
-      { label: "Privacy", href: "/privacy" },
+    Account: [
+      { label: "Sign in", href: "/login" },
+      { label: "Create an account", href: "/register" },
     ],
   }
 
-  return (
-    <footer className="bg-card text-card-foreground pt-6 pb-4">
-      <div className="max-w-7xl mx-auto px-3">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-          <div className="col-span-2">
-            <Link href="/" className="inline-block mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-base font-bold">BwengePlus</div>
-                  <div className="text-xs text-muted-foreground">Never Stop Learning</div>
-                </div>
-              </div>
-            </Link>
-            <p className="text-xs text-muted-foreground mb-3">Empowering learners worldwide</p>
+  const socials = [
+    { Icon: Twitter, label: "Twitter" },
+    { Icon: Facebook, label: "Facebook" },
+    { Icon: Instagram, label: "Instagram" },
+    { Icon: Linkedin, label: "LinkedIn" },
+  ]
 
-            <div className="flex items-center gap-2">
-              {[Twitter, Facebook, Instagram, Linkedin].map((Icon, i) => (
-                <a key={i} href="#" className="w-8 h-8 bg-card rounded flex items-center justify-center">
-                  <Icon className="w-3 h-3 text-muted-foreground" />
+  return (
+    <footer className="text-white" style={{ background: "linear-gradient(160deg, #5B4E96, #413675)" }}>
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              {/*
+                The real mark, as in the navigation. This was still the
+                placeholder glyph in a coloured square, so the footer and the
+                header showed two different logos on the same page.
+              */}
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <Image
+                  src="/BwengePlusLogo.png"
+                  alt="BwengePlus"
+                  width={72}
+                  height={72}
+                  className="h-7 w-7 object-contain"
+                />
+              </span>
+              <span>
+                <span className="block text-base font-bold leading-tight">BwengePlus</span>
+                <span className="block text-[11px] leading-tight text-white/70">
+                  Never Stop Learning
+                </span>
+              </span>
+            </Link>
+
+            <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-white/75">
+              Connecting Knowledge. Empowering Learners. Building Rwanda&rsquo;s Knowledge
+              Economy.
+            </p>
+
+            {/*
+              White, on a translucent white chip. They were grey glyphs on a
+              white square before and effectively invisible. aria-label on each,
+              because an icon-only link announces nothing without one.
+            */}
+            <div className="mt-5 flex items-center gap-2">
+              {socials.map(({ Icon, label }) => (
+                <a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20"
+                >
+                  <Icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
@@ -1460,11 +1545,16 @@ function Footer() {
 
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="font-bold text-sm mb-2">{category}</h3>
-              <ul className="space-y-1.5">
+              <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">
+                {category}
+              </h3>
+              <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-xs text-muted-foreground hover:text-foreground">
+                    <Link
+                      href={link.href}
+                      className="text-[13px] text-white/80 transition-colors hover:text-white"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -1474,30 +1564,31 @@ function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-border my-3" />
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs">
-          <div className="text-muted-foreground">© {new Date().getFullYear()} BwengePlus</div>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="text-muted-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-muted-foreground">
-              Terms
-            </Link>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-1 text-muted-foreground"
-            >
-              Top <ChevronUp className="w-3 h-3" />
-            </button>
+        <div className="mt-10 border-t border-white/15 pt-5">
+          <div className="flex flex-col items-center justify-between gap-3 text-[12px] text-white/70 sm:flex-row">
+            <div>&copy; {new Date().getFullYear()} BwengePlus</div>
+            <div className="flex items-center gap-5">
+              <Link href="/#core-values" className="transition-colors hover:text-white">
+                Our values
+              </Link>
+              <Link href="/our-products" className="transition-colors hover:text-white">
+                Our products
+              </Link>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="flex items-center gap-1 transition-colors hover:text-white"
+              >
+                Top
+                <ChevronUp className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </footer>
   )
 }
-
 export default function BwengePlusPage() {
   const { isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
