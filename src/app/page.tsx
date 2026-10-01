@@ -1507,10 +1507,10 @@ function Footer() {
               <Image
                 src="/bwenge-plus-mark-white.png"
                 alt="BWENGE+"
-                width={960}
-                height={320}
+                width={760}
+                height={260}
                 unoptimized
-                className="h-10 w-auto object-contain"
+                className="h-[34px] w-auto object-contain"
               />
             </Link>
 
