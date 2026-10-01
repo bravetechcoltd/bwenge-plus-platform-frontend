@@ -5,6 +5,7 @@
 import { CourseSearch } from "@/components/courses/course-search"
 import Image from "next/image"
 import api from "@/lib/api"
+import AboutSections, { ABOUT_NAV_ITEMS } from "@/components/home/about-sections"
 import type React from "react"
 import { hardSignOut } from "@/lib/auth/hard-sign-out"
 import { motion, AnimatePresence } from "framer-motion"
@@ -347,6 +348,9 @@ function Navigation() {
     }
   }, [showUserMenu])
 
+  // HP-002. Open state for the About BWENGE+ dropdown.
+  const [aboutOpen, setAboutOpen] = useState(false)
+
   const navLinks = [
     { label: "Courses", href: "#courses" },
     { label: "Instructors", href: "#instructors" },
@@ -482,6 +486,63 @@ function Navigation() {
                 <span className="absolute bottom-1 left-3 right-3 h-0.5 origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
               </a>
             ))}
+
+            {/*
+              HP-002. Six informational sections behind one item, so the bar
+              does not grow by six links. It opens on hover for a pointer and
+              on click for everything else — hover alone is unreachable by
+              keyboard and unusable on a touch screen, and click alone feels
+              stiff on a desktop menu, so both are wired.
+            */}
+            <div
+              className="relative"
+              onMouseEnter={() => setAboutOpen(true)}
+              onMouseLeave={() => setAboutOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setAboutOpen((open) => !open)}
+                aria-expanded={aboutOpen}
+                aria-haspopup="true"
+                className={`flex items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground ${
+                  aboutOpen ? "bg-accent text-foreground" : "text-muted-foreground"
+                }`}
+              >
+                About BWENGE+
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${aboutOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {aboutOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.14 }}
+                    className="absolute left-0 top-full z-50 w-72 pt-2"
+                  >
+                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                      <p className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        About BWENGE+
+                      </p>
+                      <div className="p-1">
+                        {ABOUT_NAV_ITEMS.map((item) => (
+                          <a
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setAboutOpen(false)}
+                            className="block rounded-md px-3 py-2 transition-colors hover:bg-accent"
+                          >
+                            <span className="block text-sm font-medium text-foreground">{item.label}</span>
+                            <span className="block text-xs text-muted-foreground">{item.description}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
 
           {/*
@@ -765,6 +826,25 @@ function Navigation() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
+                  </a>
+                ))}
+
+                {/*
+                  HP-002. The same six sections, flat rather than behind a
+                  dropdown: a menu that is already a vertical list gains
+                  nothing from a second level, and loses a tap.
+                */}
+                <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  About BWENGE+
+                </p>
+                {ABOUT_NAV_ITEMS.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    {item.label}
                   </a>
                 ))}
 
@@ -2385,6 +2465,13 @@ export default function BwengePlusPage() {
         
         <Navigation />
         <HeroSection />
+        {/*
+          HP-002. BWENGE+ → Purpose → Who We Are → Vision → Mission → Core
+          Values, and then the learning ecosystem below: what the platform is
+          before what it currently offers. Every existing section follows,
+          unchanged and in its original order.
+        */}
+        <AboutSections />
         <CategoryFilters
           onCategoryChange={setActiveCategory}
           activeCategory={activeCategory}

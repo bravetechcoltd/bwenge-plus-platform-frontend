@@ -670,6 +670,15 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             href: "/dashboard/system-admin/users/analytics",
             icon: BarChart3
           },
+          {
+            // FI-001. The instructors shown on the public homepage. It belongs
+            // under User Management because that is where someone looks for a
+            // screen about instructors; as a top-level item at the bottom of a
+            // long menu it was effectively invisible.
+            title: "Homepage Instructors",
+            href: "/dashboard/system-admin/instructors",
+            icon: GraduationCap
+          },
         ]
       },
       {
@@ -751,15 +760,6 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         title: "Registration Questionnaire",
         icon: ClipboardList,
         href: "/dashboard/system-admin/onboarding",
-      },
-      {
-        // FI-001. The homepage instructor section was a constant in the
-        // public page, so changing who the platform thanks for their work
-        // needed a code change. It is database-backed now, and this is where
-        // it is curated.
-        title: "Homepage Instructors",
-        icon: GraduationCap,
-        href: "/dashboard/system-admin/instructors",
       },
       {
         title: "Assign Course",
