@@ -840,8 +840,14 @@ function Navigation() {
           result signed out opens the same login modal and comes back to
           the same course.
         */}
-        <div className="hidden border-t border-border/60 py-2.5 lg:block">
-          <CourseSearch className="w-full" />
+        {/*
+          Half the row, centred, so the quarter either side reads as deliberate
+          margin rather than as a control that happened to stop there. Full
+          width made the search the widest thing on the page and left it
+          looking like a page element rather than part of the bar.
+        */}
+        <div className="hidden justify-center border-t border-border/60 py-2.5 lg:flex">
+          <CourseSearch className="w-1/2" />
         </div>
 
         {/* Mobile Menu */}
