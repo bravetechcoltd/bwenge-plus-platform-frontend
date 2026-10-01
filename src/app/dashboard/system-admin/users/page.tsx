@@ -78,9 +78,8 @@ export default function SystemAdminUsersPage() {
   const pagination = useAppSelector(selectUsersPagination);
   const filters = useAppSelector(selectUserFilters);
   const statistics = useAppSelector(selectUserStatistics);
-  const [isCreating, setIsCreating] = useState(false); 
+  const [isCreating, setIsCreating] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const [activeSystemTab, setActiveSystemTab] = useState<'all' | 'bwengeplus' | 'ongera'>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -90,17 +89,14 @@ export default function SystemAdminUsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   
-  // Filter users by system
-  const filteredUsers = users.filter(user => {
-    if (activeSystemTab === 'all') return true;
-    const userSystem = user.isforwhich_system?.toLowerCase();
-    return userSystem === activeSystemTab;
-  });
 
-  // Calculate system-specific statistics
-  const bwengePlusUsers = users.filter(u => u.isforwhich_system?.toLowerCase() === 'bwengeplus');
-  const ongeraUsers = users.filter(u => u.isforwhich_system?.toLowerCase() === 'ongera');
-  
+  const filteredUsers = users.filter(
+    user => user.isforwhich_system?.toLowerCase() !== 'ongera'
+  );
+
+
+  const hiddenCount = users.length - filteredUsers.length;
+
   // Fetch data on mount and when filters change
   useEffect(() => {
     dispatch(fetchSystemUsers({
@@ -230,11 +226,6 @@ export default function SystemAdminUsersPage() {
     return parts.length > 0 ? parts.join(' ') : 'Unknown User';
   };
 
-  // Check if user is from Ongera system
-  const isOngeraUser = (user: any) => {
-    return user.isforwhich_system?.toLowerCase() === 'ongera';
-  };
-  
   return (
     <div className="container mx-auto px-4 py-6 space-y-4">
       {/* Header */}
@@ -263,42 +254,16 @@ export default function SystemAdminUsersPage() {
       
       {/* Compact Statistics Cards */}
       {statistics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {/* Total Users */}
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveSystemTab('all')}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Total Users — the ones on this page, not the ones in the table. */}
+          <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">Total Users</p>
-                  <p className="text-2xl font-bold text-foreground">{statistics.total_users}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Users</p>
+                  <p className="text-2xl font-bold text-foreground">{filteredUsers.length}</p>
                 </div>
                 <Users className="w-8 h-8 text-primary opacity-80" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* BwengePlus Users */}
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveSystemTab('bwengeplus')}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">BwengePlus</p>
-                  <p className="text-2xl font-bold text-primary">{bwengePlusUsers.length}</p>
-                </div>
-                <BookOpen className="w-8 h-8 text-primary opacity-80" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Ongera Users */}
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setActiveSystemTab('ongera')}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Ongera</p>
-                  <p className="text-2xl font-bold text-success">{ongeraUsers.length}</p>
-                </div>
-                <Shield className="w-8 h-8 text-success opacity-80" />
               </div>
             </CardContent>
           </Card>
@@ -348,19 +313,22 @@ export default function SystemAdminUsersPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <Tabs value={activeSystemTab} onValueChange={(v) => setActiveSystemTab(v as any)} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-3">
-                <TabsTrigger value="all" className="text-sm">
-                  All Users ({users.length})
-                </TabsTrigger>
-                <TabsTrigger value="bwengeplus" className="text-sm">
-                  BwengePlus ({bwengePlusUsers.length})
-                </TabsTrigger>
-                <TabsTrigger value="ongera" className="text-sm">
-                  Ongera ({ongeraUsers.length})
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* The system tab strip stood here. One system remains, so a strip
+                to choose between systems is a control with nothing to choose. */}
+            <div className="min-w-0">
+              <CardTitle className="text-base">
+                BwengePlus users
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {filteredUsers.length}
+                </span>
+              </CardTitle>
+              {hiddenCount > 0 && (
+                <CardDescription className="mt-0.5">
+                  {hiddenCount} row{hiddenCount === 1 ? '' : 's'} on this page belong to another
+                  system and are not shown.
+                </CardDescription>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
                 <TabsList>
@@ -396,7 +364,6 @@ export default function SystemAdminUsersPage() {
                       />
                     </th>
                     <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">User</th>
-                    <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">System</th>
                     <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Role</th>
                     <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Status</th>
                     <th className="text-left py-3 px-2 font-medium text-muted-foreground text-sm">Institutions</th>
@@ -418,9 +385,10 @@ export default function SystemAdminUsersPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-2"><Skeleton className="w-16 h-6" /></td>
+                        {/* Five more, matching the seven headers: role,
+                            status, institutions, joined, actions. It carried
+                            nine before — two more than the table ever had. */}
                         <td className="py-3 px-2"><Skeleton className="w-20 h-6" /></td>
-                        <td className="py-3 px-2"><Skeleton className="w-16 h-4" /></td>
                         <td className="py-3 px-2"><Skeleton className="w-16 h-6" /></td>
                         <td className="py-3 px-2"><Skeleton className="w-8 h-4" /></td>
                         <td className="py-3 px-2"><Skeleton className="w-24 h-4" /></td>
@@ -429,12 +397,12 @@ export default function SystemAdminUsersPage() {
                     ))
                   ) : filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-8 text-center text-muted-foreground">
+                      {/* Seven columns now that System has gone; the old value
+                          of nine spanned two columns that were never there. */}
+                      <td colSpan={7} className="py-8 text-center text-muted-foreground">
                         <Users className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
                         <p>No users found</p>
-                        <p className="text-sm mt-1">
-                          {activeSystemTab !== 'all' ? `No ${activeSystemTab} users found` : 'Try adjusting your filters'}
-                        </p>
+                        <p className="text-sm mt-1">Try adjusting your filters</p>
                       </td>
                     </tr>
                   ) : (
@@ -465,15 +433,6 @@ export default function SystemAdminUsersPage() {
                           </div>
                         </td>
                         <td className="py-3 px-2">
-                          <Badge variant="outline" className={`text-xs ${
-                            user.isforwhich_system?.toLowerCase() === 'bwengeplus' 
-                              ? 'bg-primary/10 text-primary border-primary/30' 
-                              : 'bg-success/10 text-success border-success/30'
-                          }`}>
-                            {user.isforwhich_system || 'N/A'}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-2">
                           <Badge className={`${getRoleColor(user.bwenge_role)} text-xs`}>
                             {formatRole(user.bwenge_role)}
                           </Badge>
@@ -495,22 +454,10 @@ export default function SystemAdminUsersPage() {
                           {formatDate(user.date_joined)}
                         </td>
                         <td className="py-3 px-2">
-                          {isOngeraUser(user) ? (
-                            // Ongera users - View only
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => {
-                                setUserToView(user);
-                                setShowDetailsModal(true);
-                              }}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          ) : (
-                            // BwengePlus users - Full actions
-                            <div className="flex items-center gap-1">
+                          {/* Every row here is a BwengePlus user, so every row
+                              gets the full set. The view-only branch existed
+                              for Ongera rows, which no longer appear. */}
+                          <div className="flex items-center gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -568,8 +515,7 @@ export default function SystemAdminUsersPage() {
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -619,13 +565,6 @@ export default function SystemAdminUsersPage() {
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-1 justify-center">
-                          <Badge variant="outline" className={`text-xs ${
-                            user.isforwhich_system?.toLowerCase() === 'bwengeplus' 
-                              ? 'bg-primary/10 text-primary border-primary/30' 
-                              : 'bg-success/10 text-success border-success/30'
-                          }`}>
-                            {user.isforwhich_system}
-                          </Badge>
                           <Badge className={`${getRoleColor(user.bwenge_role)} text-xs`}>
                             {formatRole(user.bwenge_role)}
                           </Badge>
@@ -651,30 +590,28 @@ export default function SystemAdminUsersPage() {
                             <Eye className="w-3 h-3 mr-1" />
                             View
                           </Button>
-                          {!isOngeraUser(user) && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Shield className="w-4 h-4 mr-2" />
-                                  Reset Password
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Shield className="w-4 h-4 mr-2" />
+                                Reset Password
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>
