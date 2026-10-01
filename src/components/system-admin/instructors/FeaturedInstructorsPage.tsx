@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   ArrowDown,
@@ -16,6 +16,7 @@ import {
   Search,
   Star,
   Trash2,
+  Upload,
   Users,
   X,
 } from "lucide-react";
@@ -62,6 +63,8 @@ import {
   serverMessage,
   setFeaturedInstructorActive,
   updateFeaturedInstructor,
+  uploadFeaturedInstructorAvatar,
+  clearFeaturedInstructorAvatar,
   type FeaturedInstructorEntry,
   type InstructorCandidate,
 } from "@/lib/instructors/featured-api";
@@ -143,6 +146,49 @@ export default function FeaturedInstructorsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
   const [pendingDelete, setPendingDelete] = useState<FeaturedInstructorEntry | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  /**
+   * Uploading writes immediately, before Save.
+   *
+   * The file goes to its own endpoint against the entry id, so there is no
+   * way to hold it until the form is submitted without keeping the bytes in
+   * memory and inventing a second failure mode. The form field is updated
+   * from the response so the preview matches what was stored, and the list
+   * behind the dialog is refreshed so its thumbnail does not go stale.
+   */
+  const uploadAvatar = async (file: File) => {
+    if (!editing) return;
+    setIsUploading(true);
+    try {
+      const res = await uploadFeaturedInstructorAvatar(editing.id, file);
+      const url = res?.data?.avatar_url || "";
+      setForm((f) => ({ ...f, avatar_url: url }));
+      toast.success("Photograph updated.");
+      await load();
+    } catch (error: any) {
+      toast.error(serverMessage(error, "Could not upload the photograph"));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeAvatar = async () => {
+    if (!editing) return;
+    setIsUploading(true);
+    try {
+      await clearFeaturedInstructorAvatar(editing.id);
+      setForm((f) => ({ ...f, avatar_url: "" }));
+      toast.success("Photograph removed.");
+      await load();
+    } catch (error: any) {
+      toast.error(serverMessage(error, "Could not remove the photograph"));
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   /* ─────────────────────────────── loading ──────────────────────────────── */
 
@@ -658,13 +704,88 @@ export default function FeaturedInstructorsPage() {
               <p className="text-xs text-muted-foreground">Comma separated. Shown as chips.</p>
             </div>
 
-            <div className="space-y-2">
-              <Label>Photograph URL</Label>
+            {/*
+              The photograph.
+
+              Uploading is only offered on an existing entry, because the file
+              goes to its own endpoint against an id and a new entry has none
+              yet. On a new one the URL field stands alone; save it, reopen it,
+              and the uploader is there. A pasted URL still works either way —
+              an image already hosted somewhere does not need copying into our
+              own storage to be shown.
+            */}
+            <div className="space-y-3">
+              <Label>Photograph</Label>
+
+              {editing && (
+                <div className="flex items-center gap-4 rounded-md border border-border p-3">
+                  {form.avatar_url ? (
+                    <img
+                      src={form.avatar_url}
+                      alt=""
+                      className="h-16 w-16 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                      {initialsOf(form.display_name || editing.name)}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        // Cleared so picking the same file twice still fires.
+                        e.target.value = "";
+                        if (file) uploadAvatar(file);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isUploading}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {isUploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {form.avatar_url ? "Replace photograph" : "Upload photograph"}
+                    </Button>
+
+                    {form.avatar_url && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={isUploading}
+                        onClick={removeAvatar}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <Input
                 placeholder={form.user_id ? "Leave empty to use the profile picture" : "https://…"}
                 value={form.avatar_url}
                 onChange={(e) => setForm((f) => ({ ...f, avatar_url: e.target.value }))}
               />
+              <p className="text-xs text-muted-foreground">
+                {editing
+                  ? "Upload a file, or paste the address of one already hosted."
+                  : "Paste an address now; the uploader appears once the entry is saved."}
+              </p>
             </div>
 
             <div className="space-y-2">

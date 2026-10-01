@@ -125,3 +125,26 @@ export async function reorderFeaturedInstructors(ids: string[]) {
   const res = await api.put("/featured-instructors/admin/reorder", { ids });
   return res.data;
 }
+
+/**
+ * The photograph.
+ *
+ * Its own call rather than a field on the update, because a file needs
+ * multipart and the rest of the form does not — and because replacing a
+ * picture must not mean resending the headline and the tags, which is how one
+ * admin's edit quietly overwrites another's.
+ */
+export async function uploadFeaturedInstructorAvatar(id: string, file: File) {
+  const form = new FormData();
+  form.append("avatar", file);
+  const res = await api.post(`/featured-instructors/admin/${id}/avatar`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+/** Clears the override, falling back to the account picture, then initials. */
+export async function clearFeaturedInstructorAvatar(id: string) {
+  const res = await api.delete(`/featured-instructors/admin/${id}/avatar`);
+  return res.data;
+}

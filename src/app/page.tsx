@@ -2154,44 +2154,68 @@ function TopInstructors() {
           <p className="text-sm text-muted-foreground"> Thanks to all instructors</p>
         </div>
 
+        {/*
+          FI-001. The card the invented instructors had, now carrying real
+          people.
+
+          Swapping the data out had quietly stripped the design with it: the
+          headline line, the expertise chips and the action all went when the
+          mock objects did, which left a card of three numbers that matched
+          nothing else on the page. Every part is back; what changed is that
+          each part now renders only when there is something true to put in
+          it.
+
+          Flex rather than a three-column grid. With two instructors the grid
+          left a third column of empty space and pushed the pair off centre —
+          visible in the screenshot. Wrapping fixed-width cards centres
+          whatever number there happens to be.
+        */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="flex flex-wrap justify-center gap-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="bg-card rounded-lg p-4 shadow text-center animate-pulse">
-                <div className="mx-auto mb-2 h-16 w-16 rounded-full bg-muted" />
+              <div
+                key={i}
+                className="w-full animate-pulse rounded-xl border border-border bg-card p-5 text-center shadow-sm sm:w-[320px]"
+              >
+                <div className="mx-auto mb-3 h-20 w-20 rounded-full bg-muted" />
                 <div className="mx-auto mb-2 h-4 w-32 rounded bg-muted" />
-                <div className="mx-auto mb-3 h-3 w-24 rounded bg-muted" />
-                <div className="grid grid-cols-3 gap-2">
+                <div className="mx-auto mb-4 h-3 w-24 rounded bg-muted" />
+                <div className="mb-4 grid grid-cols-3 gap-2">
                   {[0, 1, 2].map((j) => (
-                    <div key={j} className="h-8 rounded bg-muted" />
+                    <div key={j} className="h-10 rounded bg-muted" />
                   ))}
                 </div>
+                <div className="h-9 rounded-lg bg-muted" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="flex flex-wrap justify-center gap-4">
             {instructors.map((instructor) => (
-              <div key={instructor.id} className="bg-card rounded-lg p-4 shadow text-center relative">
+              <div
+                key={instructor.id}
+                className="relative w-full rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-shadow hover:shadow-md sm:w-[320px]"
+              >
                 {instructor.is_featured && (
-                  <div className="absolute top-2 right-2">
-                    <span className="px-2 py-0.5 bg-yellow-400 text-warning text-xs font-bold rounded">TOP</span>
-                  </div>
+                  <span className="absolute right-3 top-3 rounded bg-yellow-400 px-2 py-0.5 text-[10px] font-bold text-yellow-900">
+                    TOP
+                  </span>
                 )}
 
-                <div className="relative mx-auto mb-2">
+                <div className="relative mx-auto mb-3 w-20">
                   {instructor.avatar_url ? (
                     <img
                       src={instructor.avatar_url}
                       alt={instructor.name}
-                      className="w-16 h-16 rounded-full mx-auto border-2 border-border object-cover"
+                      className="h-20 w-20 rounded-full border-2 border-border object-cover"
                     />
                   ) : (
                     /*
-                     * No photograph is a real state, and a stock face would be a
-                     * lie about who this is. Their initials instead.
+                     * A missing photograph is a real state, and a stock face
+                     * would be a lie about who this is. Their initials until a
+                     * system admin uploads one.
                      */
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-primary/10 text-lg font-bold text-primary">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-border bg-primary/10 text-xl font-bold text-primary">
                       {instructor.name
                         .split(" ")
                         .filter(Boolean)
@@ -2201,46 +2225,70 @@ function TopInstructors() {
                         .toUpperCase()}
                     </div>
                   )}
-                  <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-5 h-5 bg-success/100 rounded-full border-2 border-white flex items-center justify-center">
-                    <CheckCircle className="w-3 h-3 text-white" />
-                  </div>
+                  <span className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-success">
+                    <CheckCircle className="h-3.5 w-3.5 text-white" />
+                  </span>
                 </div>
 
-                <h3 className="text-sm font-bold mb-0.5">{instructor.name}</h3>
-                {instructor.headline && (
-                  <p className="text-xs text-muted-foreground mb-2">{instructor.headline}</p>
-                )}
+                <h3 className="text-sm font-bold text-foreground">{instructor.name}</h3>
+                {/*
+                  Everyone here holds the instructor role, so that is the
+                  honest line when no headline has been written. Leaving it
+                  empty collapsed the card and left the name sitting on the
+                  numbers.
+                */}
+                <p className="mb-4 mt-0.5 text-xs text-muted-foreground">
+                  {instructor.headline || "Instructor"}
+                </p>
 
-                <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="mb-4 grid grid-cols-3 gap-2">
                   <div>
-                    <div className="text-lg font-bold text-primary">{instructor.course_count}</div>
-                    <div className="text-xs text-muted-foreground">Courses</div>
+                    <div className="text-xl font-bold text-primary">{instructor.course_count}</div>
+                    <div className="text-[11px] text-muted-foreground">Courses</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-primary">{compactCount(instructor.student_count)}</div>
-                    <div className="text-xs text-muted-foreground">Students</div>
+                    <div className="text-xl font-bold text-primary">
+                      {compactCount(instructor.student_count)}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Students</div>
                   </div>
                   <div>
                     {/*
-                      A course nobody has rated has no rating. A dash says that;
-                      printing 0 would read as the worst possible score.
+                      A course nobody has rated has no rating. A dash says so;
+                      0 would read as the worst possible score.
                     */}
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-xl font-bold text-primary">
                       {instructor.rating > 0 ? instructor.rating.toFixed(1) : "—"}
                     </div>
-                    <div className="text-xs text-muted-foreground">Rating</div>
+                    <div className="text-[11px] text-muted-foreground">Rating</div>
                   </div>
                 </div>
 
                 {instructor.expertise.length > 0 && (
-                  <div className="flex flex-wrap gap-1 justify-center mb-2">
+                  <div className="mb-4 flex flex-wrap justify-center gap-1">
                     {instructor.expertise.map((skill, idx) => (
-                      <span key={idx} className="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded">
+                      <span
+                        key={idx}
+                        className="rounded bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
+                      >
                         {skill}
                       </span>
                     ))}
                   </div>
                 )}
+
+                {/*
+                  The original button said View Profile and went nowhere —
+                  there is no instructor profile page in this application. This
+                  one opens the catalogue filtered to their name, which is the
+                  thing a visitor reading this section actually wants.
+                */}
+                <Link
+                  href={`/courses?search=${encodeURIComponent(instructor.name)}`}
+                  className="block w-full rounded-lg bg-primary py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  View Courses
+                </Link>
               </div>
             ))}
           </div>
