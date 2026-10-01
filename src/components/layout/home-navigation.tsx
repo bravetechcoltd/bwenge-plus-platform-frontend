@@ -405,11 +405,11 @@ export default function HomeNavigation() {
               <Image
                 src="/bwenge-plus-mark.png"
                 alt="BWENGE+"
-                width={512}
-                height={512}
+                width={960}
+                height={320}
                 priority
                 unoptimized
-                className="h-10 w-10 object-contain"
+                className="h-10 w-auto object-contain"
               />
             </Link>
             <div className="w-8 h-8" />
@@ -452,11 +452,11 @@ export default function HomeNavigation() {
               <Image
                 src="/bwenge-plus-mark.png"
                 alt="BWENGE+"
-                width={512}
-                height={512}
+                width={960}
+                height={320}
                 priority
                 unoptimized
-                className="h-10 w-10 object-contain"
+                className="h-10 w-auto object-contain"
               />
             </motion.span>
           </Link>
