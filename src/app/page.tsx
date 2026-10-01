@@ -3,6 +3,8 @@
 "use client"
 
 import { CourseSearch } from "@/components/courses/course-search"
+import Image from "next/image"
+import api from "@/lib/api"
 import type React from "react"
 import { hardSignOut } from "@/lib/auth/hard-sign-out"
 import { motion, AnimatePresence } from "framer-motion"
@@ -347,7 +349,8 @@ function Navigation() {
 
   const navLinks = [
     { label: "Courses", href: "#courses" },
-    { label: "Instructors", href: "#instructors" }
+    { label: "Instructors", href: "#instructors" },
+    { label: "Our Products", href: "#products" },
   ]
 
   const handleLogout = async () => {
@@ -432,14 +435,30 @@ function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center gap-3 lg:gap-5">
-          {/* Logo */}
+          {/*
+            HP-001. This was a graduation-cap glyph inside a coloured square —
+            a placeholder standing in for the mark, not the mark itself. The
+            real logo ships in public/BwengePlusLogo.png.
+
+            next/image is given explicit intrinsic dimensions and a square
+            box with object-contain, so a logo of any aspect ratio is letter-
+            boxed rather than stretched, and the row height never shifts as it
+            loads. priority, because it is above the fold on every page view.
+          */}
           <Link href="/" className="flex shrink-0 items-center gap-2 group">
             <motion.div
-              className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md"
+              className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg"
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <GraduationCap className="w-5 h-5 text-white" />
+              <Image
+                src="/BwengePlusLogo.png"
+                alt="BwengePlus"
+                width={72}
+                height={72}
+                priority
+                className="h-full w-full object-contain"
+              />
             </motion.div>
             <div className="leading-tight">
               <div className="text-base font-bold leading-tight text-foreground transition-colors sm:text-lg">
@@ -1830,42 +1849,171 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
     </section>
   )
 }
+/**
+ * Our Products (HP-001).
+ *
+ * The organisation runs more than this platform, and a visitor who lands
+ * here had no way to reach any of it. The cards are driven by the array
+ * below rather than written out three times, so adding the next product is
+ * one entry and nothing else.
+ *
+ * Each link leaves the application, so each carries rel=noopener noreferrer:
+ * without it the opened tab keeps a handle on this one through window.opener.
+ */
+const BWENGE_PRODUCTS = [
+  {
+    name: "Bwenge Plus",
+    tagline: "Learning platform",
+    description:
+      "Courses, assessments and verifiable certificates for institutions and independent learners. This platform.",
+    href: "https://bwenge.com/",
+    icon: GraduationCap,
+    action: "Visit Bwenge Plus",
+    highlights: ["Institution and public courses", "Proctored assessments", "Verifiable certificates"],
+    isCurrent: true,
+  },
+  {
+    name: "Bwenge Consultancy",
+    tagline: "Advisory and research",
+    description:
+      "Data, statistics and capacity-building consultancy for public institutions and private organisations.",
+    href: "https://consult.bwenge.com/",
+    icon: Building2,
+    action: "Visit Bwenge Consultancy",
+    highlights: ["Statistical advisory", "Research and analysis", "Institutional capacity building"],
+    isCurrent: false,
+  },
+]
+
+function ProductCard({ product }: { product: (typeof BWENGE_PRODUCTS)[number] }) {
+  const Icon = product.icon
+  return (
+    <motion.a
+      href={product.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      whileHover={{ y: -4 }}
+      className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <Icon className="h-6 w-6 text-primary" />
+        </div>
+        {product.isCurrent && (
+          <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+            You are here
+          </span>
+        )}
+      </div>
+
+      <h3 className="text-base font-bold text-foreground">{product.name}</h3>
+      <p className="text-xs font-medium text-primary">{product.tagline}</p>
+      <p className="mt-2 flex-1 text-sm text-muted-foreground">{product.description}</p>
+
+      <ul className="mt-3 space-y-1">
+        {product.highlights.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
+            <CheckCircle className="mt-0.5 h-3 w-3 shrink-0 text-success" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+        {product.action}
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </motion.a>
+  )
+}
+
+function OurProducts() {
+  return (
+    <section id="products" className="py-6 bg-background">
+      <div className="max-w-7xl mx-auto px-3">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold mb-1">Our Products</h2>
+          <p className="text-sm text-muted-foreground">Everything Bwenge builds, in one place</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {BWENGE_PRODUCTS.map((product) => (
+            <ProductCard key={product.name} product={product} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+/**
+ * The homepage instructor section (HP-001).
+ *
+ * It used to render three people who do not exist — Dr. Sarah Johnson, Prof.
+ * Michael Chen and Emma Wilson — with stock photographs, invented student
+ * counts and invented ratings, under a heading thanking them for their work.
+ * Every figure on the front page was fiction.
+ *
+ * It now reads /featured-instructors, which a system admin curates at
+ * /dashboard/system-admin/instructors. Course and student counts come from
+ * the instructor's published courses, so they are the real ones.
+ *
+ * ── Why the section can disappear ─────────────────────────────────────────
+ *
+ * With nobody featured there is nothing truthful to show, so the section
+ * renders nothing at all. That is the point: the alternative is to fall back
+ * to placeholders, which is exactly the state being removed. The same applies
+ * when the request fails — a heading with no cards under it would be worse
+ * than an absent section.
+ */
+interface HomepageInstructor {
+  id: string
+  name: string
+  headline: string
+  avatar_url: string | null
+  expertise: string[]
+  is_featured: boolean
+  course_count: number
+  student_count: number
+  rating: number
+}
+
+/** 25,000 students is "25K"; 300 students is "300", not "0K". */
+function compactCount(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "0"
+  if (value < 1000) return String(Math.round(value))
+  const thousands = value / 1000
+  return (thousands >= 10 ? Math.round(thousands) : Math.round(thousands * 10) / 10) + "K"
+}
+
 function TopInstructors() {
-  const mockInstructors = [
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      title: "Senior Software Engineer",
-      students: 25000,
-      courses: 12,
-      rating: 4.9,
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-      expertise: ["Web Development", "Cloud Computing"],
-      featured: true,
-    },
-    {
-      id: 2,
-      name: "Prof. Michael Chen",
-      title: "AI Research Lead",
-      students: 18000,
-      courses: 8,
-      rating: 4.8,
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
-      expertise: ["Machine Learning", "Data Science"],
-      featured: true,
-    },
-    {
-      id: 3,
-      name: "Emma Wilson",
-      title: "Lead Product Designer",
-      students: 22000,
-      courses: 10,
-      rating: 4.9,
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
-      expertise: ["UI/UX Design", "Product Strategy"],
-      featured: true,
-    },
-  ]
+  const [instructors, setInstructors] = useState<HomepageInstructor[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await api.get("/featured-instructors?limit=6")
+        if (cancelled) return
+        setInstructors(Array.isArray(res.data?.data) ? res.data.data : [])
+      } catch {
+        // An unreachable editorial endpoint hides the section; it never breaks
+        // the front page and never falls back to invented people.
+        if (!cancelled) setInstructors([])
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Nothing to show and nothing still coming: no heading either.
+  if (!isLoading && instructors.length === 0) return null
 
   return (
     <section id="instructors" className="py-6 bg-muted/50">
@@ -1875,63 +2023,101 @@ function TopInstructors() {
           <p className="text-sm text-muted-foreground"> Thanks to all instructors</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {mockInstructors.map((instructor) => (
-            <div key={instructor.id} className="bg-card rounded-lg p-4 shadow text-center relative">
-              {instructor.featured && (
-                <div className="absolute top-2 right-2">
-                  <span className="px-2 py-0.5 bg-yellow-400 text-warning text-xs font-bold rounded">TOP</span>
-                </div>
-              )}
-
-              <div className="relative mx-auto mb-2">
-                <img
-                  src={instructor.avatar || "/placeholder.svg"}
-                  alt={instructor.name}
-                  className="w-16 h-16 rounded-full mx-auto border-2 border-border"
-                />
-                <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-5 h-5 bg-success/100 rounded-full border-2 border-white flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-card rounded-lg p-4 shadow text-center animate-pulse">
+                <div className="mx-auto mb-2 h-16 w-16 rounded-full bg-muted" />
+                <div className="mx-auto mb-2 h-4 w-32 rounded bg-muted" />
+                <div className="mx-auto mb-3 h-3 w-24 rounded bg-muted" />
+                <div className="grid grid-cols-3 gap-2">
+                  {[0, 1, 2].map((j) => (
+                    <div key={j} className="h-8 rounded bg-muted" />
+                  ))}
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {instructors.map((instructor) => (
+              <div key={instructor.id} className="bg-card rounded-lg p-4 shadow text-center relative">
+                {instructor.is_featured && (
+                  <div className="absolute top-2 right-2">
+                    <span className="px-2 py-0.5 bg-yellow-400 text-warning text-xs font-bold rounded">TOP</span>
+                  </div>
+                )}
 
-              <h3 className="text-sm font-bold mb-0.5">{instructor.name}</h3>
-              <p className="text-xs text-muted-foreground mb-2">{instructor.title}</p>
+                <div className="relative mx-auto mb-2">
+                  {instructor.avatar_url ? (
+                    <img
+                      src={instructor.avatar_url}
+                      alt={instructor.name}
+                      className="w-16 h-16 rounded-full mx-auto border-2 border-border object-cover"
+                    />
+                  ) : (
+                    /*
+                     * No photograph is a real state, and a stock face would be a
+                     * lie about who this is. Their initials instead.
+                     */
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-primary/10 text-lg font-bold text-primary">
+                      {instructor.name
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-5 h-5 bg-success/100 rounded-full border-2 border-white flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                <div>
-                  <div className="text-lg font-bold text-primary">{instructor.courses}</div>
-                  <div className="text-xs text-muted-foreground">Courses</div>
+                <h3 className="text-sm font-bold mb-0.5">{instructor.name}</h3>
+                {instructor.headline && (
+                  <p className="text-xs text-muted-foreground mb-2">{instructor.headline}</p>
+                )}
+
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div>
+                    <div className="text-lg font-bold text-primary">{instructor.course_count}</div>
+                    <div className="text-xs text-muted-foreground">Courses</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-primary">{compactCount(instructor.student_count)}</div>
+                    <div className="text-xs text-muted-foreground">Students</div>
+                  </div>
+                  <div>
+                    {/*
+                      A course nobody has rated has no rating. A dash says that;
+                      printing 0 would read as the worst possible score.
+                    */}
+                    <div className="text-lg font-bold text-primary">
+                      {instructor.rating > 0 ? instructor.rating.toFixed(1) : "—"}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Rating</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-lg font-bold text-primary">{(instructor.students / 1000).toFixed(0)}K</div>
-                  <div className="text-xs text-muted-foreground">Students</div>
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-primary">{instructor.rating}</div>
-                  <div className="text-xs text-muted-foreground">Rating</div>
-                </div>
+
+                {instructor.expertise.length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-center mb-2">
+                    {instructor.expertise.map((skill, idx) => (
+                      <span key={idx} className="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              <div className="flex flex-wrap gap-1 justify-center mb-2">
-                {instructor.expertise.map((skill, idx) => (
-                  <span key={idx} className="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-
-              <button className="w-full bg-primary text-primary-foreground py-1.5 rounded text-xs font-semibold">
-                View Profile
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
 }
-
 // Platform Features (Preserved 100%)
 function PlatformFeatures() {
   const features = [
@@ -2205,6 +2391,7 @@ export default function BwengePlusPage() {
         />
         <FeaturedCourses key={activeCategory} activeCategory={activeCategory} />
         <TopInstructors />
+        <OurProducts />
         <PlatformFeatures />
         <NewsletterCTA />
         <FinalCTA />

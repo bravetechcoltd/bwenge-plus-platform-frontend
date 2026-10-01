@@ -753,6 +753,15 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
         href: "/dashboard/system-admin/onboarding",
       },
       {
+        // FI-001. The homepage instructor section was a constant in the
+        // public page, so changing who the platform thanks for their work
+        // needed a code change. It is database-backed now, and this is where
+        // it is curated.
+        title: "Homepage Instructors",
+        icon: GraduationCap,
+        href: "/dashboard/system-admin/instructors",
+      },
+      {
         title: "Assign Course",
         icon: BookOpen,
         href: "/dashboard/system-admin/courses/assign-public",

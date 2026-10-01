@@ -18,6 +18,7 @@ import {
 import { ThumbnailUpload } from "../thumbnail-upload"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Course, User, CourseCategory, Institution } from "@/types"
+import { useDuplicateTitleCheck } from "@/lib/courses/duplicate-check";
 
 interface CourseDetailsStepProps {
   courseData: Partial<Course>
@@ -164,7 +165,20 @@ export function CourseDetailsStep({
     courseData.level &&
     courseData.language?.trim()
 
+  /*
+   * CI-001. Advisory only: it asks the server whether this title is already
+   * taken in the scope the course would be created in, debounced so typing
+   * does not fire a request per character. The authoritative refusal lives
+   * in createCourse and in the unique index behind it.
+   */
+  const titleDuplicate = useDuplicateTitleCheck(courseData?.title, {
+    courseType: courseData?.course_type ?? null,
+    institutionId: courseData?.institution_id ?? null,
+    excludeId: courseData?.id ?? null,
+  });
+
   if (loading) {
+
     return (
       <div className="flex items-center justify-center py-24">
         <Loader2 className="w-8 h-8 animate-spin text-[#0158B7]" />
@@ -210,9 +224,24 @@ export function CourseDetailsStep({
               placeholder="e.g., Complete React Development Course"
               value={courseData.title || ""}
               onChange={(e) => setCourseData({ ...courseData, title: e.target.value })}
-              className={inp}
+              className={`${inp} ${titleDuplicate.isDuplicate ? "border-destructive focus-visible:ring-destructive" : ""}`}
               required
+              aria-invalid={titleDuplicate.isDuplicate || undefined}
             />
+
+            {/*
+              CI-001. A title that already exists is refused on submit, by the
+              server and by a unique index behind it. Saying so here means it is
+              found while it can still be changed in one keystroke, rather than
+              at the end of the wizard. The warning is advice and never blocks
+              typing — the refusal that matters happens on save.
+            */}
+            {titleDuplicate.isChecking && (
+              <p className="text-xs text-muted-foreground">Checking the title…</p>
+            )}
+            {titleDuplicate.isDuplicate && (
+              <p className="text-xs text-destructive">{titleDuplicate.message}</p>
+            )}
           </div>
 
           {/* Description */}

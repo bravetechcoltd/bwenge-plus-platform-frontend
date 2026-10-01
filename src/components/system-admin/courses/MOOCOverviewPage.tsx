@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -90,17 +90,144 @@ export default function MOOCOverviewPage() {
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("DESC");
 
+  /*
+   * ───────────────────────── MO-001: one fetch ─────────────────────────
+   *
+   * This page used to go back to the server for every interaction. Typing a
+   * six-letter title fired six requests, each of which joined courses to
+   * modules to lessons and recomputed the whole dashboard — the charts, the
+   * level distribution, the six-month enrolment trend — to change which rows
+   * were listed. Opening a filter, changing a sort or turning a page did the
+   * same. The result was a page that felt broken while being used normally.
+   *
+   * The dataset is now fetched once, with limit=all, and held here. Search,
+   * filtering, sorting and paging all run against it in the browser, so they
+   * are instant and cost nothing. Refresh is explicit, and is the way to pick
+   * up courses created or changed since the page was opened.
+   *
+   * serverPaged is the honest fallback: when the catalogue is larger than the
+   * server's ceiling the response says so, and the page keeps asking the
+   * server rather than quietly searching a subset as though it were
+   * everything.
+   */
+  const [allCourses, setAllCourses] = useState<any[]>([]);
+  const [serverTotal, setServerTotal] = useState(0);
+  const [serverPaged, setServerPaged] = useState(false);
+  const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null);
+  const [localPage, setLocalPage] = useState(1);
+  const PAGE_SIZE = 20;
+
+  /*
+   * Incremental, case-insensitive, word-by-word matching.
+   *
+   * The old search sent the box's whole contents to the server as one ILIKE
+   * pattern, so "pipeline statistics" matched only a title containing that
+   * exact phrase in that exact order — a title called "Statistics for Data
+   * Pipelines" did not match. Every word now has to appear somewhere in the
+   * course's searchable text, in any order, as a prefix or an infix, which is
+   * what a person typing into a search box expects.
+   */
+  const searchableText = useCallback((course: any) => {
+    return [
+      course?.title,
+      course?.description,
+      course?.short_description,
+      course?.level,
+      course?.status,
+      course?.category?.name,
+      course?.category_name,
+      course?.instructor?.first_name,
+      course?.instructor?.last_name,
+      course?.instructor?.email,
+      course?.institution?.name,
+      Array.isArray(course?.tags) ? course.tags.join(" ") : course?.tags,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+  }, []);
+
+  const matchedCourses = useMemo(() => {
+    // Server-paged mode means the server already applied all of this.
+    if (serverPaged) return allCourses;
+
+    const terms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
+
+    return allCourses.filter((course) => {
+      if (filters.status && course?.status !== filters.status) return false;
+      if (filters.level && course?.level !== filters.level) return false;
+      if (terms.length === 0) return true;
+      const haystack = searchableText(course);
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [allCourses, filters, searchQuery, searchableText, serverPaged]);
+
+  const sortedCourses = useMemo(() => {
+    if (serverPaged) return matchedCourses;
+
+    const direction = sortDir === "ASC" ? 1 : -1;
+    return [...matchedCourses].sort((a, b) => {
+      const left = a?.[sortBy];
+      const right = b?.[sortBy];
+
+      // Titles compare as words; everything else here is a number or a date.
+      if (sortBy === "title") {
+        return String(left || "").localeCompare(String(right || "")) * direction;
+      }
+      if (sortBy === "created_at") {
+        return (new Date(left || 0).getTime() - new Date(right || 0).getTime()) * direction;
+      }
+      return ((Number(left) || 0) - (Number(right) || 0)) * direction;
+    });
+  }, [matchedCourses, sortBy, sortDir, serverPaged]);
+
+  const localTotalPages = Math.max(1, Math.ceil(sortedCourses.length / PAGE_SIZE));
+
+  /*
+   * A filter that shrinks the result set below the current page would
+   * otherwise leave the page showing nothing with no way to tell why.
+   */
+  useEffect(() => {
+    if (localPage > localTotalPages) setLocalPage(1);
+  }, [localPage, localTotalPages]);
+
+  const visibleCourses = useMemo(() => {
+    if (serverPaged) return sortedCourses;
+    const start = (localPage - 1) * PAGE_SIZE;
+    return sortedCourses.slice(start, start + PAGE_SIZE);
+  }, [sortedCourses, localPage, serverPaged]);
+
+  /* What the header and the pager describe: the rows actually on screen. */
+  const view = serverPaged
+    ? {
+        page: pagination.page,
+        limit: pagination.limit,
+        total: Number(pagination.total) || 0,
+        totalPages: pagination.totalPages,
+      }
+    : {
+        page: localPage,
+        limit: PAGE_SIZE,
+        total: sortedCourses.length,
+        totalPages: localTotalPages,
+      };
+
+  /*
+   * MO-001. Called on mount and on Refresh, and nowhere else.
+   *
+   * No filter, search or sort is sent: the whole MOOC catalogue comes back
+   * and the browser does the rest. Sending them would defeat the point — the
+   * response would be a filtered subset, and a local search over it would
+   * silently answer from part of the catalogue.
+   */
   const fetchOverview = useCallback(async (page = 1) => {
     setOverviewLoading(true);
     try {
       const params = new URLSearchParams();
-      params.append("page", String(page));
-      params.append("limit", "20");
-      params.append("sort_by", sortBy);
-      params.append("sort_dir", sortDir);
-      if (filters.status) params.append("status", filters.status);
-      if (filters.level) params.append("level", filters.level);
-      if (searchQuery) params.append("search", searchQuery);
+      params.append("page", "1");
+      params.append("limit", "all");
+      params.append("sort_by", "created_at");
+      params.append("sort_dir", "DESC");
 
       const res = await api.get(`/courses/admin/mooc-overview?${params.toString()}`);
       if (res.data.success) {
@@ -108,10 +235,26 @@ export default function MOOCOverviewPage() {
         setLevelDistribution(res.data.data.level_distribution || []);
         setEnrollmentTrend(res.data.data.enrollment_trend || []);
         setTopCourses(res.data.data.top_courses || []);
-        // Also set paginated courses
+        const fetched = Array.isArray(res.data.data.courses) ? res.data.data.courses : [];
+        const pag = res.data.data.pagination || {};
+
+        setAllCourses(fetched);
+        setServerTotal(Number(pag.total) || fetched.length);
+        /*
+         * fetched_all is the server saying it sent the canonical dataset. Its
+         * absence — an older server, or a catalogue past the ceiling — puts
+         * the page back into asking the server, which is correct rather than
+         * convenient.
+         */
+        setServerPaged(!(pag.fetched_all === true && pag.has_more !== true));
+        setLastLoadedAt(new Date());
+        setLocalPage(1);
+
+        // The store still holds the list, so anything else reading
+        // state.courses keeps working exactly as before.
         dispatch({ type: "courses/getAllWithFullInfo/fulfilled", payload: {
-          courses: res.data.data.courses,
-          pagination: res.data.data.pagination,
+          courses: fetched,
+          pagination: pag,
           filters_applied: {}
         }});
       }
@@ -125,6 +268,7 @@ export default function MOOCOverviewPage() {
   useEffect(() => { fetchOverview(); }, []);
 
   const handleSort = (field: string) => {
+    setLocalPage(1);
     if (sortBy === field) {
       setSortDir(prev => prev === "ASC" ? "DESC" : "ASC");
     } else {
@@ -133,7 +277,15 @@ export default function MOOCOverviewPage() {
     }
   };
 
-  const handleSearch = () => fetchOverview(1);
+  /*
+   * Searching no longer goes anywhere. The box filters as it is typed, and
+   * this only returns to the first page — pressing Enter on page four of the
+   * old results otherwise showed page four of the new ones.
+   */
+  const handleSearch = () => setLocalPage(1);
+
+  /** Explicit refresh: the way to pick up courses created since page load. */
+  const handleRefresh = () => fetchOverview(1);
 
   const handlePublish = async (courseId: string) => {
     try {
@@ -380,11 +532,20 @@ export default function MOOCOverviewPage() {
                 className="w-full pl-9 pr-4 py-2.5 border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-primary"
               />
             </div>
+            {/*
+              MO-001. The search box filters the loaded dataset as it is typed,
+              so there is nothing to submit. This button now does the one thing
+              that genuinely needs the server: fetch the catalogue again, for
+              courses created or changed since the page was opened.
+            */}
             <button
-              onClick={handleSearch}
-              className="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary text-sm font-medium"
+              onClick={handleRefresh}
+              disabled={overviewLoading}
+              className="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary text-sm font-medium flex items-center gap-2 disabled:opacity-60"
+              title={lastLoadedAt ? `Loaded ${lastLoadedAt.toLocaleTimeString()}` : "Reload the catalogue"}
             >
-              Search
+              <RefreshCw className={`w-4 h-4 ${overviewLoading ? "animate-spin" : ""}`} />
+              Refresh
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -425,18 +586,22 @@ export default function MOOCOverviewPage() {
                 </select>
               </div>
               <div className="md:col-span-2 flex items-end gap-2">
+                {/*
+                  Filters apply the moment they change, so there is no Apply
+                  button to forget to press. Clearing is local too — it must not
+                  cost a round trip to undo a dropdown.
+                */}
                 <button
-                  onClick={() => { setFilters({ status: "", level: "" }); setSearchQuery(""); fetchOverview(1); }}
+                  onClick={() => { setFilters({ status: "", level: "" }); setSearchQuery(""); setLocalPage(1); }}
                   className="flex items-center gap-1 px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted/50"
                 >
                   <X className="w-3.5 h-3.5" /> Clear
                 </button>
-                <button
-                  onClick={() => fetchOverview(1)}
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary"
-                >
-                  Apply
-                </button>
+                <p className="flex-1 text-xs text-muted-foreground">
+                  {serverPaged
+                    ? "This catalogue is larger than one page, so filtering asks the server."
+                    : `Filtering ${serverTotal.toLocaleString()} loaded courses — no reload needed.`}
+                </p>
               </div>
             </div>
           )}
@@ -448,7 +613,9 @@ export default function MOOCOverviewPage() {
             <h3 className="font-semibold text-foreground">
               All MOOC Courses
               <span className="ml-2 text-sm text-muted-foreground font-normal">
-                ({num(pagination.total).toLocaleString()} total)
+                {/* What is listed, and out of how many when a filter narrows it. */}
+                ({view.total.toLocaleString()}
+                {view.total !== serverTotal ? ` of ${serverTotal.toLocaleString()}` : ""} total)
               </span>
             </h3>
           </div>
@@ -458,7 +625,7 @@ export default function MOOCOverviewPage() {
               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
               <p className="mt-3 text-muted-foreground text-sm">Loading courses...</p>
             </div>
-          ) : courses.length === 0 ? (
+          ) : visibleCourses.length === 0 ? (
             <div className="p-12 text-center">
               <Globe className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">No MOOC courses found</p>
@@ -495,7 +662,7 @@ export default function MOOCOverviewPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {courses.map(course => (
+                  {visibleCourses.map(course => (
                     <tr key={course.id} className="hover:bg-primary/10/20 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -587,36 +754,41 @@ export default function MOOCOverviewPage() {
         </div>
 
         {/* Pagination */}
-        {pagination.totalPages > 1 && (
+        {/*
+          MO-001. Paging slices the dataset already in memory, so turning a
+          page is instant and costs nothing. In server-paged mode the same
+          control asks the server, as it always did.
+        */}
+        {view.totalPages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {(pagination.page - 1) * pagination.limit + 1} –{" "}
-              {Math.min(pagination.page * pagination.limit, num(pagination.total))} of{" "}
-              {num(pagination.total).toLocaleString()} courses
+              Showing {(view.page - 1) * view.limit + 1} –{" "}
+              {Math.min(view.page * view.limit, view.total)} of{" "}
+              {view.total.toLocaleString()} courses
             </p>
             <div className="flex gap-1">
               <button
-                onClick={() => fetchOverview(pagination.page - 1)}
-                disabled={pagination.page === 1}
+                onClick={() => (serverPaged ? fetchOverview(view.page - 1) : setLocalPage(p => p - 1))}
+                disabled={view.page === 1}
                 className="px-3 py-1.5 border border-border rounded-lg text-sm hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 ← Prev
               </button>
-              {[...Array(Math.min(pagination.totalPages, 7))].map((_, i) => {
+              {[...Array(Math.min(view.totalPages, 7))].map((_, i) => {
                 const pg = i + 1;
                 return (
                   <button
                     key={pg}
                     onClick={() => fetchOverview(pg)}
-                    className={`px-3 py-1.5 rounded-lg text-sm ${pagination.page === pg ? "bg-primary text-white" : "border border-border hover:bg-muted/50"}`}
+                    className={`px-3 py-1.5 rounded-lg text-sm ${view.page === pg ? "bg-primary text-white" : "border border-border hover:bg-muted/50"}`}
                   >
                     {pg}
                   </button>
                 );
               })}
               <button
-                onClick={() => fetchOverview(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
+                onClick={() => (serverPaged ? fetchOverview(view.page + 1) : setLocalPage(p => p + 1))}
+                disabled={view.page === view.totalPages}
                 className="px-3 py-1.5 border border-border rounded-lg text-sm hover:bg-muted/50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next →
