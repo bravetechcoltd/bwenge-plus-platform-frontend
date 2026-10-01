@@ -5,7 +5,10 @@
 import { CourseSearch } from "@/components/courses/course-search"
 import Image from "next/image"
 import api from "@/lib/api"
-import AboutSections, { ABOUT_NAV_ITEMS } from "@/components/home/about-sections"
+import AboutSections, {
+  ABOUT_NAV_ITEMS,
+  ABOUT_NAV_HEADING,
+} from "@/components/home/about-sections"
 import type React from "react"
 import { hardSignOut } from "@/lib/auth/hard-sign-out"
 import { motion, AnimatePresence } from "framer-motion"
@@ -521,20 +524,39 @@ function Navigation() {
                     transition={{ duration: 0.14 }}
                     className="absolute left-0 top-full z-50 w-72 pt-2"
                   >
-                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-                      <p className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                        About BWENGE+
-                      </p>
-                      <div className="p-1">
+                    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+                      {/*
+                        The reference opens this menu with a short statement of
+                        what is behind it, then the five destinations. Each row
+                        carries an icon and one line, because a bare list of five
+                        similar titles — Vision, Mission, Values — gives no clue
+                        which one answers the question being asked.
+                      */}
+                      <div className="border-b border-border px-4 py-3">
+                        <p className="text-sm font-bold text-foreground">{ABOUT_NAV_HEADING.title}</p>
+                        <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                          {ABOUT_NAV_HEADING.description}
+                        </p>
+                      </div>
+                      <div className="p-1.5">
                         {ABOUT_NAV_ITEMS.map((item) => (
                           <a
                             key={item.href}
                             href={item.href}
                             onClick={() => setAboutOpen(false)}
-                            className="block rounded-md px-3 py-2 transition-colors hover:bg-accent"
+                            className="flex items-start gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-accent focus:bg-accent focus:outline-none"
                           >
-                            <span className="block text-sm font-medium text-foreground">{item.label}</span>
-                            <span className="block text-xs text-muted-foreground">{item.description}</span>
+                            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ backgroundColor: "rgba(91,78,150,0.10)", color: "#5B4E96" }}>
+                              <item.icon className="h-4 w-4" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-[13px] font-semibold leading-tight text-foreground">
+                                {item.label}
+                              </span>
+                              <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">
+                                {item.description}
+                              </span>
+                            </span>
                           </a>
                         ))}
                       </div>
@@ -2465,13 +2487,6 @@ export default function BwengePlusPage() {
         
         <Navigation />
         <HeroSection />
-        {/*
-          HP-002. BWENGE+ → Purpose → Who We Are → Vision → Mission → Core
-          Values, and then the learning ecosystem below: what the platform is
-          before what it currently offers. Every existing section follows,
-          unchanged and in its original order.
-        */}
-        <AboutSections />
         <CategoryFilters
           onCategoryChange={setActiveCategory}
           activeCategory={activeCategory}
@@ -2479,6 +2494,14 @@ export default function BwengePlusPage() {
         <FeaturedCourses key={activeCategory} activeCategory={activeCategory} />
         <TopInstructors />
         <OurProducts />
+        {/*
+          HP-002. About BWENGE+ → Who We Are → Vision + Mission → Core Values,
+          placed after the existing homepage content rather than above it: the
+          hero and the course sections are what a returning visitor comes for,
+          and the institutional reading belongs below them. Every existing
+          section keeps its position and its content.
+        */}
+        <AboutSections />
         <PlatformFeatures />
         <NewsletterCTA />
         <FinalCTA />
