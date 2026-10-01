@@ -742,9 +742,9 @@ function MissionSection() {
 }
 
 /**
- * One band for both, with Kigali clipped into a chevron at the left edge that
- * points into the vision copy — the reference's composition, and the reason
- * these two do not each need a band of their own.
+ * One band for both, with Kigali in the left column. They are one thought —
+ * where the platform is going and how it gets there — and two full-width bands
+ * would double the height for no added meaning.
  */
 function VisionAndMission() {
   return (
@@ -754,28 +754,27 @@ function VisionAndMission() {
     >
       {/*
         All three columns in one grid, inside the same max-w-7xl container every
-        other band uses.
+        other band uses, with the left and right padding equal.
 
-        Kigali was positioned absolutely against the viewport, with the text
-        pushed clear of it by a fixed `pl-[12rem]`. Two things were wrong with
-        that. The indent was a guess rather than a measurement, so the vision
-        heading started at a different x from every other heading on the page —
-        the inconsistency in the screenshot. And an absolute element is out of
-        the flow, so the band's height came from the text alone and the
-        photograph floated inside it instead of sitting level with the columns
-        beside it.
+        Kigali was positioned absolutely against the viewport and the text was
+        pushed clear of it by a fixed `pl-[12rem]`, an indent that was a guess
+        rather than a measurement — so this band started at a different x from
+        every other one on the page. Then it bled one container-padding to the
+        left, which was the reference's own composition but still left this the
+        only section on the page whose left edge did not match its right.
 
-        As a grid column it aligns to the same container as everything else. The
-        negative margin is the one deliberate exception: it is exactly the
-        container's own padding, so the image still reaches the viewport edge —
-        the reference's bleed — without the text losing the page's left margin.
+        It is an ordinary grid column now, with no negative margin: the
+        photograph starts where every other section's content starts and ends
+        where every other section's content ends. Uniformity across the page is
+        worth more than reproducing one bleed, because the bleed is only visible
+        against the sections above and below it.
       */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.92fr)_minmax(0,1.3fr)] lg:gap-8">
           <Figure
             src="/about/kigali.png"
             alt="Kigali"
-            className="hidden h-[260px] w-full object-contain object-left lg:-ml-6 lg:block"
+            className="hidden h-[260px] w-full rounded-2xl object-cover lg:block"
           />
 
           <VisionSection />
