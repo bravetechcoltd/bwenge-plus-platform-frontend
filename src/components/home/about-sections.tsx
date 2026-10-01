@@ -174,19 +174,13 @@ function Figure({
 }) {
   const [failed, setFailed] = useState(false)
 
-  if (failed) {
-    return (
-      <div
-        aria-hidden
-        className={className}
-        style={{
-          ...style,
-          background:
-            "linear-gradient(150deg, rgba(143,123,201,0.22), rgba(47,107,224,0.14) 55%, rgba(18,145,106,0.16))",
-        }}
-      />
-    )
-  }
+  /*
+   * A missing file leaves the slot empty rather than drawing a placeholder.
+   * These images are cut-outs floating on the band's own wash, not cards, so
+   * there is no frame to hold open — a coloured rectangle in the gap would be
+   * more conspicuous than the gap.
+   */
+  if (failed) return null
 
   return (
     <img
@@ -380,10 +374,9 @@ function AboutBwengeSection() {
             <div className="relative grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
               <BwengeOrbit />
               <Figure
-                src="/about/learner.jpg"
+                src="/about/learner.png"
                 alt="A BWENGE+ learner studying on a laptop"
-                className="hidden h-[300px] w-[190px] rounded-2xl sm:block"
-                style={{ boxShadow: "var(--bw-shadow-lg)" }}
+                className="hidden h-[300px] w-[215px] object-contain sm:block"
               />
             </div>
           </div>
@@ -596,10 +589,9 @@ function WhoWeAreSection() {
           <BwengeEcosystem />
 
           <Figure
-            src="/about/community.jpg"
+            src="/about/community.png"
             alt="Educators and learners collaborating around a laptop"
-            className="hidden h-[310px] w-full rounded-2xl xl:block"
-            style={{ boxShadow: "var(--bw-shadow-lg)" }}
+            className="hidden h-[300px] w-full object-contain xl:block"
           />
         </div>
       </div>
@@ -744,24 +736,18 @@ function MissionSection() {
 function VisionAndMission() {
   return (
     <section className="relative overflow-hidden py-14 sm:py-16" style={{ ...BRAND, backgroundColor: "#FFFFFF" }}>
-      <div
-        aria-hidden
-        className="absolute left-0 top-1/2 hidden h-[260px] w-[230px] -translate-y-1/2 xl:block"
-        style={{ clipPath: "polygon(0 0, 72% 0, 100% 50%, 72% 100%, 0 100%)" }}
-      >
-        <Figure src="/about/kigali.jpg" alt="Kigali" className="h-full w-full" />
-      </div>
-      {/* the translucent chevrons the reference lays over the photograph's point */}
-      <div
-        aria-hidden
-        className="absolute left-[150px] top-1/2 hidden h-[260px] w-[120px] -translate-y-1/2 xl:block"
-        style={{
-          clipPath: "polygon(0 0, 45% 0, 100% 50%, 45% 100%, 0 100%)",
-          background: "linear-gradient(120deg, rgba(143,123,201,0.75), rgba(91,78,150,0.55))",
-        }}
+      {/*
+        Kigali, cut from the reference with the chevron it is already set in.
+        No clip-path and no overlay: the shape is in the image, and clipping a
+        shape onto a shape is what produced the ragged edge before.
+      */}
+      <Figure
+        src="/about/kigali.png"
+        alt="Kigali"
+        className="absolute left-0 top-1/2 hidden h-[240px] w-[170px] -translate-y-1/2 object-contain xl:block"
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 xl:pl-[17rem]">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 xl:pl-[13rem]">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-10">
           <VisionSection />
           <div className="lg:border-l lg:pl-10" style={{ borderColor: "var(--bw-line)" }}>
