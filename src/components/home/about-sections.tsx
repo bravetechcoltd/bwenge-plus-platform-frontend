@@ -295,7 +295,7 @@ function AboutBwengeSection() {
   return (
     <section
       id="about"
-      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      className="relative scroll-mt-20 lg:scroll-mt-[8rem] overflow-hidden py-14 sm:py-16"
       style={{ ...BRAND, backgroundColor: "#FBFAFE" }}
     >
       {/* the washes behind the illustration, as in the reference */}
@@ -553,7 +553,7 @@ function WhoWeAreSection() {
   return (
     <section
       id="who-we-are"
-      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      className="relative scroll-mt-20 lg:scroll-mt-[8rem] overflow-hidden py-14 sm:py-16"
       style={{ ...BRAND, backgroundColor: "#FBFAFE" }}
     >
       <Wash className="-left-24 top-10 h-[300px] w-[360px]" color="#DCD7F3" opacity={0.4} />
@@ -650,7 +650,7 @@ const MISSION_ITEMS: { icon: any; title: string; body: string; tint: TintName }[
 
 function VisionSection() {
   return (
-    <div id="our-vision" className="scroll-mt-20">
+    <div id="our-vision" className="scroll-mt-20 lg:scroll-mt-[8rem]">
       <Eyebrow>Our Vision</Eyebrow>
       <Heading size="md">Our Vision</Heading>
       <p className="mt-4 max-w-[27rem] text-[12.5px] leading-[1.85] text-muted-foreground">
@@ -723,7 +723,7 @@ function MissionItem({
 
 function MissionSection() {
   return (
-    <div id="our-mission" className="scroll-mt-20">
+    <div id="our-mission" className="scroll-mt-20 lg:scroll-mt-[8rem]">
       <Eyebrow>Our Mission</Eyebrow>
       <Heading size="md">Our Mission</Heading>
       <p className="mt-4 text-[12.5px] leading-[1.85] text-muted-foreground">
@@ -870,7 +870,7 @@ function CoreValuesSection() {
   return (
     <section
       id="core-values"
-      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      className="relative scroll-mt-20 lg:scroll-mt-[8rem] overflow-hidden py-14 sm:py-16"
       style={{ ...BRAND, backgroundColor: "var(--bw-wash)" }}
     >
       <Wash className="-left-20 -top-10 h-[280px] w-[340px]" color="#DCD7F3" opacity={0.45} />

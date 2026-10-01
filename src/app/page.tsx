@@ -575,19 +575,6 @@ function Navigation() {
             </div>
           </nav>
 
-          {/*
-            The same search as every other bar (CS-001).
-
-            Not a fourth implementation: this is the component the catalogue,
-            an institution's catalogue and a course page already use, so a
-            query typed here returns the same courses in the same order, and
-            clicking a result signed out opens the same login modal and
-            returns to the same course afterwards.
-          */}
-          <div className="hidden min-w-0 flex-1 justify-center lg:flex">
-            <CourseSearch className="w-full max-w-md" />
-          </div>
-
           {/* User Actions */}
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
             {/* Theme Toggle */}
@@ -830,6 +817,31 @@ function Navigation() {
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+        </div>
+
+        {/*
+          NAV-001. The search on its own row.
+
+          It used to sit between the nav links and the account controls in
+          the 64px row, taking whatever width was left after both — which
+          on a laptop is a short box wedged between two groups of
+          unrelated controls, and the thing it is competing with for that
+          width is the navigation itself.
+
+          A row of its own gives it the container's full width and leaves
+          the nav row to the things that belong together: brand, sections,
+          account. The row is hidden below lg, where the search already
+          lives inside the mobile menu and a second bar would eat a third
+          of a phone screen before any content.
+
+          Still the same component the catalogue, an institution's
+          catalogue and a course page use (CS-001), so a query typed here
+          returns the same courses in the same order, and clicking a
+          result signed out opens the same login modal and comes back to
+          the same course.
+        */}
+        <div className="hidden border-t border-border/60 py-2.5 lg:block">
+          <CourseSearch className="w-full" />
         </div>
 
         {/* Mobile Menu */}
@@ -1075,7 +1087,10 @@ function HeroSection() {
   )
 
   return (
-    <section className="pt-16 bg-background">
+    // The header is fixed, so this padding is what stops it covering the top of
+    // the page. It gains the height of the search row at lg, which is exactly
+    // where that row appears. The sidebar below is pinned to the same offset.
+    <section className="bg-background pt-16 lg:pt-[7.25rem]">
       <div className="flex min-h-[calc(100vh-4rem)]">
         <aside
           className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-300 z-40 overflow-y-auto ${isSidebarOpen ? "w-64" : "w-0 md:w-12"
@@ -1846,7 +1861,7 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
 
   if (isLoading) {
     return (
-      <section id="courses" className="py-12 bg-muted/50">
+      <section id="courses" className="scroll-mt-20 py-12 bg-muted/50 lg:scroll-mt-[8rem]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -1876,7 +1891,7 @@ function FeaturedCourses({ activeCategory }: { activeCategory: string }) {
   }
 
   return (
-    <section id="courses" className="py-12 bg-muted/50">
+    <section id="courses" className="scroll-mt-20 py-12 bg-muted/50 lg:scroll-mt-[8rem]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -2039,7 +2054,7 @@ function ProductCard({ product }: { product: (typeof BWENGE_PRODUCTS)[number] })
 
 function OurProducts() {
   return (
-    <section id="products" className="py-6 bg-background">
+    <section id="products" className="scroll-mt-20 py-6 bg-background lg:scroll-mt-[8rem]">
       <div className="max-w-7xl mx-auto px-3">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold mb-1">Our Products</h2>
@@ -2126,7 +2141,7 @@ function TopInstructors() {
   if (!isLoading && instructors.length === 0) return null
 
   return (
-    <section id="instructors" className="py-6 bg-muted/50">
+    <section id="instructors" className="scroll-mt-20 py-6 bg-muted/50 lg:scroll-mt-[8rem]">
       <div className="max-w-7xl mx-auto px-3">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold mb-1">It’s truly inspiring to see your effort contributing to my future.</h2>
