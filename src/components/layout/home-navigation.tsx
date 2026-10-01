@@ -400,14 +400,17 @@ export default function HomeNavigation() {
       <header className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-14">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="font-bold text-lg text-foreground">BwengePlus</div>
-                <div className="text-xs text-muted-foreground">Never Stop Learning</div>
-              </div>
+            {/* The same mark as the loaded bar, so it does not change on hydration. */}
+            <Link href="/" className="flex items-center" aria-label="BWENGE+ home">
+              <Image
+                src="/bwenge-plus-mark.png"
+                alt="BWENGE+"
+                width={512}
+                height={512}
+                priority
+                unoptimized
+                className="h-10 w-10 object-contain"
+              />
             </Link>
             <div className="w-8 h-8" />
           </div>
@@ -424,38 +427,38 @@ export default function HomeNavigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center gap-3 lg:gap-5">
           {/*
-            HP-001. This was a graduation-cap glyph inside a coloured square —
-            a placeholder standing in for the mark, not the mark itself. The
-            real logo ships in public/BwengePlusLogo.png.
+            LOGO-001. The mark alone, with no wordmark beside it.
 
-            next/image is given explicit intrinsic dimensions and a square
-            box with object-contain, so a logo of any aspect ratio is letter-
-            boxed rather than stretched, and the row height never shifts as it
-            loads. priority, because it is above the fold on every page view.
+            It used to be a 36px box holding BwengePlusLogo.png — which is the
+            Bwenge Collaboration Space poster, 1536x1024 with a solid blue
+            background baked in. Letterboxed into that box it was a blue
+            rectangle with something unreadable inside, and the two lines of
+            text beside it were doing the work the logo should do.
+
+            public/bwenge-plus-mark.png is the actual BWENGE+ mark: square,
+            transparent, 512px, with the plus at the top right. 40px here and
+            40px in the footer, so the two agree.
+
+            unoptimized, because this is already a small square PNG — putting
+            it through the image pipeline costs a request and returns the same
+            pixels. priority, because it is above the fold on every view.
           */}
-          <Link href="/" className="flex shrink-0 items-center gap-2 group">
-            <motion.div
-              className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg"
-              whileHover={{ scale: 1.05, rotate: 5 }}
+          <Link href="/" className="group flex shrink-0 items-center" aria-label="BWENGE+ home">
+            <motion.span
+              className="block"
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Image
-                src="/BwengePlusLogo.png"
-                alt="BwengePlus"
-                width={72}
-                height={72}
+                src="/bwenge-plus-mark.png"
+                alt="BWENGE+"
+                width={512}
+                height={512}
                 priority
-                className="h-full w-full object-contain"
+                unoptimized
+                className="h-10 w-10 object-contain"
               />
-            </motion.div>
-            <div className="leading-tight">
-              <div className="text-base font-bold leading-tight text-foreground transition-colors sm:text-lg">
-                BwengePlus
-              </div>
-              <div className="hidden text-[11px] leading-tight text-muted-foreground sm:block">
-                Never Stop Learning
-              </div>
-            </div>
+            </motion.span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -1496,27 +1496,22 @@ function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              {/*
-                The real mark, as in the navigation. This was still the
-                placeholder glyph in a coloured square, so the footer and the
-                header showed two different logos on the same page.
-              */}
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-                <Image
-                  src="/BwengePlusLogo.png"
-                  alt="BwengePlus"
-                  width={72}
-                  height={72}
-                  className="h-7 w-7 object-contain"
-                />
-              </span>
-              <span>
-                <span className="block text-base font-bold leading-tight">BwengePlus</span>
-                <span className="block text-[11px] leading-tight text-white/70">
-                  Never Stop Learning
-                </span>
-              </span>
+            {/*
+              LOGO-001. The same mark as the navigation, at the same 40px, and
+              alone — the wordmark beside it was doing the logo's job.
+
+              The white variant, because the purple tile would disappear into
+              a purple footer. Same geometry, inverted: one mark, two surfaces.
+            */}
+            <Link href="/" className="inline-flex items-center" aria-label="BWENGE+ home">
+              <Image
+                src="/bwenge-plus-mark-white.png"
+                alt="BWENGE+"
+                width={512}
+                height={512}
+                unoptimized
+                className="h-10 w-10 object-contain"
+              />
             </Link>
 
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-white/75">
