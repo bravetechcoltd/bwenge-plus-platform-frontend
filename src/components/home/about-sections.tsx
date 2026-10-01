@@ -57,14 +57,18 @@ import {
  *
  * ── The photographs ───────────────────────────────────────────────────────
  *
- * The reference uses three. They are not in this repository, and stock
- * photographs of people standing in for this platform's community would be a
- * claim about who uses it. `Figure` holds each slot at its exact size and
- * renders the file when it exists, so dropping `/about/learner.jpg`,
- * `/about/community.jpg` and `/about/kigali.jpg` into `public` completes the
- * three compositions with no code change. Until then the slot carries the same
- * colour wash the reference puts behind the photo, so nothing shifts and
- * nothing looks broken.
+ * The reference uses three, in About, Who We Are and Vision; Mission and Core
+ * Values have none, and adding any there would depart from it.
+ *
+ * This environment has no network access, so no stock library was reachable.
+ * The three are cut from the reference PNG itself with sharp and live in
+ * /public/about — which makes them exact rather than approximate, since they
+ * are the images the design was drawn around.
+ *
+ * Each crop already carries its own composition: the colour shapes behind the
+ * learner, the geometry behind the group, the chevron around Kigali. So they
+ * are frameless cut-outs on the band wash, not cards — a rounded frame would
+ * put a second shape around one that already has its own.
  */
 
 const BRAND = {
@@ -362,7 +366,7 @@ function AboutBwengeSection() {
 
             <p
               aria-hidden
-              className="absolute -top-4 right-0 hidden max-w-[8.5rem] text-right text-[13.5px] font-medium italic leading-[1.35] text-foreground/70 xl:block"
+              className="absolute -top-4 right-0 hidden max-w-[8.5rem] text-right text-[13.5px] font-medium italic leading-[1.35] text-foreground/70 lg:block"
             >
               Together
               <br />
@@ -557,7 +561,7 @@ function WhoWeAreSection() {
       <Wash className="right-[8%] bottom-0 h-[260px] w-[300px]" color="#CFE0FA" opacity={0.4} />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.76fr)_minmax(0,1.12fr)_minmax(0,0.6fr)] xl:items-center xl:gap-7">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.76fr)_minmax(0,1.12fr)_minmax(0,0.58fr)] lg:items-center lg:gap-6">
           <div>
             <Eyebrow>Our Community</Eyebrow>
             <Heading size="md">Who We Are</Heading>
@@ -591,7 +595,7 @@ function WhoWeAreSection() {
           <Figure
             src="/about/community.png"
             alt="Educators and learners collaborating around a laptop"
-            className="hidden h-[300px] w-full object-contain xl:block"
+            className="hidden h-[300px] w-full object-contain lg:block"
           />
         </div>
       </div>
@@ -744,10 +748,10 @@ function VisionAndMission() {
       <Figure
         src="/about/kigali.png"
         alt="Kigali"
-        className="absolute left-0 top-1/2 hidden h-[240px] w-[170px] -translate-y-1/2 object-contain xl:block"
+        className="absolute left-0 top-1/2 hidden h-[240px] w-[170px] -translate-y-1/2 object-contain lg:block"
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 xl:pl-[13rem]">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:pl-[12rem]">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-10">
           <VisionSection />
           <div className="lg:border-l lg:pl-10" style={{ borderColor: "var(--bw-line)" }}>
