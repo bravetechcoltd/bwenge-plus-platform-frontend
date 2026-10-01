@@ -4,12 +4,13 @@ import { useState } from "react"
 import {
   ArrowRight,
   Award,
+  BadgeCheck,
+  BarChart3,
   BookOpen,
   Briefcase,
   Building2,
   Check,
   GraduationCap,
-  Handshake,
   Infinity as InfinityIcon,
   Landmark,
   Layers,
@@ -20,7 +21,6 @@ import {
   Share2,
   ShieldCheck,
   Target,
-  TrendingUp,
   Users,
   Users2,
 } from "lucide-react"
@@ -30,71 +30,71 @@ import {
  * BWENGE+ information sections (HP-002)
  * ============================================================================
  *
- * Built to "/public/BWENGE+ Educational Platform Overview.png", section by
- * section and in its proportions.
+ * Built to "/public/BWENGE+ Educational Platform Overview.png".
  *
- * ── What the reference is ─────────────────────────────────────────────────
+ * ── What makes the reference look the way it does ─────────────────────────
  *
- * Four bands, each a wide editorial split rather than a stack of full-width
- * blocks:
+ * Three things, and the first two are what a summary of it always loses:
  *
- *   1. About BWENGE+   text on the left  | orbit diagram + photo on the right
- *   2. Who We Are      text ~1/3 | hub-and-spoke diagram ~40% | photo ~27%
- *   3. Vision | Mission  one band, photo bleeding off the left edge, the two
- *                        halves divided by a hairline
- *   4. Core Values     heading column ~1/4 | three-across grid
+ *   1. The surfaces are never flat. Each band is near-white with soft, very
+ *      low-opacity colour washes behind the illustrations — lavender, cornflower,
+ *      a little green — plus a pale map silhouette behind the About orbit. Those
+ *      washes are why it reads as depth rather than as boxes on a page.
  *
- * The type is large and the bodies are small: a 36–40px heading over 13px grey
- * prose is what makes those bands read as dense without feeling cramped. The
- * icon chips are circles of tinted colour — purple, blue, green, amber, cyan —
- * never six of the same purple, and the only saturated fill on the page is the
- * ecosystem disc at the centre of each diagram.
+ *   2. The cards have almost no border. They sit on a soft, wide, low-opacity
+ *      shadow with a hairline at most. A 1px grey border on every card is the
+ *      single change that makes a layout like this look generated.
+ *
+ *   3. The type is a hard ratio: a ~34px bold heading over a 15px lead over a
+ *      12.5px body, with 10–11px copy inside the cards. The density comes from
+ *      that gap, not from cramming.
+ *
+ * Everything below follows those, plus the per-element detail the crops show:
+ * diamond markers on the orbit ring, coloured rings around the white orbit
+ * nodes, card titles tinted to their own icon colour, the raised middle card in
+ * the mission row, and the Kigali photo clipped into a chevron that points into
+ * the vision copy.
  *
  * ── The photographs ───────────────────────────────────────────────────────
  *
- * The reference places three photographs: a student with a laptop beside the
- * orbit, a group around a laptop beside the community diagram, and Kigali
- * clipped into the left edge of the vision band. Those files are not in this
- * repository, and stock photographs presented as this platform's community
- * would be a claim about who uses it.
- *
- * So `Figure` takes the exact slot each one occupies and renders the file when
- * it is there, falling back to a brand panel when it is not. Drop
- * `/about/learner.jpg`, `/about/community.jpg` and `/about/kigali.jpg` into
- * `public` and the three compositions complete themselves with no code change.
- *
- * ── Colour ────────────────────────────────────────────────────────────────
- *
- * #5B4E96 and #8F7BC9, declared once on the wrapper and read through `var()`,
- * scoped to these sections so the rest of the application's palette is
- * untouched.
+ * The reference uses three. They are not in this repository, and stock
+ * photographs of people standing in for this platform's community would be a
+ * claim about who uses it. `Figure` holds each slot at its exact size and
+ * renders the file when it exists, so dropping `/about/learner.jpg`,
+ * `/about/community.jpg` and `/about/kigali.jpg` into `public` completes the
+ * three compositions with no code change. Until then the slot carries the same
+ * colour wash the reference puts behind the photo, so nothing shifts and
+ * nothing looks broken.
  */
 
 const BRAND = {
   "--bw-primary": "#5B4E96",
+  "--bw-deep": "#4A3F80",
   "--bw-secondary": "#8F7BC9",
-  "--bw-tint": "#F6F5FC",
-  "--bw-line": "#E8E5F3",
+  "--bw-wash": "#F7F6FC",
+  "--bw-line": "#EDEBF6",
+  "--bw-shadow": "0 2px 14px rgba(42,46,90,0.07)",
+  "--bw-shadow-lg": "0 8px 28px rgba(42,46,90,0.10)",
 } as React.CSSProperties
 
 const TINT = {
-  purple: { bg: "rgba(91,78,150,0.10)", fg: "#5B4E96" },
-  violet: { bg: "rgba(143,123,201,0.16)", fg: "#6F5DB3" },
-  pink: { bg: "rgba(192,132,252,0.14)", fg: "#9333EA" },
-  green: { bg: "rgba(16,163,110,0.10)", fg: "#0E8F60" },
-  blue: { bg: "rgba(37,99,235,0.10)", fg: "#2563EB" },
-  cyan: { bg: "rgba(8,145,178,0.10)", fg: "#0891B2" },
-  amber: { bg: "rgba(217,119,6,0.12)", fg: "#B45309" },
+  purple: { bg: "#EDE9F8", fg: "#5B4E96", ring: "rgba(91,78,150,0.22)" },
+  violet: { bg: "#F0EAFB", fg: "#7A5FC0", ring: "rgba(122,95,192,0.22)" },
+  pink: { bg: "#F8E9F6", fg: "#9D4EDD", ring: "rgba(157,78,221,0.20)" },
+  blue: { bg: "#E4EDFD", fg: "#2F6BE0", ring: "rgba(47,107,224,0.20)" },
+  green: { bg: "#E3F5EC", fg: "#12916A", ring: "rgba(18,145,106,0.20)" },
+  cyan: { bg: "#E0F2FA", fg: "#0E8BB0", ring: "rgba(14,139,176,0.20)" },
+  amber: { bg: "#FDF0DC", fg: "#C97A14", ring: "rgba(201,122,20,0.22)" },
 } as const
 
 type TintName = keyof typeof TINT
 
-/* ── small shared pieces ──────────────────────────────────────────────── */
+/* ── primitives ───────────────────────────────────────────────────────── */
 
 function Chip({
   icon: Icon,
   tint = "purple",
-  size = 44,
+  size = 46,
 }: {
   icon: any
   tint?: TintName
@@ -103,14 +103,9 @@ function Chip({
   return (
     <span
       className="inline-flex shrink-0 items-center justify-center rounded-full"
-      style={{
-        height: size,
-        width: size,
-        backgroundColor: TINT[tint].bg,
-        color: TINT[tint].fg,
-      }}
+      style={{ height: size, width: size, backgroundColor: TINT[tint].bg, color: TINT[tint].fg }}
     >
-      <Icon style={{ height: size * 0.44, width: size * 0.44 }} strokeWidth={1.9} />
+      <Icon style={{ height: size * 0.42, width: size * 0.42 }} strokeWidth={1.9} />
     </span>
   )
 }
@@ -118,7 +113,7 @@ function Chip({
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em]"
+      className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.15em]"
       style={{ color: "var(--bw-secondary)" }}
     >
       {children}
@@ -126,34 +121,56 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Heading({ children }: { children: React.ReactNode }) {
+function Heading({ children, size = "lg" }: { children: React.ReactNode; size?: "lg" | "md" }) {
   return (
-    <h2 className="text-[30px] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[38px]">
+    <h2
+      className={`font-bold leading-[1.12] tracking-[-0.02em] text-foreground ${
+        size === "lg" ? "text-[28px] sm:text-[34px]" : "text-[24px] sm:text-[28px]"
+      }`}
+    >
       {children}
     </h2>
   )
 }
 
 /**
- * A photograph slot.
+ * A colour wash.
  *
- * It holds its aspect ratio whether or not the file exists, so the composition
- * beside it never shifts when the image loads or fails. Missing is the normal
- * state today, and the fallback is a quiet brand panel rather than a broken
- * icon or an empty hole.
+ * The reference's depth comes from large, very soft, low-opacity blooms behind
+ * the illustrations rather than from gradients on the cards. They are
+ * decorative and non-interactive, so they are aria-hidden and
+ * pointer-events-none, and they sit at low opacity so text over them stays at
+ * full contrast.
  */
+function Wash({
+  className,
+  color,
+  opacity = 0.5,
+}: {
+  className: string
+  color: string
+  opacity?: number
+}) {
+  return (
+    <div
+      aria-hidden
+      className={`pointer-events-none absolute rounded-full blur-3xl ${className}`}
+      style={{ backgroundColor: color, opacity }}
+    />
+  )
+}
+
+/** A photograph slot that holds its size whether or not the file is there. */
 function Figure({
   src,
   alt,
-  icon: Icon,
   className = "",
-  rounded = "rounded-2xl",
+  style,
 }: {
   src: string
   alt: string
-  icon: any
   className?: string
-  rounded?: string
+  style?: React.CSSProperties
 }) {
   const [failed, setFailed] = useState(false)
 
@@ -161,14 +178,13 @@ function Figure({
     return (
       <div
         aria-hidden
-        className={`flex items-center justify-center overflow-hidden ${rounded} ${className}`}
+        className={className}
         style={{
-          background: "linear-gradient(160deg, rgba(91,78,150,0.08), rgba(143,123,201,0.16))",
-          border: "1px solid var(--bw-line)",
+          ...style,
+          background:
+            "linear-gradient(150deg, rgba(143,123,201,0.22), rgba(47,107,224,0.14) 55%, rgba(18,145,106,0.16))",
         }}
-      >
-        <Icon className="h-10 w-10" strokeWidth={1.2} style={{ color: "var(--bw-secondary)" }} />
-      </div>
+      />
     )
   }
 
@@ -177,30 +193,9 @@ function Figure({
       src={src}
       alt={alt}
       onError={() => setFailed(true)}
-      className={`object-cover ${rounded} ${className}`}
+      className={`object-cover ${className}`}
+      style={style}
     />
-  )
-}
-
-function Band({
-  id,
-  tinted = false,
-  className = "",
-  children,
-}: {
-  id?: string
-  tinted?: boolean
-  className?: string
-  children: React.ReactNode
-}) {
-  return (
-    <section
-      id={id}
-      className={`scroll-mt-20 overflow-hidden py-12 sm:py-16 ${className}`}
-      style={{ ...BRAND, backgroundColor: tinted ? "var(--bw-tint)" : "transparent" }}
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">{children}</div>
-    </section>
   )
 }
 
@@ -210,9 +205,9 @@ function Band({
 
 const ABOUT_INDICATORS: { icon: any; label: string; tint: TintName }[] = [
   { icon: Users2, label: "Collaborative Learning", tint: "purple" },
-  { icon: ShieldCheck, label: "Standardized Content", tint: "green" },
+  { icon: BadgeCheck, label: "Standardized Content", tint: "green" },
   { icon: Network, label: "Industry Connection", tint: "blue" },
-  { icon: Handshake, label: "Inclusive Access", tint: "cyan" },
+  { icon: Users, label: "Inclusive Access", tint: "cyan" },
 ]
 
 const ORBIT: { icon: any; label: string; tint: TintName }[] = [
@@ -222,36 +217,46 @@ const ORBIT: { icon: any; label: string; tint: TintName }[] = [
   { icon: Users, label: "Learners", tint: "pink" },
 ]
 
+/** White circle, tinted glyph, and a ring in the same tint — as the crop shows. */
 function OrbitNode({ icon: Icon, label, tint }: (typeof ORBIT)[number]) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-2">
       <span
-        className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-card shadow-sm"
-        style={{ border: "1px solid var(--bw-line)", color: TINT[tint].fg }}
+        className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-white"
+        style={{
+          color: TINT[tint].fg,
+          boxShadow: `0 0 0 5px ${TINT[tint].bg}, var(--bw-shadow)`,
+        }}
       >
-        <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+        <Icon className="h-[23px] w-[23px]" strokeWidth={1.9} />
       </span>
-      <span className="text-[12px] font-semibold text-foreground">{label}</span>
+      <span className="text-[11.5px] font-semibold text-foreground">{label}</span>
     </div>
   )
 }
 
-/**
- * The orbit.
- *
- * A three-by-three grid with the four nodes in the corners and the disc in the
- * middle, which is the reference's diagonal arrangement and — unlike absolute
- * positioning on a circle — survives a phone: below `sm` the ring is dropped
- * and the four nodes become a plain two-column pair around the disc.
- */
 function BwengeOrbit() {
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[380px]">
+    <div className="relative mx-auto aspect-square w-full max-w-[370px]">
+      {/* the dashed ring, with the four diamond markers the reference sets on it */}
       <div
         aria-hidden
-        className="absolute inset-[14%] hidden rounded-full border border-dashed sm:block"
-        style={{ borderColor: "rgba(91,78,150,0.3)" }}
-      />
+        className="absolute inset-[13%] hidden rounded-full border border-dashed sm:block"
+        style={{ borderColor: "rgba(91,78,150,0.28)" }}
+      >
+        {[
+          "left-1/2 top-0 -translate-x-1/2 -translate-y-1/2",
+          "left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2",
+          "top-1/2 left-0 -translate-y-1/2 -translate-x-1/2",
+          "top-1/2 right-0 -translate-y-1/2 translate-x-1/2",
+        ].map((pos) => (
+          <span
+            key={pos}
+            className={`absolute h-[7px] w-[7px] rotate-45 ${pos}`}
+            style={{ backgroundColor: "var(--bw-secondary)", opacity: 0.55 }}
+          />
+        ))}
+      </div>
 
       <div className="relative grid h-full grid-cols-3 grid-rows-3 place-items-center">
         <div className="col-start-1 row-start-1">
@@ -262,12 +267,15 @@ function BwengeOrbit() {
         </div>
 
         <div
-          className="col-start-2 row-start-2 flex h-[124px] w-[124px] flex-col items-center justify-center rounded-full text-center text-white shadow-lg sm:h-[136px] sm:w-[136px]"
-          style={{ background: "var(--bw-primary)" }}
+          className="col-start-2 row-start-2 flex h-[122px] w-[122px] flex-col items-center justify-center rounded-full text-center text-white sm:h-[134px] sm:w-[134px]"
+          style={{
+            background: "linear-gradient(155deg, #6C5BA8, var(--bw-deep))",
+            boxShadow: "0 10px 30px rgba(91,78,150,0.35)",
+          }}
         >
-          <GraduationCap className="mb-1 h-6 w-6" strokeWidth={1.7} />
-          <span className="text-[15px] font-bold leading-none">BWENGE+</span>
-          <span className="mt-1 text-[10px] leading-[1.3] opacity-85">
+          <GraduationCap className="mb-1.5 h-[26px] w-[26px]" strokeWidth={1.6} />
+          <span className="text-[15px] font-bold leading-none tracking-tight">BWENGE+</span>
+          <span className="mt-1.5 text-[9.5px] font-medium leading-[1.35] opacity-80">
             Knowledge
             <br />
             Connects Us
@@ -287,81 +295,101 @@ function BwengeOrbit() {
 
 function AboutBwengeSection() {
   return (
-    <Band id="about" tinted>
-      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        {/* ── left ── */}
-        <div>
-          <Eyebrow>About BWENGE+</Eyebrow>
-          <Heading>
-            About <span style={{ color: "var(--bw-primary)" }}>BWENGE+</span>
-          </Heading>
+    <section
+      id="about"
+      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      style={{ ...BRAND, backgroundColor: "#FBFAFE" }}
+    >
+      {/* the washes behind the illustration, as in the reference */}
+      <Wash className="-right-20 top-0 h-[460px] w-[560px]" color="#D9D4F2" opacity={0.55} />
+      <Wash className="right-[16%] top-[8%] h-[260px] w-[300px]" color="#CFE0FA" opacity={0.5} />
+      <Wash className="-right-10 bottom-0 h-[240px] w-[280px]" color="#CDEBDC" opacity={0.45} />
 
-          <p className="mt-4 max-w-[30rem] text-[15px] font-medium leading-relaxed text-foreground">
-            An inclusive digital learning ecosystem connecting universities, companies,
-            educators, industry experts, and learners across Rwanda.
-          </p>
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+          {/* ── left ── */}
+          <div>
+            <Eyebrow>About BWENGE+</Eyebrow>
+            <Heading>
+              About <span style={{ color: "var(--bw-primary)" }}>BWENGE+</span>
+            </Heading>
 
-          <p className="mt-4 max-w-[30rem] text-[13px] leading-[1.75] text-muted-foreground">
-            BWENGE+ is an inclusive digital MOOC and SPOC platform designed to promote
-            educational content standardization and collaboration across Rwanda. We connect
-            universities, companies, educators, industry experts, and learners through a shared
-            digital learning environment where knowledge can be developed, delivered, and
-            shared.
-          </p>
+            <p className="mt-4 max-w-[29rem] text-[15px] font-medium leading-[1.55] text-foreground">
+              An inclusive digital learning ecosystem connecting universities, companies,
+              educators, industry experts, and learners across Rwanda.
+            </p>
 
-          <a
-            href="#who-we-are"
-            className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-            style={{ background: "var(--bw-primary)" }}
-          >
-            Learn More
-            <ArrowRight className="h-4 w-4" />
-          </a>
+            <p className="mt-4 max-w-[29rem] text-[12.5px] leading-[1.85] text-muted-foreground">
+              BWENGE+ is an inclusive digital MOOC and SPOC platform designed to promote
+              educational content standardization and collaboration across Rwanda. We connect
+              universities, companies, educators, industry experts, and learners through a
+              shared digital learning environment where knowledge can be developed, delivered,
+              and shared.
+            </p>
 
-          {/*
-            Chips, not cards. Four short statements of what the platform is for
-            do not each need a bordered container, and giving them one would make
-            this column taller than the diagram beside it.
-          */}
-          <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 sm:grid-cols-4">
-            {ABOUT_INDICATORS.map((item) => (
-              <div key={item.label} className="flex flex-col items-start gap-2.5">
-                <Chip icon={item.icon} tint={item.tint} />
-                <span className="text-[12px] font-semibold leading-[1.35] text-foreground">
-                  {item.label}
-                </span>
-              </div>
-            ))}
+            <a
+              href="#who-we-are"
+              className="mt-7 inline-flex items-center gap-3 rounded-full py-3 pl-6 pr-4 text-[12.5px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+              style={{
+                background: "linear-gradient(135deg, #6C5BA8, var(--bw-deep))",
+                boxShadow: "0 8px 20px rgba(91,78,150,0.32)",
+              }}
+            >
+              Learn More
+              <ArrowRight className="h-4 w-4" />
+            </a>
+
+            <div className="mt-9 grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4">
+              {ABOUT_INDICATORS.map((item) => (
+                <div key={item.label} className="flex flex-col items-start gap-3">
+                  <Chip icon={item.icon} tint={item.tint} />
+                  <span className="text-[11.5px] font-semibold leading-[1.35] text-foreground">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* ── right: orbit, with the learner photograph alongside ── */}
-        <div className="relative">
-          {/*
-            The handwritten aside from the reference. Decorative, so it is
-            hidden from assistive technology and from narrow screens, where it
-            would collide with the diagram.
-          */}
-          <p
-            aria-hidden
-            className="absolute -top-2 right-2 hidden max-w-[9rem] text-right text-[13px] font-medium italic leading-tight xl:block"
-            style={{ color: "var(--bw-secondary)" }}
-          >
-            Together for a stronger Rwanda
-          </p>
+          {/* ── right ── */}
+          <div className="relative">
+            {/* the pale map silhouette the reference sets behind the orbit */}
+            <svg
+              aria-hidden
+              viewBox="0 0 200 180"
+              className="pointer-events-none absolute left-1/2 top-1/2 hidden h-[330px] w-[380px] -translate-x-1/2 -translate-y-1/2 sm:block"
+              style={{ opacity: 0.35 }}
+            >
+              <path
+                d="M38 60 L72 26 L128 20 L168 48 L178 96 L150 142 L96 160 L48 142 L24 104 Z"
+                fill="#D7D0F0"
+              />
+            </svg>
 
-          <div className="grid items-center gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <BwengeOrbit />
-            <Figure
-              src="/about/learner.jpg"
-              alt="A BWENGE+ learner studying on a laptop"
-              icon={Monitor}
-              className="hidden h-[280px] w-[180px] sm:block"
-            />
+            <p
+              aria-hidden
+              className="absolute -top-4 right-0 hidden max-w-[8.5rem] text-right text-[13.5px] font-medium italic leading-[1.35] text-foreground/70 xl:block"
+            >
+              Together
+              <br />
+              for a stronger
+              <br />
+              Rwanda
+            </p>
+
+            <div className="relative grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <BwengeOrbit />
+              <Figure
+                src="/about/learner.jpg"
+                alt="A BWENGE+ learner studying on a laptop"
+                className="hidden h-[300px] w-[190px] rounded-2xl sm:block"
+                style={{ boxShadow: "var(--bw-shadow-lg)" }}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </Band>
+    </section>
   )
 }
 
@@ -377,10 +405,9 @@ const COMMUNITY_POINTS = [
   "Education and knowledge sharing contribute to Rwanda's vision of a knowledge-based economy.",
 ]
 
-const COMMUNITY_MEMBERS: Record<
-  string,
-  { icon: any; title: string; body: string; tint: TintName }
-> = {
+type Member = { icon: any; title: string; body: string; tint: TintName }
+
+const MEMBERS: Record<string, Member> = {
   universities: {
     icon: Landmark,
     title: "Universities",
@@ -397,77 +424,76 @@ const COMMUNITY_MEMBERS: Record<
     icon: GraduationCap,
     title: "Educators",
     body: "Creating and delivering meaningful learning experiences.",
-    tint: "green",
+    tint: "violet",
   },
   companies: {
     icon: Building2,
     title: "Companies",
     body: "Collaborating to strengthen skills development.",
-    tint: "cyan",
+    tint: "blue",
   },
   learners: {
     icon: Users,
     title: "Learners",
     body: "Accessing relevant knowledge, skills and opportunities.",
-    tint: "pink",
+    tint: "violet",
   },
 }
 
 const PROCESS = ["Connect", "Collaborate", "Learn", "Share", "Grow"]
 
-function MemberCard({
-  member,
-}: {
-  member: (typeof COMMUNITY_MEMBERS)[keyof typeof COMMUNITY_MEMBERS]
-}) {
+/**
+ * A member card.
+ *
+ * White, a generous radius, one soft wide shadow and no visible border — the
+ * reference's card, and the detail a border would destroy. The title takes its
+ * icon's colour, which is what stops five near-identical cards reading as a
+ * wall of grey text.
+ */
+function MemberCard({ member }: { member: Member }) {
   const Icon = member.icon
   return (
     <div
-      className="flex gap-3 rounded-xl bg-card p-3.5 shadow-sm transition-shadow hover:shadow-md"
-      style={{ border: "1px solid var(--bw-line)" }}
+      className="flex gap-3 rounded-[14px] bg-white p-3.5 transition-shadow hover:shadow-[var(--bw-shadow-lg)]"
+      style={{ boxShadow: "var(--bw-shadow)" }}
     >
       <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]"
         style={{ backgroundColor: TINT[member.tint].bg, color: TINT[member.tint].fg }}
       >
         <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
       </span>
       <div className="min-w-0">
-        <h3 className="text-[12.5px] font-bold leading-tight" style={{ color: TINT[member.tint].fg }}>
+        <h3
+          className="text-[12.5px] font-bold leading-tight"
+          style={{ color: TINT[member.tint].fg }}
+        >
           {member.title}
         </h3>
-        <p className="mt-1 text-[11px] leading-[1.45] text-muted-foreground">{member.body}</p>
+        <p className="mt-1 text-[10.5px] leading-[1.5] text-muted-foreground">{member.body}</p>
       </div>
     </div>
   )
 }
 
-/**
- * The hub and its five spokes.
- *
- * Universities above, Industry and Educators flanking the disc, Companies and
- * Learners below — the reference's arrangement. The connectors are one SVG
- * stretched behind the grid with `preserveAspectRatio="none"`, so the lines
- * follow the cards as the grid reflows instead of drifting off them; the whole
- * overlay is dropped below `lg`, where the cards stack and there is nothing
- * left for a line to connect.
- */
 function BwengeEcosystem() {
   return (
     <div>
       <div className="relative mx-auto max-w-xl lg:max-w-none">
+        {/* the faint ring and the spokes */}
         <svg
           aria-hidden
           className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
         >
+          <circle cx="50" cy="50" r="27" fill="none" stroke="#E7E3F4" strokeWidth="0.6" />
           {[
-            [50, 26],
-            [26, 50],
-            [74, 50],
-            [30, 76],
-            [70, 76],
+            [50, 24],
+            [25, 50],
+            [75, 50],
+            [31, 78],
+            [69, 78],
           ].map(([x, y]) => (
             <line
               key={`${x}-${y}`}
@@ -475,47 +501,49 @@ function BwengeEcosystem() {
               y1="50"
               x2={x}
               y2={y}
-              stroke="var(--bw-line)"
-              strokeWidth="0.5"
+              stroke="#E7E3F4"
+              strokeWidth="0.6"
             />
           ))}
         </svg>
 
         <div className="relative">
-          <div className="mb-3 lg:mx-auto lg:max-w-[18rem]">
-            <MemberCard member={COMMUNITY_MEMBERS.universities} />
+          <div className="mb-4 lg:mx-auto lg:max-w-[17.5rem]">
+            <MemberCard member={MEMBERS.universities} />
           </div>
 
-          <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            <MemberCard member={COMMUNITY_MEMBERS.industry} />
+          <div className="grid items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+            <MemberCard member={MEMBERS.industry} />
 
             <div
-              className="mx-auto my-1 flex h-[112px] w-[112px] flex-col items-center justify-center rounded-full text-white shadow-lg lg:my-0"
-              style={{ background: "var(--bw-primary)" }}
+              className="mx-auto my-1 flex h-[110px] w-[110px] flex-col items-center justify-center rounded-full text-white lg:my-0"
+              style={{
+                background: "linear-gradient(155deg, #6C5BA8, var(--bw-deep))",
+                boxShadow: "0 10px 28px rgba(91,78,150,0.32)",
+              }}
             >
-              <GraduationCap className="mb-1 h-5 w-5" strokeWidth={1.7} />
-              <span className="text-[13px] font-bold">BWENGE+</span>
+              <GraduationCap className="mb-1 h-[22px] w-[22px]" strokeWidth={1.6} />
+              <span className="text-[13px] font-bold tracking-tight">BWENGE+</span>
             </div>
 
-            <MemberCard member={COMMUNITY_MEMBERS.educators} />
+            <MemberCard member={MEMBERS.educators} />
           </div>
 
-          <div className="mt-3 grid gap-3 lg:grid-cols-2">
-            <MemberCard member={COMMUNITY_MEMBERS.companies} />
-            <MemberCard member={COMMUNITY_MEMBERS.learners} />
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <MemberCard member={MEMBERS.companies} />
+            <MemberCard member={MEMBERS.learners} />
           </div>
         </div>
       </div>
 
-      {/* Connect → Collaborate → Learn → Share → Grow */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2">
         {PROCESS.map((step, index) => (
-          <span key={step} className="flex items-center gap-3">
-            <span className="text-[13px] font-semibold" style={{ color: "var(--bw-primary)" }}>
+          <span key={step} className="flex items-center gap-3.5">
+            <span className="text-[12.5px] font-semibold" style={{ color: "var(--bw-primary)" }}>
               {step}
             </span>
             {index < PROCESS.length - 1 && (
-              <ArrowRight aria-hidden className="h-3.5 w-3.5 text-muted-foreground/60" />
+              <ArrowRight aria-hidden className="h-3.5 w-3.5 text-muted-foreground/50" />
             )}
           </span>
         ))}
@@ -526,63 +554,74 @@ function BwengeEcosystem() {
 
 function WhoWeAreSection() {
   return (
-    <Band id="who-we-are">
-      {/* Three columns at xl, as the reference has it: prose, diagram, photo. */}
-      <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.1fr)_minmax(0,0.62fr)] xl:items-center xl:gap-6">
-        <div>
-          <Eyebrow>Our Community</Eyebrow>
-          <Heading>Who We Are</Heading>
-          <p className="mt-4 text-[14px] leading-relaxed text-foreground">
-            We are a collaborative digital learning community committed to making quality
-            education, knowledge sharing, and professional development more accessible.
-          </p>
+    <section
+      id="who-we-are"
+      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      style={{ ...BRAND, backgroundColor: "#FBFAFE" }}
+    >
+      <Wash className="-left-24 top-10 h-[300px] w-[360px]" color="#DCD7F3" opacity={0.4} />
+      <Wash className="-right-16 top-6 h-[340px] w-[380px]" color="#CDEBDC" opacity={0.45} />
+      <Wash className="right-[8%] bottom-0 h-[260px] w-[300px]" color="#CFE0FA" opacity={0.4} />
 
-          <p className="mt-5 text-[12.5px] font-bold text-foreground">
-            We work together towards a future where:
-          </p>
-          <ul className="mt-3 space-y-2.5">
-            {COMMUNITY_POINTS.map((point) => (
-              <li key={point} className="flex gap-2.5">
-                <span
-                  className="mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "var(--bw-primary)" }}
-                >
-                  <Check className="h-2.5 w-2.5 text-white" strokeWidth={3.5} />
-                </span>
-                <span className="text-[12px] leading-[1.5] text-muted-foreground">{point}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.76fr)_minmax(0,1.12fr)_minmax(0,0.6fr)] xl:items-center xl:gap-7">
+          <div>
+            <Eyebrow>Our Community</Eyebrow>
+            <Heading size="md">Who We Are</Heading>
+            <p className="mt-4 text-[14px] leading-[1.6] text-foreground">
+              We are a collaborative digital learning community committed to making quality
+              education, knowledge sharing, and professional development more accessible.
+            </p>
+
+            <p className="mt-6 text-[12px] font-bold text-foreground">
+              We work together towards a future where:
+            </p>
+            <ul className="mt-3.5 space-y-3">
+              {COMMUNITY_POINTS.map((point) => (
+                <li key={point} className="flex gap-2.5">
+                  <span
+                    className="mt-[2px] flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: "var(--bw-primary)" }}
+                  >
+                    <Check className="h-2.5 w-2.5 text-white" strokeWidth={3.5} />
+                  </span>
+                  <span className="text-[11.5px] leading-[1.55] text-muted-foreground">
+                    {point}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <BwengeEcosystem />
+
+          <Figure
+            src="/about/community.jpg"
+            alt="Educators and learners collaborating around a laptop"
+            className="hidden h-[310px] w-full rounded-2xl xl:block"
+            style={{ boxShadow: "var(--bw-shadow-lg)" }}
+          />
         </div>
-
-        <BwengeEcosystem />
-
-        <Figure
-          src="/about/community.jpg"
-          alt="Educators and learners collaborating around a laptop"
-          icon={Users2}
-          className="hidden h-[320px] w-full xl:block"
-        />
       </div>
-    </Band>
+    </section>
   )
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   3 + 4. Vision and Mission — one band, split by a hairline
+   3 + 4. Vision and Mission
    ══════════════════════════════════════════════════════════════════════════ */
 
-const VISION_FLOW: { icon: any; label: string }[] = [
-  { icon: GraduationCap, label: "Education" },
-  { icon: Users2, label: "Collaboration" },
-  { icon: BookOpen, label: "Knowledge" },
-  { icon: Settings, label: "Skills" },
-  { icon: Target, label: "Impact" },
+const VISION_FLOW: { icon: any; label: string; tint: TintName }[] = [
+  { icon: GraduationCap, label: "Education", tint: "purple" },
+  { icon: Users2, label: "Collaboration", tint: "purple" },
+  { icon: BookOpen, label: "Knowledge", tint: "purple" },
+  { icon: Settings, label: "Skills", tint: "green" },
+  { icon: Target, label: "Impact", tint: "purple" },
 ]
 
 const MISSION_ITEMS: { icon: any; title: string; body: string; tint: TintName }[] = [
   {
-    icon: Network,
+    icon: Users2,
     title: "Connect",
     body: "Universities, companies, educators, experts and learners.",
     tint: "purple",
@@ -591,7 +630,7 @@ const MISSION_ITEMS: { icon: any; title: string; body: string; tint: TintName }[
     icon: ShieldCheck,
     title: "Standardize",
     body: "Quality content aligned with relevant standards.",
-    tint: "green",
+    tint: "blue",
   },
   {
     icon: Share2,
@@ -606,10 +645,10 @@ const MISSION_ITEMS: { icon: any; title: string; body: string; tint: TintName }[
     tint: "blue",
   },
   {
-    icon: TrendingUp,
+    icon: BarChart3,
     title: "Impact",
     body: "Skills development and Rwanda's knowledge economy.",
-    tint: "amber",
+    tint: "green",
   },
 ]
 
@@ -617,23 +656,18 @@ function VisionSection() {
   return (
     <div id="our-vision" className="scroll-mt-20">
       <Eyebrow>Our Vision</Eyebrow>
-      <Heading>Our Vision</Heading>
-      <p className="mt-4 max-w-[28rem] text-[13px] leading-[1.75] text-muted-foreground">
+      <Heading size="md">Our Vision</Heading>
+      <p className="mt-4 max-w-[27rem] text-[12.5px] leading-[1.85] text-muted-foreground">
         To transform education through standardized educational content, collaborative
         learning, and accessible digital knowledge, contributing to an inclusive and
         knowledge-based economy in Rwanda.
       </p>
 
-      {/*
-        Education → Collaboration → Knowledge → Skills → Impact. The arrows are
-        decorative and hidden from assistive technology; the five labels read as
-        the list they are.
-      */}
-      <ol className="mt-7 flex flex-wrap items-start gap-y-5">
+      <ol className="mt-8 flex flex-wrap items-start gap-y-5">
         {VISION_FLOW.map((node, index) => (
           <li key={node.label} className="flex items-start">
-            <div className="flex w-[78px] flex-col items-center gap-2 text-center">
-              <Chip icon={node.icon} tint="purple" />
+            <div className="flex w-[76px] flex-col items-center gap-2.5 text-center">
+              <Chip icon={node.icon} tint={node.tint} />
               <span className="text-[11px] font-semibold leading-tight text-foreground">
                 {node.label}
               </span>
@@ -641,7 +675,7 @@ function VisionSection() {
             {index < VISION_FLOW.length - 1 && (
               <ArrowRight
                 aria-hidden
-                className="mt-[15px] h-3.5 w-3.5 shrink-0 text-muted-foreground/60"
+                className="mt-[16px] h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
               />
             )}
           </li>
@@ -651,17 +685,33 @@ function VisionSection() {
   )
 }
 
-function MissionItem({ icon: Icon, title, body, tint }: (typeof MISSION_ITEMS)[number]) {
+/**
+ * A mission item.
+ *
+ * The reference lifts the middle one — white and shadowed where its neighbours
+ * are flat on the wash. It is not a state, it is composition: it stops a row of
+ * five identical boxes from reading as a table.
+ */
+function MissionItem({
+  item,
+  raised,
+}: {
+  item: (typeof MISSION_ITEMS)[number]
+  raised: boolean
+}) {
   return (
     <li
-      className="flex h-full flex-col items-center rounded-xl p-3 text-center transition-shadow hover:bg-card hover:shadow-md"
-      style={{ border: "1px solid var(--bw-line)", backgroundColor: "rgba(246,245,252,0.6)" }}
+      className="flex h-full flex-col items-center rounded-[14px] px-3 py-4 text-center transition-shadow"
+      style={{
+        backgroundColor: raised ? "#FFFFFF" : "rgba(255,255,255,0.55)",
+        boxShadow: raised ? "var(--bw-shadow-lg)" : "var(--bw-shadow)",
+      }}
     >
-      <Chip icon={Icon} tint={tint} size={38} />
-      <h3 className="mt-2 text-[12.5px] font-bold" style={{ color: TINT[tint].fg }}>
-        {title}
+      <Chip icon={item.icon} tint={item.tint} size={40} />
+      <h3 className="mt-2.5 text-[12.5px] font-bold" style={{ color: TINT[item.tint].fg }}>
+        {item.title}
       </h3>
-      <p className="mt-1 text-[10.5px] leading-[1.45] text-muted-foreground">{body}</p>
+      <p className="mt-1.5 text-[10px] leading-[1.55] text-muted-foreground">{item.body}</p>
     </li>
   )
 }
@@ -670,16 +720,16 @@ function MissionSection() {
   return (
     <div id="our-mission" className="scroll-mt-20">
       <Eyebrow>Our Mission</Eyebrow>
-      <Heading>Our Mission</Heading>
-      <p className="mt-4 text-[13px] leading-[1.75] text-muted-foreground">
+      <Heading size="md">Our Mission</Heading>
+      <p className="mt-4 text-[12.5px] leading-[1.85] text-muted-foreground">
         To connect universities, companies, educators, industry experts, and learners through an
         inclusive digital MOOC and SPOC platform that promotes standardized educational content,
         collaborative course development, and shared teaching and learning.
       </p>
 
-      <ul className="mt-7 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
-        {MISSION_ITEMS.map((item) => (
-          <MissionItem key={item.title} {...item} />
+      <ul className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+        {MISSION_ITEMS.map((item, index) => (
+          <MissionItem key={item.title} item={item} raised={index === 2} />
         ))}
       </ul>
     </div>
@@ -687,25 +737,32 @@ function MissionSection() {
 }
 
 /**
- * The reference runs these across one band with Kigali clipped into the left
- * edge. They are one thought — where the platform is going and how it gets
- * there — and two full-width sections would double the height for no added
- * meaning.
+ * One band for both, with Kigali clipped into a chevron at the left edge that
+ * points into the vision copy — the reference's composition, and the reason
+ * these two do not each need a band of their own.
  */
 function VisionAndMission() {
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16" style={BRAND}>
-      {/* The photograph bleeds off the left edge, behind the content column. */}
-      <Figure
-        src="/about/kigali.jpg"
-        alt="Kigali"
-        icon={Building2}
-        rounded="rounded-r-3xl"
-        className="absolute left-0 top-1/2 hidden h-[260px] w-[200px] -translate-y-1/2 xl:block"
+    <section className="relative overflow-hidden py-14 sm:py-16" style={{ ...BRAND, backgroundColor: "#FFFFFF" }}>
+      <div
+        aria-hidden
+        className="absolute left-0 top-1/2 hidden h-[260px] w-[230px] -translate-y-1/2 xl:block"
+        style={{ clipPath: "polygon(0 0, 72% 0, 100% 50%, 72% 100%, 0 100%)" }}
+      >
+        <Figure src="/about/kigali.jpg" alt="Kigali" className="h-full w-full" />
+      </div>
+      {/* the translucent chevrons the reference lays over the photograph's point */}
+      <div
+        aria-hidden
+        className="absolute left-[150px] top-1/2 hidden h-[260px] w-[120px] -translate-y-1/2 xl:block"
+        style={{
+          clipPath: "polygon(0 0, 45% 0, 100% 50%, 45% 100%, 0 100%)",
+          background: "linear-gradient(120deg, rgba(143,123,201,0.75), rgba(91,78,150,0.55))",
+        }}
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 xl:pl-[14rem]">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-10">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 xl:pl-[17rem]">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-10">
           <VisionSection />
           <div className="lg:border-l lg:pl-10" style={{ borderColor: "var(--bw-line)" }}>
             <MissionSection />
@@ -729,14 +786,14 @@ const CORE_VALUES: {
 }[] = [
   {
     number: "01",
-    icon: Handshake,
+    icon: Users2,
     title: "Collaboration",
     body: "We believe that meaningful progress comes through working together. We promote collaboration among universities, companies, educators, and learners to develop and share knowledge.",
     tint: "purple",
   },
   {
     number: "02",
-    icon: Users2,
+    icon: Users,
     title: "Inclusivity and Accessibility",
     body: "We believe that everyone deserves an opportunity to learn. We promote accessible and inclusive digital education for learners and educators from different backgrounds and institutions.",
     tint: "blue",
@@ -764,7 +821,7 @@ const CORE_VALUES: {
   },
   {
     number: "06",
-    icon: TrendingUp,
+    icon: BarChart3,
     title: "National Development and Impact",
     body: "We align our efforts with Rwanda's knowledge economy ambitions by supporting skills development, education-industry collaboration, and access to relevant knowledge.",
     tint: "violet",
@@ -774,21 +831,21 @@ const CORE_VALUES: {
 function CoreValueItem({ number, icon, title, body, tint }: (typeof CORE_VALUES)[number]) {
   return (
     <div
-      className="flex h-full gap-3 rounded-xl p-4 transition-shadow hover:bg-card hover:shadow-md"
-      style={{ border: "1px solid var(--bw-line)", backgroundColor: "rgba(255,255,255,0.65)" }}
+      className="flex h-full gap-3.5 rounded-[14px] bg-white p-4 transition-shadow hover:shadow-[var(--bw-shadow-lg)]"
+      style={{ boxShadow: "var(--bw-shadow)" }}
     >
-      <Chip icon={icon} tint={tint} size={38} />
+      <Chip icon={icon} tint={tint} size={40} />
       <div className="min-w-0">
         {/*
           The numbering is part of the official content, so it is printed rather
-          than implied by grid position — a card that reflows on a narrow screen
+          than implied by grid position: a card that reflows on a narrow screen
           keeps the number it was given.
         */}
         <p className="text-[12px] font-bold" style={{ color: TINT[tint].fg }}>
           {number}
         </p>
-        <h3 className="mt-0.5 text-[12.5px] font-bold leading-tight text-foreground">{title}</h3>
-        <p className="mt-1.5 text-[11px] leading-[1.5] text-muted-foreground">{body}</p>
+        <h3 className="mt-1 text-[12.5px] font-bold leading-tight text-foreground">{title}</h3>
+        <p className="mt-2 text-[10.5px] leading-[1.6] text-muted-foreground">{body}</p>
       </div>
     </div>
   )
@@ -796,23 +853,31 @@ function CoreValueItem({ number, icon, title, body, tint }: (typeof CORE_VALUES)
 
 function CoreValuesSection() {
   return (
-    <Band id="core-values" tinted>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.52fr)_minmax(0,2fr)] lg:gap-10">
-        <div className="lg:sticky lg:top-24 lg:self-start">
-          <Eyebrow>Our Core Values</Eyebrow>
-          <Heading>Our Core Values</Heading>
-          <p className="mt-4 text-[13px] leading-[1.7] text-muted-foreground">
-            The principles that guide how we learn, teach, collaborate, and grow together.
-          </p>
-        </div>
+    <section
+      id="core-values"
+      className="relative scroll-mt-20 overflow-hidden py-14 sm:py-16"
+      style={{ ...BRAND, backgroundColor: "var(--bw-wash)" }}
+    >
+      <Wash className="-left-20 -top-10 h-[280px] w-[340px]" color="#DCD7F3" opacity={0.45} />
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {CORE_VALUES.map((value) => (
-            <CoreValueItem key={value.number} {...value} />
-          ))}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid gap-9 lg:grid-cols-[minmax(0,0.5fr)_minmax(0,2fr)] lg:gap-10">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <Eyebrow>Our Core Values</Eyebrow>
+            <Heading size="md">Our Core Values</Heading>
+            <p className="mt-4 text-[12px] leading-[1.75] text-muted-foreground">
+              The principles that guide how we learn, teach, collaborate, and grow together.
+            </p>
+          </div>
+
+          <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+            {CORE_VALUES.map((value) => (
+              <CoreValueItem key={value.number} {...value} />
+            ))}
+          </div>
         </div>
       </div>
-    </Band>
+    </section>
   )
 }
 
@@ -829,7 +894,6 @@ export default function AboutSections() {
   )
 }
 
-/** The dropdown's contents, kept beside the sections they point at. */
 export const ABOUT_NAV_ITEMS = [
   {
     label: "About BWENGE+",
