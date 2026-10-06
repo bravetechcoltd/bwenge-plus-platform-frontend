@@ -2,6 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from "react"
 import { useAuth } from "./use-auth"
+import { useSession } from "@/lib/auth/session"
 import type { 
   Course, 
   CourseType, 
@@ -104,7 +105,23 @@ interface CoursesContextType {
 const CoursesContext = createContext<CoursesContextType | undefined>(undefined)
 
 export function CoursesProvider({ children }: { children: ReactNode }) {
-  const { token,user } = useAuth()
+  const { token: contextToken, user } = useAuth()
+
+  /*
+   * The token comes from whichever store has it (AXM-CONS-001 C-03, follow-up).
+   *
+   * This provider read useAuth().token alone — the context — while the pages
+   * around it read useSession(), which resolves redux.token ?? context.token.
+   * A session restored into Redux but not into the context is authenticated by
+   * one and anonymous by the other, so the SWR key stayed null, pendingSession
+   * stayed true, and the course page showed its skeleton forever. That is the
+   * infinite loading on /dashboard/system-admin/courses/[id].
+   *
+   * sessionStatus is what ends it: once the session has resolved, a missing
+   * token is an answer rather than a reason to keep waiting.
+   */
+  const { token: sessionToken, status: sessionStatus } = useSession()
+  const token = contextToken ?? sessionToken
 
 
     const useCoursesByType = (type: "live" | "draft" | "all" | "org" | "enrolled") => {
@@ -219,7 +236,9 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
      * Reporting the pending key as loading is the whole fix: a request that
      * has not been made yet is not a request that came back empty.
      */
-    const pendingSession = !!id && !key
+    // Pending only while the session is still resolving. Without the status
+    // check this stayed true forever whenever no token ever arrived.
+    const pendingSession = !!id && !key && sessionStatus === "initializing"
 
     return {
       course: data?.data,

@@ -672,6 +672,14 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             icon: BarChart3
           },
           {
+            // PI-001. Instructors who belong to the platform rather than to an
+            // institution. They are who a MOOC can be assigned to, since a
+            // platform course has no institution to draw one from.
+            title: "Public Instructors",
+            href: "/dashboard/system-admin/instructors/public",
+            icon: GraduationCap
+          },
+          {
             // FI-001. The instructors shown on the public homepage. It belongs
             // under User Management because that is where someone looks for a
             // screen about instructors; as a top-level item at the bottom of a

@@ -305,13 +305,29 @@ export function CourseCreationWizard() {
             setInstitutions(data.data || [])
           }
 
+          /*
+            PI-001. This asked /users?role=INSTRUCTOR, which is not a route on
+            this server. The request 404'd, the catch below swallowed it, and
+            the instructor list came back empty every single time — so a system
+            admin had nobody to name as primary instructor and could not tell
+            why.
+
+            /public-instructors/assignable returns the active instructors who
+            belong to no institution, plus the system admin making the request
+            as a fallback, so the field is never empty on a platform that has
+            not recruited one yet.
+          */
           const instructorsResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users?role=INSTRUCTOR`,
+            `${process.env.NEXT_PUBLIC_API_URL}/public-instructors/assignable`,
             { headers: { Authorization: `Bearer ${token}` } }
           )
           if (instructorsResponse.ok) {
             const data = await instructorsResponse.json()
             setInstructors(data.data || [])
+          } else {
+            // Said out loud, rather than left as an empty dropdown that reads
+            // as though the platform has no instructors at all.
+            toast.error("Could not load the instructor list")
           }
         }
 

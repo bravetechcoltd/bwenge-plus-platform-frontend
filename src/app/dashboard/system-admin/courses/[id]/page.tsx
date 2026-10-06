@@ -198,6 +198,42 @@ function CourseDetailPageBody({ id, course }: { id: string; course: Course }) {
                   Popular
                 </Badge>
               )}
+
+              {/*
+                CD-001. What the course actually is.
+
+                MOOC or SPOC decides who may enrol and whether an institution
+                owns it, and it was the one thing this header never said — so a
+                system admin could read the whole page without learning which
+                kind of course they were looking at.
+              */}
+              {course.course_type && (
+                <Badge
+                  variant="outline"
+                  className={
+                    course.course_type === "MOOC"
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-border bg-muted text-muted-foreground"
+                  }
+                >
+                  {course.course_type}
+                </Badge>
+              )}
+
+              {/*
+                A SPOC belongs to an institution and a MOOC belongs to the
+                platform. Saying which, here, is what distinguishes a public
+                course from one that merely has no institution loaded yet.
+              */}
+              {course.institution?.name ? (
+                <Badge variant="outline" className="border-border">
+                  {course.institution.name}
+                </Badge>
+              ) : course.course_type === "MOOC" ? (
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  Platform course
+                </Badge>
+              ) : null}
             </div>
 
             <h1 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl">

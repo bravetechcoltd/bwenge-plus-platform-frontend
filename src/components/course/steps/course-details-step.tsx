@@ -125,6 +125,9 @@ export function CourseDetailsStep({
   const userRole = user?.bwenge_role
   const isSystemAdmin = userRole === "SYSTEM_ADMIN"
   const isInstitutionAdmin = userRole === "INSTITUTION_ADMIN"
+  // CT-001. Needed so an instructor reaching this wizard still gets a course
+  // type field; without it the value stayed undefined all the way to submit.
+  const isInstructor = userRole === "INSTRUCTOR"
 
   const userInstitution = user?.institution
   const userInstitutionId = user?.primary_institution_id
@@ -332,15 +335,32 @@ export function CourseDetailsStep({
             </div>
           )}
 
-          {/* Course Type — System Admin: full select */}
-          {isSystemAdmin && (
+          {/*
+            CT-001. One control, for everyone who may create a course.
+
+            This was gated on isSystemAdmin, and the institution admin got a
+            disabled box below it reading SPOC — directly above its own help
+            text saying institution admins can create both SPOC and MOOC. The
+            text was right and the control was wrong: /dashboard/
+            institution-admin/courses/create uses this same step, so an
+            institution admin could not create a MOOC at all. An instructor
+            reaching this wizard got no course-type field whatsoever, which
+            left course_type undefined on submit.
+
+            The side effects below are unchanged, and the institution rules
+            are unchanged with them: a SPOC still pins to the admin's own
+            institution, and the server still decides what each role may
+            actually do. This only stops the form from withholding a choice
+            the rules already allow.
+          */}
+          {(isSystemAdmin || isInstitutionAdmin || isInstructor) && (
             <div className="space-y-1.5">
               <Label htmlFor="course_type" className={lbl}>
                 Course Type <span className="text-destructive">*</span>
               </Label>
               <select
                 id="course_type"
-                value={courseData.course_type || "MOOC"}
+                value={courseData.course_type || (isSystemAdmin ? "MOOC" : "SPOC")}
                 onChange={(e) => {
                   const value = e.target.value
                   const updates: any = { course_type: value }
@@ -365,25 +385,12 @@ export function CourseDetailsStep({
             </div>
           )}
 
-          {/* Course Type — Institution Admin: read-only (SPOC) */}
-          {isInstitutionAdmin && (
-            <div className="space-y-1.5">
-              <Label className={lbl}>Course Type</Label>
-              <Input
-                value="SPOC — Small Private Online Course"
-                disabled
-                className="bg-muted/50 border-border text-muted-foreground text-sm"
-              />
-              <p className={hint}>
-                Institution admins can create both SPOC and MOOC courses for their institution
-              </p>
-              <input
-                type="hidden"
-                value="SPOC"
-                onChange={() => setCourseData({ ...courseData, course_type: "SPOC" })}
-              />
-            </div>
-          )}
+          {/*
+            The read-only duplicate of the field above used to sit here. Its
+            hidden input carried an onChange that could never fire — hidden
+            inputs do not change — so for an institution admin the only thing
+            that ever set course_type was the default further up.
+          */}
 
           {(courseData.course_type === "SPOC" || isInstitutionAdmin) && (
             <div className="flex items-start gap-2.5 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
@@ -422,14 +429,30 @@ export function CourseDetailsStep({
               <option value="">
                 {isInstitutionAdmin
                   ? "Select instructor from your institution"
-                  : "Select instructor"}
+                  : "Select a public instructor"}
               </option>
-              {getAvailableInstructors().map((instructor) => (
+
+              {/*
+                PI-001. For a system admin these are the public instructors —
+                active, and belonging to no institution — because a MOOC has no
+                institution to draw one from. The server marks itself in the
+                list with is_self, so the admin's own account is labelled as the
+                fallback it is rather than offered as a peer of the others.
+
+                The institution rules are untouched: an institution admin still
+                sees only their own institution's instructors, filtered above.
+              */}
+              {getAvailableInstructors().map((instructor: any) => (
                 <option key={instructor.id} value={instructor.id}>
-                  {instructor.first_name} {instructor.last_name}
-                  {isInstitutionAdmin && ` (${instructor.email})`}
+                  {instructor.is_self
+                    ? `${instructor.first_name ?? ""} ${instructor.last_name ?? ""} (Myself — system admin)`.trim()
+                    : `${instructor.first_name ?? ""} ${instructor.last_name ?? ""}`.trim() ||
+                      instructor.email}
+                  {!instructor.is_self && instructor.email ? ` (${instructor.email})` : null}
                 </option>
               ))}
+
+              {/* The institution admin's own fallback, as before. */}
               {isInstitutionAdmin && (
                 <option value={user?.id}>
                   {user?.first_name} {user?.last_name} (Myself)
@@ -438,7 +461,14 @@ export function CourseDetailsStep({
             </select>
             {isInstitutionAdmin && (
               <p className={hint}>
-                You can assign yourself or choose from your institution's instructors
+                You can assign yourself or choose from your institution&apos;s instructors
+              </p>
+            )}
+            {isSystemAdmin && (
+              <p className={hint}>
+                Public instructors belong to the platform rather than an institution.
+                Manage them at Users &rarr; Public Instructors. If none exists yet, you can
+                name yourself and reassign the course later.
               </p>
             )}
           </div>
