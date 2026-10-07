@@ -15,6 +15,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BulkEnrollmentExcelWorkflow from "./BulkEnrollmentExcelWorkflow";
+import { fetchRoster } from "@/lib/enrollment/bulk-enrollment-api";
+import { buildEnrollmentTemplate } from "@/lib/enrollment/bulk-template";
 import {
   Table,
   TableBody,
@@ -41,6 +44,7 @@ import {
 import {
   Loader2,
   Upload,
+  FileSpreadsheet,
   Download,
   CheckCircle,
   XCircle,
@@ -418,19 +422,46 @@ export default function BulkEnrollmentPage() {
     student.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const downloadTemplate = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      ['Email', 'First Name', 'Last Name'],
-      ['student1@example.com', 'John', 'Doe'],
-      ['student2@example.com', 'Jane', 'Smith'],
-      ['student3@example.com', 'Bob', 'Johnson'],
-    ]);
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
-    XLSX.writeFile(workbook, 'bulk_enrollment_template.xlsx');
-    
-    toast.success("Template downloaded successfully");
+  /*
+   * BE-001. The header's template, now built from real students.
+   *
+   * It used to contain student1@example.com, John Doe and two more invented
+   * people — the only guidance an admin had about what to put in the file,
+   * so following the example produced rows for students who do not exist.
+   *
+   * The same builder the Excel Workflow tab uses, so the two cannot disagree
+   * about the columns, and the roster is fetched at the moment of download
+   * rather than held, because a template is only as good as the list behind
+   * it.
+   */
+  const downloadTemplate = async () => {
+    if (!institutionId) {
+      toast.error("No institution on this account, so there is no roster to build from.");
+      return;
+    }
+
+    try {
+      const { students } = await fetchRoster(institutionId);
+      const blob = await buildEnrollmentTemplate({
+        students: students.slice(0, 10),
+        courseTitle: selectedCourseData?.title,
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'bulk-enrolment-template.xlsx';
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast.success(
+        students.length === 0
+          ? "Template downloaded. No students are listed — this institution has none yet."
+          : `Template downloaded with ${Math.min(students.length, 10)} real students.`
+      );
+    } catch (error) {
+      toast.error("Could not build the template");
+    }
   };
 
   const downloadResults = () => {
@@ -529,7 +560,13 @@ export default function BulkEnrollmentPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3">
+        {/*
+          BE-001. A fourth tab rather than a rewrite: the three below keep
+          working exactly as they do, and the spreadsheet flow stands beside
+          them for the case they never covered — enrolling a list of existing
+          students, checked against the database before anything is written.
+        */}
+        <TabsList className="grid grid-cols-4">
           <TabsTrigger value="upload">
             <Upload className="w-4 h-4 mr-2" />
             Upload & Enroll
@@ -537,6 +574,10 @@ export default function BulkEnrollmentPage() {
           <TabsTrigger value="manual">
             <FileText className="w-4 h-4 mr-2" />
             Manual Entry
+          </TabsTrigger>
+          <TabsTrigger value="excel">
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Excel Workflow
           </TabsTrigger>
           <TabsTrigger value="students">
             <Users className="w-4 h-4 mr-2" />
@@ -754,6 +795,28 @@ export default function BulkEnrollmentPage() {
         </TabsContent>
 
         {/* Student List Tab */}
+        <TabsContent value="excel">
+          {institutionId ? (
+            <BulkEnrollmentExcelWorkflow
+              institutionId={institutionId}
+              courseId={selectedCourse}
+              courseTitle={selectedCourseData?.title}
+              onEnrolled={() => {
+                // The counts and the course list both change on enrolment.
+                fetchStats();
+                fetchCourses();
+              }}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                This account is not associated with an institution, so there is no student
+                roster to enrol from.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
         <TabsContent value="students">
           <Card>
             <CardHeader>
