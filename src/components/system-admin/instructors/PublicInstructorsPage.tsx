@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
+  AlertTriangle,
   BookOpen,
   GraduationCap,
   Loader2,
@@ -112,6 +113,18 @@ export default function PublicInstructorsPage() {
   const [editing, setEditing] = useState<PublicInstructor | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [pendingToggle, setPendingToggle] = useState<PublicInstructor | null>(null);
+
+  /*
+   * MAIL-001. The credential the admin has to deliver themselves.
+   *
+   * When the welcome email fails the account still exists and still has a
+   * generated password, which nobody else knows. A toast is the wrong place
+   * for it: it disappears, and then the instructor cannot sign in and the
+   * admin cannot tell them why. It is held on the page until dismissed.
+   */
+  const [undeliverable, setUndeliverable] = useState<{ email: string; password: string } | null>(
+    null
+  );
 
   /*
    * UL-001. Where the instructor comes from.
@@ -261,6 +274,12 @@ export default function PublicInstructorsPage() {
           is_active: form.is_active,
         });
         toast.success(res?.message || "Public instructor created.");
+        if (res?.data?.email_sent === false && res?.data?.temporary_password) {
+          setUndeliverable({
+            email: form.email.trim(),
+            password: res.data.temporary_password,
+          });
+        }
       }
       setDialogOpen(false);
       await load();
@@ -307,6 +326,46 @@ export default function PublicInstructorsPage() {
           </Button>
         </div>
       </div>
+
+      {/*
+        MAIL-001. Shown only when the welcome email did not go out. The account
+        exists and this password is the only way in, so it stays on screen until
+        the admin dismisses it rather than vanishing with a toast.
+      */}
+      {undeliverable && (
+        <div className="rounded-lg border border-warning/40 bg-warning/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                The welcome email could not be sent
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {undeliverable.email} has an account, but no message reached them. Give them
+                this temporary password yourself and ask them to change it after signing in.
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <code className="rounded bg-background px-2 py-1 text-sm font-semibold">
+                  {undeliverable.password}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(undeliverable.password);
+                    toast.success("Password copied.");
+                  }}
+                >
+                  Copy
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setUndeliverable(null)}>
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
