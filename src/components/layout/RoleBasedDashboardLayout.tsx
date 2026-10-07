@@ -442,6 +442,14 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             icon: PlusCircle
           },
           {
+            // CAT-001. What a course can be filed under when it belongs to no
+            // institution. Readable here; only a system admin changes the list,
+            // because it is shared by every institution-less course.
+            title: "Global Categories",
+            href: "/dashboard/instructor/categories",
+            icon: Layers
+          },
+          {
             title: "Course Drafts",
             href: "/dashboard/instructor/courses/drafts",
             icon: FileEdit
@@ -711,6 +719,14 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             title: "Course Drafts",
             href: "/dashboard/system-admin/courses/drafts",
             icon: FileEdit
+          },
+          {
+            // CAT-001. The platform taxonomy, used by every course that
+            // belongs to no institution. It had no screen at all: the course
+            // wizard fetched the list and nobody could add to it.
+            title: "Global Categories",
+            href: "/dashboard/system-admin/courses/categories",
+            icon: Layers
           },
           {
             title: "Enrollment Requests",
