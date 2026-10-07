@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BulkEnrollmentExcelWorkflow from "./BulkEnrollmentExcelWorkflow";
+import ManualStudentPicker from "./ManualStudentPicker";
 import { fetchRoster } from "@/lib/enrollment/bulk-enrollment-api";
 import { buildEnrollmentTemplate } from "@/lib/enrollment/bulk-template";
 import {
@@ -715,9 +716,10 @@ export default function BulkEnrollmentPage() {
         <TabsContent value="manual">
           <Card>
             <CardHeader>
-              <CardTitle>Manual Email Entry</CardTitle>
+              <CardTitle>Select Students</CardTitle>
               <CardDescription>
-                Enter email addresses manually (one per line)
+                Pick from this institution&apos;s students, or paste addresses below if they
+                come from somewhere else.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -743,10 +745,39 @@ export default function BulkEnrollmentPage() {
                 </Select>
               </div>
 
+              {/*
+                BE-002. The students are already in the database.
+
+                This tab asked an admin to type thirty addresses from memory to
+                enrol thirty of their own students, and a single typo failed
+                silently inside the batch. The list is here instead, searchable,
+                selectable and un-selectable, checked against the course so
+                anyone already on it is shown as such rather than quietly
+                skipped.
+              */}
+              {institutionId && (
+                <div className="border-b border-border pb-6">
+                  <ManualStudentPicker
+                    institutionId={institutionId}
+                    courseId={selectedCourse}
+                    courseTitle={selectedCourseData?.title}
+                    onEnrolled={() => {
+                      fetchStats();
+                      fetchCourses();
+                    }}
+                  />
+                </div>
+              )}
+
               <div>
-                <Label>Email Addresses</Label>
+                {/*
+                  Kept, and moved below the picker. Pasting a list is still a
+                  real way to work when the addresses come from elsewhere; it is
+                  no longer the only way.
+                */}
+                <Label>Or paste email addresses</Label>
                 <textarea
-                  rows={8}
+                  rows={6}
                   className="w-full mt-2 p-3 border rounded-md font-mono text-sm"
                   placeholder="student1@example.com&#10;student2@example.com&#10;student3@example.com"
                   value={emailsText}
