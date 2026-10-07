@@ -627,7 +627,7 @@ export function CourseDetailsStep({
                       ? "No categories in this institution yet"
                       : isSystemAdmin && courseData.course_type === "SPOC"
                         ? "Select an institution first"
-                        : "No platform categories yet"}
+                        : "No platform categories exist yet"}
                   </option>
                 )}
               </select>
@@ -637,6 +637,32 @@ export function CourseDetailsStep({
                 </div>
               )}
             </div>
+
+            {/*
+              CAT-001. A dead end otherwise.
+
+              An empty dropdown told the reader there was nothing to pick and
+              stopped there. If the platform has no categories yet, the fix is a
+              page away and the person reading this is usually the one who can
+              make it — an instructor may add one, and a system admin may do
+              anything with the list.
+            */}
+            {!loadingCategories && categoryOptions.length === 0 && !usesInstitutionCategories && (
+              <p className={hint}>
+                No platform categories exist yet.{" "}
+                <a
+                  href={
+                    isSystemAdmin
+                      ? "/dashboard/system-admin/courses/categories"
+                      : "/dashboard/instructor/categories"
+                  }
+                  className="font-medium text-primary hover:underline"
+                >
+                  Add one
+                </a>
+                , then come back — your course details are kept.
+              </p>
+            )}
           </div>
         </Section>
 

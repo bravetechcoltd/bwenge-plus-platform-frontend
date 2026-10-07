@@ -294,6 +294,37 @@ export function CourseCreationWizard() {
           setCategories(categoriesArray)
         }
 
+        /*
+          CAT-001. The platform's own categories, fetched explicitly.
+
+          The call above returns every top-level category on the platform when
+          no institution is named — including other institutions' — and keeps
+          the inactive ones. This one returns exactly the global set, active
+          only, which is what a course with no institution can be filed under.
+
+          Merged by id rather than replacing, so an institution context keeps
+          every category it already had.
+        */
+        try {
+          const globalResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/categories/global?active=true`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          if (globalResponse.ok) {
+            const globalData = await globalResponse.json()
+            const globals = Array.isArray(globalData.data) ? globalData.data : []
+            if (globals.length > 0) {
+              setCategories((previous: any[]) => {
+                const seen = new Set((previous || []).map((c: any) => c.id))
+                return [...(previous || []), ...globals.filter((c: any) => !seen.has(c.id))]
+              })
+            }
+          }
+        } catch {
+          // The list above still stands; this only adds to it.
+        }
+
+
         // System Admin: always fetch instructors and institutions
         if (user.bwenge_role === "SYSTEM_ADMIN") {
           const institutionsResponse = await fetch(
