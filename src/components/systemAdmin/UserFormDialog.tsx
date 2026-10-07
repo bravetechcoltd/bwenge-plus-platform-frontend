@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import {
+  ExistingUserPicker,
+  type LookupUser,
+} from "./ExistingUserPicker";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -64,6 +68,20 @@ export default function UserFormDialog({
   isSubmitting,
 }: UserFormDialogProps) {
   const [activeTab, setActiveTab] = useState("basic");
+
+  /*
+   * UL-001. Where the person comes from.
+   *
+   * "new" is the form as it was. "existing" searches the accounts that are
+   * already on the platform, so an admin adding someone who has signed up
+   * before reuses that account instead of creating a second one — which is
+   * what the dialog forced until now, leaving two accounts for one person
+   * and the first one still holding whatever access it had.
+   *
+   * Edit mode never shows the switch: the subject is already decided.
+   */
+  const [source, setSource] = useState<"new" | "existing">("new");
+  const [existingUser, setExistingUser] = useState<LookupUser | null>(null);
   const [formData, setFormData] = useState({
     // Basic Information
     email: "",
@@ -215,7 +233,12 @@ export default function UserFormDialog({
     }
     
     // Password validation (create mode only)
-    if (mode === 'create') {
+    /*
+     * UL-001. A reused account already has a password, and the admin has no
+     * business setting one for it — demanding a new credential here would
+     * either overwrite the person's own or block the form outright.
+     */
+    if (mode === 'create' && !existingUser) {
       if (!formData.password) newErrors.password = "Password is required";
       if (formData.password.length < 8) {
         newErrors.password = "Password must be at least 8 characters";
@@ -239,6 +262,32 @@ export default function UserFormDialog({
     return Object.keys(newErrors).length === 0;
   };
   
+  /*
+   * Taking a chosen account into the form.
+   *
+   * The rest of the dialog — roles, institution, settings — keeps working
+   * exactly as it does for a new user, so an admin can pick someone and then
+   * set what they are here. Only the identity fields are filled, and the
+   * email is locked afterwards because it is this person's sign-in and
+   * editing it would point the submission at somebody else.
+   */
+  const adoptExistingUser = (picked: LookupUser | null) => {
+    setExistingUser(picked);
+    if (!picked) return;
+
+    setFormData((prev: any) => ({
+      ...prev,
+      email: picked.email,
+      first_name: picked.first_name ?? "",
+      last_name: picked.last_name ?? "",
+      bwenge_role: picked.bwenge_role ?? prev.bwenge_role,
+      is_active: picked.is_active,
+      is_verified: picked.is_verified,
+      profile_picture_url: picked.profile_picture_url ?? prev.profile_picture_url,
+    }));
+    setErrors({});
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -268,8 +317,18 @@ export default function UserFormDialog({
       submissionData.profile_picture_url = formData.profile_picture_url;
     }
     
-    // Add password for create mode
-    if (mode === 'create') {
+    /*
+     * UL-001. Which account this is about.
+     *
+     * With existing_user_id the server is being asked to update and assign a
+     * person who already exists, not to insert one — the difference between
+     * reusing an account and creating a duplicate that shares its email.
+     * No password and no welcome mail travel with it: both belong to an
+     * account that is being created, and this one is not.
+     */
+    if (mode === 'create' && existingUser) {
+      submissionData.existing_user_id = existingUser.id;
+    } else if (mode === 'create') {
       submissionData.password = formData.password;
       submissionData.send_welcome_email = formData.send_welcome_email;
       submissionData.require_password_change = formData.require_password_change;
@@ -324,6 +383,66 @@ export default function UserFormDialog({
           </DialogDescription>
         </DialogHeader>
         
+        {/*
+          UL-001. Create a new account, or reuse one that already exists.
+
+          Only on create: in edit mode the subject is already decided.
+        */}
+        {mode === 'create' && (
+          <div className="mb-4 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                {
+                  key: "new" as const,
+                  title: "Create new",
+                  body: "A person who has no account yet",
+                },
+                {
+                  key: "existing" as const,
+                  title: "Add from existing",
+                  body: "Someone already on the platform",
+                },
+              ]).map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => {
+                    setSource(option.key);
+                    if (option.key === "new") adoptExistingUser(null);
+                  }}
+                  className={`rounded-lg border p-3 text-left transition-colors ${
+                    source === option.key
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-accent"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold text-foreground">
+                    {option.title}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">{option.body}</span>
+                </button>
+              ))}
+            </div>
+
+            {source === 'existing' && (
+              <div className="rounded-lg border border-border p-3">
+                {/*
+                  Unaffiliated only: an account that already belongs to an
+                  institution carries that institution's access with it, so it
+                  is not free to be used from here. The picker still reports
+                  how many matches it withheld and why.
+                */}
+                <ExistingUserPicker
+                  unaffiliatedOnly
+                  role={null}
+                  selected={existingUser}
+                  onSelect={adoptExistingUser}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-5">
@@ -376,6 +495,9 @@ export default function UserFormDialog({
                     <Label htmlFor="email">Email Address *</Label>
                     <Input
                       id="email"
+                      // UL-001. existingUser is this person's sign-in; editing
+                      // it here would point the submission at somebody else.
+                      disabled={!!existingUser}
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
