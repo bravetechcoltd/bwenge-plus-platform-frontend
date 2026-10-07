@@ -17,6 +17,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BulkEnrollmentExcelWorkflow from "./BulkEnrollmentExcelWorkflow";
 import ManualStudentPicker from "./ManualStudentPicker";
+import EnrollmentPreviewTable, {
+  toPreviewRows,
+  type PreviewRow,
+} from "./EnrollmentPreviewTable";
+import { parseEnrollmentWorkbook } from "@/lib/enrollment/bulk-template";
 import { fetchRoster } from "@/lib/enrollment/bulk-enrollment-api";
 import { buildEnrollmentTemplate } from "@/lib/enrollment/bulk-template";
 import {
@@ -115,6 +120,17 @@ export default function BulkEnrollmentPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+  /*
+   * BE-003. What the uploaded file contains, before anything is written.
+   *
+   * This tab read the file and enrolled from it, so a wrong address was
+   * discovered after the import had already run. The rows are parsed into
+   * a preview now and go through the same validation and the same confirm
+   * step as the Excel Workflow tab — one table, used by both, rather than
+   * two that drift apart on the first change to either.
+   */
+  const [uploadPreviewRows, setUploadPreviewRows] = useState<PreviewRow[]>([]);
   const [emailsText, setEmailsText] = useState("");
   const [enrollmentResults, setEnrollmentResults] = useState<BulkEnrollmentResult | null>(null);
   const [showResultsDialog, setShowResultsDialog] = useState(false);
@@ -166,19 +182,18 @@ export default function BulkEnrollmentPage() {
     try {
       const token = localStorage.getItem("bwengeplus_token");
       
-      // Fetch students count
-      const studentsResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/institutions/${institutionId}/members?role=MEMBER`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (studentsResponse.ok) {
-        const studentsData = await studentsResponse.json();
-        setStats(prev => ({ ...prev, total_students: studentsData.data?.length || 0 }));
+      /*
+       * BE-004. The whole membership, counted.
+       *
+       * This asked the members endpoint with role=MEMBER and took the length
+       * of the array it returned. That endpoint paginates at fifteen, so the
+       * count read 15 for every institution larger than that, and left out
+       * anyone holding a different role. The roster is the same list the
+       * three tabs below use.
+       */
+      if (institutionId) {
+        const { students: rosterForCount } = await fetchRoster(institutionId);
+        setStats(prev => ({ ...prev, total_students: rosterForCount.length }));
       }
 
       // Fetch pending enrollments
@@ -221,25 +236,37 @@ export default function BulkEnrollmentPage() {
     }
   };
 
+  /*
+   * BE-004. Every member of the institution.
+   *
+   * This asked the members endpoint with role=MEMBER, which excludes anyone
+   * holding another role in the institution, and that endpoint paginates at
+   * fifteen by default — so the Student List tab showed at most fifteen of
+   * one role and called it the institution's students.
+   *
+   * The roster endpoint returns the whole membership joined to their
+   * profiles, and is the same list the Excel workflow and the manual picker
+   * use. One source, so the three tabs cannot disagree about who is here.
+   */
   const fetchStudents = async () => {
+    if (!institutionId) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem("bwengeplus_token");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/institutions/${institutionId}/members?role=MEMBER`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const { students: roster } = await fetchRoster(institutionId);
+      setStudents(
+        roster.map((student) => ({
+          id: student.id,
+          email: student.email,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          profile_picture_url: null,
+          is_active: student.is_active,
+          // The roster does not report verification, and claiming a student
+          // is unverified because a field was absent would be a lie about
+          // their account.
+          is_verified: true,
+        }))
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data.data || []);
-      } else {
-        toast.error("Failed to load students");
-      }
     } catch (error) {
       toast.error("Failed to load students");
     } finally {
@@ -247,17 +274,45 @@ export default function BulkEnrollmentPage() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      
-      if (fileExt === 'csv' || fileExt === 'xlsx' || fileExt === 'xls') {
-        setFile(file);
-        toast.success(`File "${file.name}" uploaded successfully`);
-      } else {
-        toast.error("Please upload a valid CSV or Excel file");
+    if (!file) return;
+
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+    if (fileExt !== "csv" && fileExt !== "xlsx" && fileExt !== "xls") {
+      toast.error("Please upload a valid CSV or Excel file");
+      return;
+    }
+
+    setFile(file);
+
+    /*
+     * BE-003. Read into a preview rather than enrolled from.
+     *
+     * The file used to be held and enrolled from on the next click, so a
+     * wrong address was found after the import had already run. An .xlsx is
+     * parsed into rows here and checked against the database before anything
+     * is written.
+     *
+     * CSV keeps the original path. The parser below already handles it, and
+     * the structured preview is built around the template's columns, which a
+     * bare CSV of addresses does not have.
+     */
+    if (fileExt === "xlsx" || fileExt === "xls") {
+      try {
+        const parsed = await parseEnrollmentWorkbook(file);
+        if (parsed.length === 0) {
+          toast.error("No rows found in that file. Is it the downloaded template?");
+          return;
+        }
+        setUploadPreviewRows(toPreviewRows(parsed));
+        toast.success(`${parsed.length} rows read. Check them below before enrolling.`);
+      } catch (error) {
+        toast.error("Could not read that file");
       }
+    } else {
+      setUploadPreviewRows([]);
+      toast.success(`File "${file.name}" uploaded successfully`);
     }
   };
 
@@ -689,25 +744,55 @@ export default function BulkEnrollmentPage() {
                 </div>
               )}
 
-              <div className="flex justify-end">
-                <Button
-                  size="lg"
-                  onClick={handleBulkEnroll}
-                  disabled={!selectedCourse || !file || processingEnrollment}
-                >
-                  {processingEnrollment ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Enroll Students
-                    </>
-                  )}
-                </Button>
-              </div>
+              {/*
+                BE-003. The spreadsheet, before it becomes enrolments.
+
+                The button below still exists for the CSV path, which has no
+                structured columns to preview. An .xlsx produces this table
+                instead: every row with its verdict, editable, removable, and
+                confirmable only once nothing is blocking.
+              */}
+              {uploadPreviewRows.length > 0 && institutionId && (
+                <EnrollmentPreviewTable
+                  institutionId={institutionId}
+                  courseId={selectedCourse}
+                  rows={uploadPreviewRows}
+                  onRowsChange={setUploadPreviewRows}
+                  title="Check the uploaded rows"
+                  onEnrolled={() => {
+                    setFile(null);
+                    fetchStats();
+                    fetchCourses();
+                  }}
+                />
+              )}
+
+              {/*
+                Hidden once a preview is on screen: two enrol buttons doing
+                different things, one of them skipping the checks, is how the
+                wrong one gets pressed.
+              */}
+              {uploadPreviewRows.length === 0 && (
+                <div className="flex justify-end">
+                  <Button
+                    size="lg"
+                    onClick={handleBulkEnroll}
+                    disabled={!selectedCourse || !file || processingEnrollment}
+                  >
+                    {processingEnrollment ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Enroll Students
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
