@@ -204,6 +204,21 @@ export function CourseDetailsStep({
     return null
   }
 
+  /*
+   * CAT-001. Which categories this course can be filed under.
+   *
+   * The select read `institutionCategories` and nothing else, so a course with
+   * no institution had no categories at all — the dropdown said "Select an
+   * institution first" to a global instructor who will never have one, and to
+   * a system admin creating a MOOC, which by definition has none.
+   *
+   * The global list was already being fetched by the wizard and handed to this
+   * step as `categories`; it was simply never read. An institution course uses
+   * that institution's categories, and a platform course uses the platform's.
+   */
+  const usesInstitutionCategories = !!getInstitutionIdForCategories()
+  const categoryOptions = usesInstitutionCategories ? institutionCategories : categories
+
   // ── Fetch institution categories ────────────────────────
   useEffect(() => {
     const fetchInstitutionCategories = async () => {
@@ -594,15 +609,25 @@ export function CourseDetailsStep({
                 <option value="">Select category</option>
                 {loadingCategories ? (
                   <option disabled>Loading categories…</option>
-                ) : institutionCategories.length > 0 ? (
-                  institutionCategories.map((cat) => (
+                ) : categoryOptions.length > 0 ? (
+                  categoryOptions.map((cat: any) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.parent_category_id ? `↳ ${cat.name}` : cat.name}
                     </option>
                   ))
                 ) : (
                   <option disabled>
-                    {getInstitutionIdForCategories() ? "No categories found" : "Select an institution first"}
+                    {/*
+                      Three different situations, and they used to share one
+                      sentence that was wrong for two of them. "Select an
+                      institution first" is only true for a system admin
+                      building a SPOC who has not named one yet.
+                    */}
+                    {usesInstitutionCategories
+                      ? "No categories in this institution yet"
+                      : isSystemAdmin && courseData.course_type === "SPOC"
+                        ? "Select an institution first"
+                        : "No platform categories yet"}
                   </option>
                 )}
               </select>
