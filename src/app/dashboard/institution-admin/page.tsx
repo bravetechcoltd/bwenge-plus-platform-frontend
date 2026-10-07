@@ -28,6 +28,7 @@ import {
   MoreVertical,
   Upload,
   Key,
+  Globe,
   Mail,
   Layers,
   Filter,
@@ -798,12 +799,27 @@ export default function InstitutionAdminDashboard() {
               <Upload className="w-4 h-4" />
               Upload CSV
             </Link>
-            <Link 
+            <Link
               href={`/dashboard/institution-admin/enrollment/access-codes?institution=${institution.id}`}
               className="px-4 py-2 bg-white border border-green-600 text-green-700 text-sm rounded-lg hover:bg-green-50 flex items-center gap-2"
             >
               <Key className="w-4 h-4" />
               Generate Codes
+            </Link>
+            {/*
+              A MOOC is the other thing an institution launches, and nothing on
+              this dashboard started one. The only course link led to the
+              wizard's default, which for an institution is a SPOC — so a MOOC
+              meant creating a SPOC and changing the type afterwards.
+
+              `type=MOOC` is read by the wizard and preselects it.
+            */}
+            <Link
+              href={`/dashboard/institution-admin/courses/create?type=MOOC&institution=${institution.id}`}
+              className="px-4 py-2 bg-white border border-green-600 text-green-700 text-sm rounded-lg hover:bg-green-50 flex items-center gap-2"
+            >
+              <Globe className="w-4 h-4" />
+              Launch a MOOC
             </Link>
           </div>
         </div>

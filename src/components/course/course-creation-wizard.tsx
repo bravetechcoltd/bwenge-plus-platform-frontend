@@ -105,6 +105,38 @@ export function CourseCreationWizard() {
   const [restoredDraftId, setRestoredDraftId] = useState<string | null>(requestedDraftId)
 
   /*
+   * ?type=MOOC — the course type the caller asked for.
+   *
+   * A dashboard that says "Launch a MOOC" has to arrive at a form already set
+   * to MOOC; landing on the default and expecting the person to change it
+   * makes the button a lie. Applied once, and only when a draft is not being
+   * restored — a saved draft already has a type, and overwriting it with a
+   * query string would silently change a course someone was part way through.
+   */
+  const requestedType = (searchParams?.get("type") ?? "").toUpperCase()
+
+  useEffect(() => {
+    if (requestedDraftId) return
+    if (requestedType !== "MOOC" && requestedType !== "SPOC") return
+
+    setCourseData((previous: any) => {
+      if (previous.course_type === requestedType) return previous
+      return {
+        ...previous,
+        course_type: requestedType,
+        // The same side effects the type selector applies, so arriving by link
+        // and choosing by hand leave the form in the same state.
+        ...(requestedType === "MOOC"
+          ? { is_public: true, requires_approval: false, is_institution_wide: false }
+          : { is_public: false, requires_approval: true }),
+      }
+    })
+    // Once, on arrival. Re-running would fight the selector if the user then
+    // changes the type by hand.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedType, requestedDraftId])
+
+  /*
    * Server-side auto-save (CD-001 §1), alongside the localStorage mirror
    * below. Paused until loading finishes, so restoring a draft cannot save
    * the half-populated state back over it.
