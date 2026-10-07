@@ -39,12 +39,33 @@ export default function InstitutionCourseCreatePage() {
           !!sessionUser.is_institution_member &&
           institutionIdsOf(sessionUser).length > 0;
 
+        /*
+         * PI-001. An instructor who belongs to no institution.
+         *
+         * The branch above requires membership, so a global instructor — the
+         * platform's own, invited by a system admin and carrying
+         * `is_institution_member: false` with an empty `institution_ids` —
+         * failed every branch and was told their role does not include access
+         * to this page. It does: holding INSTRUCTOR is what grants it. What
+         * they lack is an institution, and that decides which *kind* of course
+         * they can make, not whether they may make one.
+         *
+         * They create platform courses. The wizard handles the absent
+         * institution; this guard only has to stop pretending the role is the
+         * problem.
+         */
+        const isPublicInstructor =
+          roleOf(sessionUser) === "INSTRUCTOR" &&
+          !sessionUser.is_institution_member &&
+          institutionIdsOf(sessionUser).length === 0;
+
         // A system administrator creates courses anywhere, which every other
         // surface already allows and this one silently did not.
         return (
           roleOf(sessionUser) === "SYSTEM_ADMIN" ||
           isInstitutionAdmin ||
-          isInstitutionInstructor
+          isInstitutionInstructor ||
+          isPublicInstructor
         );
       }}
     >

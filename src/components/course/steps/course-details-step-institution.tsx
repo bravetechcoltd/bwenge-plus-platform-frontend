@@ -133,6 +133,29 @@ export function CourseDetailsStep({
   const isSystemAdmin = userRole === "SYSTEM_ADMIN"
   const isInstitutionAdmin = userRole === "INSTITUTION_ADMIN"
   const isInstitutionInstructor = userRole === "INSTRUCTOR" && user?.is_institution_member
+  /*
+   * PI-001. An instructor who belongs to no institution.
+   *
+   * Every gate in this step asked `isInstitutionInstructor`, so a global
+   * instructor got no course-type field, was absent from their own instructor
+   * list, and had no institution to fall back on. They create platform
+   * courses — a MOOC, necessarily, since a SPOC needs an institution to be
+   * private to.
+   */
+  const isPublicInstructor = userRole === "INSTRUCTOR" && !user?.is_institution_member
+
+  useEffect(() => {
+    if (isPublicInstructor && courseData.course_type !== "MOOC") {
+      setCourseData({
+        ...courseData,
+        course_type: "MOOC",
+        is_public: true,
+        requires_approval: false,
+        is_institution_wide: false,
+        institution_id: null,
+      })
+    }
+  }, [isPublicInstructor, courseData.course_type])
 
   const userInstitution = user?.institution
   const userInstitutionId = user?.primary_institution_id
@@ -161,7 +184,9 @@ export function CourseDetailsStep({
 
     const seen = new Set(fromInstitution.map(i => i.id))
     const withMe =
-      user && !seen.has(user.id) && (isInstitutionAdmin || isInstitutionInstructor)
+      user &&
+      !seen.has(user.id) &&
+      (isInstitutionAdmin || isInstitutionInstructor || isPublicInstructor)
         ? [...fromInstitution, user as unknown as User]
         : fromInstitution
 
@@ -405,6 +430,24 @@ export function CourseDetailsStep({
                 <option value="MOOC">MOOC — Massive Open Online Course</option>
                 <option value="SPOC">SPOC — Small Private Online Course</option>
               </select>
+            </div>
+          )}
+
+          {/*
+            PI-001. A global instructor has no institution, so a SPOC — a course
+            private to one — is not a thing they can make. They are shown what
+            they are creating rather than a choice with one real option.
+          */}
+          {isPublicInstructor && (
+            <div className="space-y-1.5">
+              <Label className={lbl}>Course Type</Label>
+              <div className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-sm text-foreground">
+                MOOC — Massive Open Online Course
+              </div>
+              <p className={hint}>
+                You teach on the platform rather than for an institution, so your courses are
+                public.
+              </p>
             </div>
           )}
 
