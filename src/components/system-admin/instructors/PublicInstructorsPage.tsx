@@ -42,6 +42,10 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import {
+  ExistingUserPicker,
+  type LookupUser,
+} from "@/components/systemAdmin/ExistingUserPicker";
+import {
   createPublicInstructor,
   listPublicInstructors,
   serverMessage,
@@ -109,6 +113,61 @@ export default function PublicInstructorsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [pendingToggle, setPendingToggle] = useState<PublicInstructor | null>(null);
 
+  /*
+   * UL-001. Where the instructor comes from.
+   *
+   * "new" creates an account. "existing" promotes someone who already has
+   * one — which is the common case, because a person teaching here has
+   * usually signed up as a learner first. Creating a second account for them
+   * leaves two rows for one human being and splits their courses across both.
+   */
+  const [source, setSource] = useState<"new" | "existing">("new");
+  const [existingUser, setExistingUser] = useState<LookupUser | null>(null);
+
+  /*
+   * Why an account cannot be made a public instructor.
+   *
+   * The rule is the definition of public: belonging to no institution. An
+   * institution's instructor already teaches under that institution, and
+   * moving them here would take them out of it — which is a transfer, not an
+   * addition, and belongs to the screens that own institution membership.
+   *
+   * Someone already in this list is excluded for the plainer reason that
+   * adding them twice is not a thing. Both are reported on the row rather
+   * than filtered out, so the admin can see the person exists.
+   */
+  const ineligibleReason = useCallback(
+    (user: LookupUser): string | null => {
+      if (!user.is_unaffiliated) {
+        const where = user.institutions[0]?.name;
+        return where
+          ? `Already an instructor or member at ${where}`
+          : "Already belongs to an institution";
+      }
+      if (instructors.some((i) => i.id === user.id)) {
+        return "Already a public instructor";
+      }
+      if (!user.is_active) return "Account is deactivated";
+      return null;
+    },
+    [instructors]
+  );
+
+  /*
+   * Taking a chosen account into the form. Only the identity fields are
+   * filled; the email is locked afterwards because it is their sign-in.
+   */
+  const adoptExistingUser = (picked: LookupUser | null) => {
+    setExistingUser(picked);
+    if (!picked) return;
+    setForm({
+      email: picked.email,
+      first_name: picked.first_name ?? "",
+      last_name: picked.last_name ?? "",
+      is_active: picked.is_active,
+    });
+  };
+
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -151,6 +210,8 @@ export default function PublicInstructorsPage() {
   const openCreate = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setSource("new");
+    setExistingUser(null);
     setDialogOpen(true);
   };
 
@@ -187,7 +248,13 @@ export default function PublicInstructorsPage() {
         });
         toast.success("Instructor updated.");
       } else {
+        /*
+         * With existing_user_id the server promotes an account that already
+         * exists rather than inserting a second one for the same person, and
+         * no password is generated — they already have one.
+         */
         const res = await createPublicInstructor({
+          ...(existingUser ? { existing_user_id: existingUser.id } : {}),
           email: form.email.trim(),
           first_name: form.first_name.trim(),
           last_name: form.last_name.trim(),
@@ -408,13 +475,72 @@ export default function PublicInstructorsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
+            {/*
+              UL-001. Create an account, or promote one that already exists.
+              Only when adding: an existing entry's subject is already decided.
+            */}
+            {!editing && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    {
+                      key: "new" as const,
+                      title: "Create new",
+                      body: "No account on the platform yet",
+                    },
+                    {
+                      key: "existing" as const,
+                      title: "Add from existing",
+                      body: "Already signed up here",
+                    },
+                  ]).map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => {
+                        setSource(option.key);
+                        if (option.key === "new") {
+                          adoptExistingUser(null);
+                          setForm(EMPTY_FORM);
+                        }
+                      }}
+                      className={`rounded-lg border p-3 text-left transition-colors ${
+                        source === option.key
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:bg-accent"
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold text-foreground">
+                        {option.title}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {option.body}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {source === "existing" && (
+                  <div className="rounded-lg border border-border p-3">
+                    <ExistingUserPicker
+                      selected={existingUser}
+                      onSelect={adoptExistingUser}
+                      ineligible={ineligibleReason}
+                      label="Search the platform"
+                      hint="Accounts that cannot be used are listed too, with the reason — so you can tell an ineligible person from one who has no account at all."
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Email address</Label>
               <Input
                 type="email"
                 placeholder="instructor@example.com"
                 value={form.email}
-                disabled={!!editing}
+                disabled={!!editing || !!existingUser}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               />
               {editing && (

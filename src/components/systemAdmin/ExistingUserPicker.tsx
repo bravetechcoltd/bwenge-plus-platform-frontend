@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, Building2, Check, Loader2, Search, UserPlus } from "lucide-react";
+import { Building2, Check, Loader2, Lock, Search, UserPlus } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,20 +13,24 @@ import api from "@/lib/api";
  * Existing-user picker (UL-001)
  * ============================================================================
  *
- * Searches the accounts that already exist, so an admin adding someone can
- * reuse the person rather than creating a second account for the same human
- * being.
+ * Searches the accounts that already exist, so an admin adding someone reuses
+ * the person rather than creating a second account for the same human being.
  *
- * ── Eligibility ───────────────────────────────────────────────────────────
+ * ── Why ineligible people are shown, not hidden ───────────────────────────
  *
- * The caller asks for unaffiliated accounts — what this platform calls global
- * or public users: no primary institution, nothing in institution_ids, and no
- * membership row. They are the ones free to be used here, because an account
- * that already belongs somewhere carries that institution's access with it.
+ * The first version filtered them out on the server and reported a count. That
+ * is better than silence, but it still leaves the admin typing a colleague's
+ * address, seeing an empty list, and having no idea whether the account exists
+ * at all — so they create a duplicate.
  *
- * Accounts that are *not* eligible are still reported, as a count rather than
- * as rows. Showing nothing when the typed address plainly exists is how an
- * admin concludes the search is broken and creates the duplicate anyway.
+ * Every match is listed now. The ones that cannot be used are greyed, not
+ * clickable, and carry the reason: already at an institution, already an
+ * instructor here, deactivated. The admin learns the thing they actually needed
+ * to know, which is that the person exists and why this screen will not take
+ * them.
+ *
+ * Each caller supplies its own rule through `ineligible`, because what
+ * disqualifies someone depends on what they are being added to.
  */
 
 export interface LookupUser {
@@ -46,10 +50,17 @@ export interface LookupUser {
 interface Props {
   /** Restricts results to one platform role, e.g. "INSTRUCTOR". */
   role?: string | null;
-  /** Only accounts belonging to no institution. Default true. */
-  unaffiliatedOnly?: boolean;
+  /**
+   * The reason this account cannot be used, or null when it can.
+   *
+   * Defaults to the institution rule: an account that already belongs
+   * somewhere carries that institution's access with it.
+   */
+  ineligible?: (user: LookupUser) => string | null;
   selected: LookupUser | null;
   onSelect: (user: LookupUser | null) => void;
+  label?: string;
+  hint?: string;
 }
 
 function initialsOf(name: string): string {
@@ -64,22 +75,32 @@ function initialsOf(name: string): string {
   );
 }
 
+/** The default rule: belonging to an institution disqualifies an account. */
+export function institutionIneligibility(user: LookupUser): string | null {
+  if (!user.is_unaffiliated) {
+    const where = user.institutions[0]?.name;
+    return where ? `Already at ${where}` : "Already in an institution";
+  }
+  return null;
+}
+
 export function ExistingUserPicker({
   role = null,
-  unaffiliatedOnly = true,
+  ineligible = institutionIneligibility,
   selected,
   onSelect,
+  label = "Find an existing account",
+  hint,
 }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<LookupUser[]>([]);
-  const [hiddenAffiliated, setHiddenAffiliated] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const [searched, setSearched] = useState(false);
 
   /*
-   * Every reply carries the query that produced it. Without that check a slow
+   * Every reply carries the query that produced it. Without the check a slow
    * answer for "ja" can land after a fast one for "jane@" and overwrite it, so
-   * the list shows matches for something the admin has already finished typing.
+   * the list shows matches for text the admin has already finished typing.
    */
   const latestQuery = useRef("");
 
@@ -89,7 +110,6 @@ export function ExistingUserPicker({
 
     if (term.length < 2) {
       setResults([]);
-      setHiddenAffiliated(0);
       setSearched(false);
       setIsSearching(false);
       return;
@@ -101,19 +121,18 @@ export function ExistingUserPicker({
     const timer = setTimeout(async () => {
       try {
         const params = new URLSearchParams({ q: term });
-        if (unaffiliatedOnly) params.append("unaffiliated_only", "true");
+        // Deliberately unfiltered: ineligible accounts are shown with a reason
+        // rather than withheld, so the admin learns the person exists.
         if (role) params.append("role", role);
 
         const res = await api.get(`/system-admin/users/lookup?${params.toString()}`);
         if (latestQuery.current !== term) return;
 
         setResults(Array.isArray(res.data?.data) ? res.data.data : []);
-        setHiddenAffiliated(Number(res.data?.hidden_affiliated) || 0);
         setSearched(true);
       } catch {
         if (latestQuery.current !== term) return;
         setResults([]);
-        setHiddenAffiliated(0);
         setSearched(true);
       } finally {
         if (latestQuery.current === term) setIsSearching(false);
@@ -121,7 +140,7 @@ export function ExistingUserPicker({
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [query, role, unaffiliatedOnly]);
+  }, [query, role]);
 
   /* ── the chosen person ─────────────────────────────────────────────── */
 
@@ -161,7 +180,7 @@ export function ExistingUserPicker({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="existing-user-search">Find an existing account</Label>
+      <Label htmlFor="existing-user-search">{label}</Label>
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -178,89 +197,83 @@ export function ExistingUserPicker({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {unaffiliatedOnly
-          ? "Searches accounts that belong to no institution — the global users free to be added here."
-          : "Searches every account on the platform."}
+        {hint ??
+          "Accounts that cannot be used are listed too, with the reason, so you can tell an ineligible person from one who has no account at all."}
       </p>
 
       {query.trim().length >= 2 && (
-        <div className="max-h-56 overflow-y-auto rounded-md border border-border">
+        <div className="max-h-64 overflow-y-auto rounded-md border border-border">
           {isSearching && results.length === 0 ? (
             <div className="flex items-center justify-center gap-2 p-4 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Searching…
             </div>
           ) : results.length === 0 ? (
-            <div className="space-y-2 p-4">
-              <p className="text-sm text-muted-foreground">
-                {searched ? "No eligible account matched." : "Searching…"}
-              </p>
-              {/*
-                The count matters. Returning nothing while the typed address
-                plainly exists is how an admin decides the search is broken and
-                creates a duplicate account for someone who already has one.
-              */}
-              {hiddenAffiliated > 0 && (
-                <div className="flex items-start gap-2 rounded-md bg-warning/10 p-2.5">
-                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
-                  <p className="text-xs text-warning">
-                    {hiddenAffiliated} matching {hiddenAffiliated === 1 ? "account" : "accounts"}{" "}
-                    already {hiddenAffiliated === 1 ? "belongs" : "belong"} to an institution, so
-                    {hiddenAffiliated === 1 ? " it is" : " they are"} not listed here.
-                  </p>
-                </div>
-              )}
-            </div>
+            <p className="p-4 text-sm text-muted-foreground">
+              {searched
+                ? "No account matched. Create a new one instead."
+                : "Searching…"}
+            </p>
           ) : (
-            results.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => onSelect(user)}
-                className="flex w-full items-center gap-3 border-b border-border p-2.5 text-left last:border-b-0 hover:bg-accent"
-              >
-                {user.profile_picture_url ? (
-                  <img
-                    src={user.profile_picture_url}
-                    alt=""
-                    className="h-9 w-9 shrink-0 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                    {initialsOf(user.name)}
-                  </div>
-                )}
+            results.map((user) => {
+              const reason = ineligible(user);
+              const blocked = !!reason;
 
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {user.name}
+              return (
+                <button
+                  key={user.id}
+                  type="button"
+                  disabled={blocked}
+                  onClick={() => !blocked && onSelect(user)}
+                  className={`flex w-full items-center gap-3 border-b border-border p-2.5 text-left last:border-b-0 ${
+                    blocked ? "cursor-not-allowed opacity-60" : "hover:bg-accent"
+                  }`}
+                >
+                  {user.profile_picture_url ? (
+                    <img
+                      src={user.profile_picture_url}
+                      alt=""
+                      className="h-9 w-9 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {initialsOf(user.name)}
+                    </div>
+                  )}
+
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {user.name}
+                      </span>
+                      {user.is_unaffiliated ? (
+                        <Badge variant="outline" className="text-[10px]">
+                          Global
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-warning">
+                          <Building2 className="mr-1 h-2.5 w-2.5" />
+                          {user.institutions[0]?.name ?? "In an institution"}
+                        </Badge>
+                      )}
                     </span>
-                    {user.is_unaffiliated ? (
-                      <Badge variant="outline" className="text-[10px]">
-                        Global
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-[10px] text-warning">
-                        <Building2 className="mr-1 h-2.5 w-2.5" />
-                        {user.institutions[0]?.name ?? "In an institution"}
-                      </Badge>
-                    )}
-                    {!user.is_active && (
-                      <Badge variant="outline" className="text-[10px] text-destructive">
-                        Deactivated
-                      </Badge>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {user.email}
+                      {user.bwenge_role ? ` · ${user.bwenge_role.replace(/_/g, " ")}` : ""}
+                    </span>
+                    {/* The reason, on the row it belongs to. */}
+                    {blocked && (
+                      <span className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-warning">
+                        <Lock className="h-2.5 w-2.5" />
+                        {reason}
+                      </span>
                     )}
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {user.email}
-                    {user.bwenge_role ? ` · ${user.bwenge_role.replace(/_/g, " ")}` : ""}
-                  </span>
-                </span>
 
-                <Check className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </button>
-            ))
+                  {!blocked && <Check className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                </button>
+              );
+            })
           )}
         </div>
       )}

@@ -30,6 +30,13 @@ export interface AssignableInstructor extends PublicInstructor {
 }
 
 export interface PublicInstructorInput {
+  /**
+   * An account that already exists, promoted rather than duplicated.
+   *
+   * When present the server updates that user instead of inserting one, and
+   * generates no password — they already have theirs.
+   */
+  existing_user_id?: string;
   email?: string;
   first_name?: string;
   last_name?: string;

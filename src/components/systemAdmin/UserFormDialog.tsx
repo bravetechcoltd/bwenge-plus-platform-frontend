@@ -427,13 +427,14 @@ export default function UserFormDialog({
             {source === 'existing' && (
               <div className="rounded-lg border border-border p-3">
                 {/*
-                  Unaffiliated only: an account that already belongs to an
-                  institution carries that institution's access with it, so it
-                  is not free to be used from here. The picker still reports
-                  how many matches it withheld and why.
+                  An account that already belongs to an institution carries
+                  that institution’s access with it, so it cannot be used
+                  from here. Those accounts are
+                  listed too, greyed and with the reason on the row, so an
+                  admin can tell an ineligible person from one who has no
+                  account at all.
                 */}
                 <ExistingUserPicker
-                  unaffiliatedOnly
                   role={null}
                   selected={existingUser}
                   onSelect={adoptExistingUser}
