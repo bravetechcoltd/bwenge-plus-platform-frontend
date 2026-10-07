@@ -3,17 +3,19 @@ import GlobalCategoriesPage from "@/components/categories/GlobalCategoriesPage";
 /**
  * CAT-001. The instructor's view.
  *
- * Readable, not editable. An instructor needs to know what they are choosing
- * from when they file a course, but a global category is shared by every
- * institution-less course on the platform — renaming one re-labels other
- * people's courses and deleting one strands them. The server enforces the same
- * rule regardless of what is rendered here.
+ * They can add a category and correct its wording: the people filing courses
+ * are the ones who find one missing or misnamed, and routing every such fix
+ * through an administrator is how a taxonomy stops matching what is taught.
+ *
+ * Hiding and deleting are not offered. Those reach backwards into courses
+ * other people have already filed under the category, where adding one only
+ * changes what the list offers next. The server enforces the same split.
  */
 export default function Page() {
-  return <GlobalCategoriesPage />;
+  return <GlobalCategoriesPage canAuthor />;
 }
 
 export const metadata = {
-  title: "Course Categories | Instructor",
+  title: "Global Categories | Instructor",
   description: "The platform's course categories",
 };

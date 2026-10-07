@@ -1,10 +1,11 @@
 import GlobalCategoriesPage from "@/components/categories/GlobalCategoriesPage";
 
 /**
- * CAT-001. The system admin's view: full management of the platform taxonomy.
+ * CAT-001. The system admin's view: the full taxonomy, including the actions
+ * that reach into courses already filed — hiding, deleting, reordering.
  */
 export default function Page() {
-  return <GlobalCategoriesPage canManage />;
+  return <GlobalCategoriesPage canAuthor canAdminister />;
 }
 
 export const metadata = {

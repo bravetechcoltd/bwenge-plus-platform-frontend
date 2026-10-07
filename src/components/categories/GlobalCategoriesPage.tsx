@@ -65,14 +65,20 @@ import {
  * list, and until now there was nowhere to see or change it — the wizard
  * fetched it and nobody could add to it.
  *
- * ── Read by everyone, written by system admins ────────────────────────────
+ * ── Two permissions, not one ──────────────────────────────────────────────
  *
- * An instructor needs to see these to know what they are choosing from, so the
- * screen is readable to them. Changing them is not theirs: a global category is
- * shared by every institution-less course on the platform, so renaming one
- * re-labels other people's courses and deleting one strands them. `canManage`
- * controls the difference, and the server enforces it again regardless of what
- * this component renders.
+ * `canAuthor` — adding a category and correcting its wording. Instructors as
+ * well as system admins: the people filing courses are the ones who notice a
+ * category missing or misnamed, and routing every such fix through an
+ * administrator is how a taxonomy stops matching what is actually taught.
+ *
+ * `canAdminister` — hiding, deleting and reordering. System admins only. A
+ * global category is shared by every institution-less course on the platform,
+ * so removing one reaches backwards into work other people have already filed,
+ * where adding one only changes what the list offers next.
+ *
+ * The server enforces the same split regardless of what this component
+ * renders; these props decide what is worth showing, not what is allowed.
  */
 
 interface FormState {
@@ -84,10 +90,19 @@ interface FormState {
 const EMPTY_FORM: FormState = { name: "", description: "", is_active: true };
 
 export default function GlobalCategoriesPage({
-  canManage = false,
+  canAuthor = false,
+  canAdminister = false,
 }: {
-  /** System admins manage; everyone else reads. */
-  canManage?: boolean;
+  /** Add a category and correct its wording. Instructors and system admins. */
+  canAuthor?: boolean;
+  /**
+   * Hide, delete and reorder. System admins only.
+   *
+   * Separate from canAuthor because these reach backwards into courses other
+   * people have already filed, where adding a category only changes what the
+   * list offers next.
+   */
+  canAdminister?: boolean;
 }) {
   const [categories, setCategories] = useState<GlobalCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -257,7 +272,7 @@ export default function GlobalCategoriesPage({
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          {canManage && (
+          {canAuthor && (
             <Button onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" />
               Add category
@@ -270,7 +285,7 @@ export default function GlobalCategoriesPage({
         Said plainly to a reader who cannot change anything, rather than leaving
         them to work out why the buttons are missing.
       */}
-      {!canManage && (
+      {!canAuthor ? (
         <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -278,7 +293,16 @@ export default function GlobalCategoriesPage({
             shared across the whole platform, so only a system administrator can change them.
           </p>
         </div>
-      )}
+      ) : !canAdminister ? (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            You can add categories and correct their wording. Hiding or deleting one is left to
+            a system administrator, because it affects courses other people have already filed
+            here.
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
@@ -352,7 +376,7 @@ export default function GlobalCategoriesPage({
                   ? "Until one exists, the category field is empty for anyone creating a course with no institution."
                   : "Try a different word."}
               </p>
-              {categories.length === 0 && canManage && (
+              {categories.length === 0 && canAuthor && (
                 <Button className="mt-4" onClick={openCreate}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add the first category
@@ -369,7 +393,7 @@ export default function GlobalCategoriesPage({
                     : "border-dashed border-border bg-muted/30"
                 }`}
               >
-                {canManage && !search.trim() && (
+                {canAdminister && !search.trim() && (
                   <div className="flex shrink-0 flex-col gap-1">
                     <Button
                       variant="ghost"
@@ -419,35 +443,46 @@ export default function GlobalCategoriesPage({
                   </p>
                 </div>
 
-                {canManage && (
+                {(canAuthor || canAdminister) && (
                   <div className="flex shrink-0 items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleActive(category)}
-                      title={
-                        category.is_active
-                          ? "Hide from new courses"
-                          : "Make available again"
-                      }
-                    >
-                      {category.is_active ? (
-                        <Eye className="h-4 w-4 text-success" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(category)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPendingDelete(category)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/*
+                      Hiding and deleting reach backwards into courses already
+                      filed under this category, so they are administrator
+                      actions. Editing only changes what the list says next.
+                    */}
+                    {canAdminister && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleActive(category)}
+                        title={
+                          category.is_active
+                            ? "Hide from new courses"
+                            : "Make available again"
+                        }
+                      >
+                        {category.is_active ? (
+                          <Eye className="h-4 w-4 text-success" />
+                        ) : (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    )}
+                    {canAuthor && (
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(category)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {canAdminister && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPendingDelete(category)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
