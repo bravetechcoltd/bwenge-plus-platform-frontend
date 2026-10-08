@@ -103,6 +103,21 @@ function HeroSection() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [selectedInstitution, setSelectedInstitution] = useState<string | null>(null)
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
+  /*
+   * HS-001. The slides, from the database when it has them.
+   *
+   * Named bannerImages so the markup below is unchanged — it already reads
+   * this list, and the only thing that moved is where the list comes from.
+   */
+  const bannerImages = useHeroSlides()
+
+  /*
+   * The database list may be shorter than the fallback, which would leave the
+   * index pointing past the end and render undefined.
+   */
+  useEffect(() => {
+    if (currentBannerIndex >= bannerImages.length) setCurrentBannerIndex(0)
+  }, [bannerImages.length, currentBannerIndex])
   const router = useRouter()
   const { user: reduxUser, isAuthenticated } = useSelector((state: RootState) => state.bwengeAuth)
   const { isLoadingPublic, publicInstitutions } = useAppSelector((state) => state.institutions)
@@ -462,7 +477,19 @@ const mockStats = {
   partnerInstitutions: 35,
 }
 
-const bannerImages = [
+/**
+ * HS-001. The slides the page falls back on.
+ *
+ * These five were the banner: changing a headline on the front page meant a
+ * code change and a deploy. They are seeded into hero_slides, so the page
+ * normally shows the database copy and an admin edits it at
+ * /dashboard/system-admin/hero-slides.
+ *
+ * They stay here as the fallback rather than being deleted. The banner is
+ * the first thing every visitor sees, and a request that fails should leave
+ * it looking the way it does today rather than empty.
+ */
+const FALLBACK_BANNERS = [
   {
     id: 0,
     image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=400&fit=crop",
@@ -495,6 +522,51 @@ const bannerImages = [
   },
 ]
 
+/**
+ * The banner slides (HS-001).
+ *
+ * The database first, the built-in list when it has nothing to say —
+ * which covers an empty table, a failed request and a backend that has
+ * not been redeployed yet. The shape returned is the one the markup
+ * already uses, so the rendering did not have to change.
+ */
+function useHeroSlides() {
+  const [slides, setSlides] = useState(FALLBACK_BANNERS)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await api.get("/hero-slides")
+        const rows = Array.isArray(res.data?.data) ? res.data.data : []
+        if (cancelled || rows.length === 0) return
+
+        setSlides(
+          rows.map((slide: any, index: number) => ({
+            id: index,
+            image: slide.image_url || undefined,
+            title: slide.headline || slide.title,
+            description: slide.description,
+            eyebrow: slide.eyebrow,
+            cta_text: slide.cta_text,
+            cta_href: slide.cta_href,
+          }))
+        )
+      } catch {
+        // The built-in slides stay. A banner that failed to load is not
+        // something a visitor can act on.
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return slides
+}
 // Updated CategoryFilters component that filters the FeaturedCourses section
 function CategoryFilters({ onCategoryChange, activeCategory }: {
   onCategoryChange: (category: string) => void;

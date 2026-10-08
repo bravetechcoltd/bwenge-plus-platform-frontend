@@ -9,6 +9,7 @@ import instructorReducer from "./features/instructor/instructorSlice"
 import systemAdminUserManagementReducer from "./features/systemAdmin/userManagementSlice"
 import systemSettingsReducer from "./features/system-settings/systemSettingsSlice";
 import notificationReducer from "./features/notifications/notificationSlice";
+import heroSlideReducer from "./features/auth/heroSlideSlice"
 import storage from "redux-persist/lib/storage"
 /**
  * AXM-CONS-001 finding A-05.
@@ -72,7 +73,9 @@ const rootReducer = combineReducers({
   courseInstructors: courseInstructorReducer,
   instructor: instructorReducer,
   systemAdminUserManagement:systemAdminUserManagementReducer,
-  notifications: notificationReducer
+  notifications: notificationReducer,
+  // HS-001. The homepage banner, which used to be an array in page.tsx.
+  heroSlides: heroSlideReducer
 
 
 

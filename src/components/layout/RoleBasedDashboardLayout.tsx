@@ -37,6 +37,7 @@ import {
   Upload,
   Key,
   Layers,
+  Image as ImageIcon,
   Target,
   Award,
   MessageSquare,
@@ -678,6 +679,13 @@ const getSidebarConfig = (role: string, institutionId?: string, user?: { primary
             title: "User Analytics",
             href: "/dashboard/system-admin/users/analytics",
             icon: BarChart3
+          },
+          {
+            // HS-001. The homepage banner. Its slides were an array in
+            // page.tsx, so changing the front page needed a deploy.
+            title: "Homepage Banner",
+            href: "/dashboard/system-admin/hero-slides",
+            icon: ImageIcon
           },
           {
             // PI-001. Instructors who belong to the platform rather than to an
