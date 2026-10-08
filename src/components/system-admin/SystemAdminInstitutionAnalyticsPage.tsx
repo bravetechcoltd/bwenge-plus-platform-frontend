@@ -39,6 +39,7 @@ import {
   PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
+import { formatRating } from "@/lib/utils";
 
 // ═══════════════════════════════════════════
 //  COLOUR SYSTEM
@@ -1021,7 +1022,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
             {[
               { label: "Avg Completion", value: `${summary.average_completion_rate?.toFixed(1)}%`, bg: `${OK}12`,   text: OK,   border: `${OK}30`   },
               { label: "Growth Rate",    value: `${summary.growth_rate?.toFixed(1)}%`,              bg: `${TEAL}12`, text: TEAL, border: `${TEAL}30` },
-              { label: "Avg Rating",     value: summary.average_rating?.toFixed(1) ?? "—",          bg: `${AMB}12`,  text: AMB,  border: `${AMB}30`  },
+              { label: "Avg Rating",     value: formatRating(summary.average_rating),          bg: `${AMB}12`,  text: AMB,  border: `${AMB}30`  },
             ].map(({ label, value, bg, text, border }) => (
               <div key={label} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-bold"
                 style={{ backgroundColor: bg, color: text, borderColor: border }}>
@@ -1070,7 +1071,7 @@ export default function SystemAdminInstitutionAnalyticsPage() {
               <DetailRow label="Enrollments" value={fmtK(selInst.enrollments)} />
               <DetailRow
                 label="Avg Rating"
-                value={selInst.average_rating?.toFixed(1) ?? null}
+                value={formatRating(selInst.average_rating, null as any)}
               />
             </DetailSection>
 

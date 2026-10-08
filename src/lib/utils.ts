@@ -57,3 +57,39 @@ export const isTempId = (id: any): boolean => {
   if (typeof id !== 'string') return false
   return id.startsWith('temp-')
 }
+/**
+ * A rating, as text (RAT-001).
+ *
+ * `average_rating` is a Postgres `numeric` column, and node-postgres returns
+ * numerics as strings — the value arrives as "4.50", not 4.5. So
+ * `rating?.toFixed(1)` passes the optional chain, because a non-empty string is
+ * not null, and then throws: strings have no toFixed. Eight call sites across
+ * the application had that exact line, each one a crash waiting for a screen
+ * that happened to show a rated course.
+ *
+ * It is deliberately not `Number(value).toFixed(1)` alone: NaN formats quite
+ * happily as "NaN", so a malformed value would render as text on the page
+ * rather than being caught. Anything unparseable gives the fallback instead.
+ *
+ * A course nobody has rated has no rating, which is why the fallback defaults
+ * to a dash rather than "0.0" — zero reads as the worst possible score.
+ */
+export function formatRating(value: unknown, fallback: string = "—"): string {
+  if (value === null || value === undefined || value === "") return fallback
+  const parsed = typeof value === "number" ? value : Number(value)
+  if (!Number.isFinite(parsed)) return fallback
+  if (parsed <= 0) return fallback
+  return parsed.toFixed(1)
+}
+
+/**
+ * The same coercion without the formatting, for comparisons and arithmetic.
+ *
+ * `rating >= 4.8` against the string "4.50" compares lexically and is wrong in
+ * ways that look right for most values.
+ */
+export function toNumber(value: unknown, fallback: number = 0): number {
+  if (value === null || value === undefined || value === "") return fallback
+  const parsed = typeof value === "number" ? value : Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}

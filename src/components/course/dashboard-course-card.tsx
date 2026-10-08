@@ -7,6 +7,7 @@ import { Users, BookOpen, Clock, Play, Share2, Edit, BarChart, Lock, Globe, Star
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Course, CourseType, CourseLevel, CourseStatus } from "@/types"
+import { formatRating } from "@/lib/utils";
 
 interface DashboardCourseCardProps {
   course: Course
@@ -241,7 +242,7 @@ export function DashboardCourseCard({
       <span>
         {typeof course.average_rating === 'string' 
           ? parseFloat(course.average_rating).toFixed(1) 
-          : course.average_rating?.toFixed(1) || "0.0"}
+          : formatRating(course.average_rating, "0.0")}
       </span>
     </div>
   </div>

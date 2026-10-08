@@ -54,6 +54,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { format, subDays, subMonths, subYears, formatDistance } from "date-fns";
+import { formatRating } from "@/lib/utils";
 
 /**
  * A `Date` only when the value really is one.
@@ -971,7 +972,7 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Avg. Rating</p>
-                <p className="text-3xl font-bold">{analytics.performance.average_rating.toFixed(1)}</p>
+                <p className="text-3xl font-bold">{formatRating(analytics.performance.average_rating, '0.0')}</p>
                 <p className="text-xs text-warning mt-1">
                   {analytics.performance.total_reviews} reviews
                 </p>
@@ -1112,7 +1113,7 @@ export default function InstructorAnalyticsPage() {
                       </div>
                     </div>
                     <Badge className="bg-primary/15 text-primary">
-                      {course.average_rating.toFixed(1)} ★
+                      {formatRating(course.average_rating)} ★
                     </Badge>
                   </div>
                 ))}

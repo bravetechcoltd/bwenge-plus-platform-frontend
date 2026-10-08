@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Star, Clock, Users, Play, BookOpen, Award, Lock, Globe } from "lucide-react"
 import Link from "next/link"
 import { CourseType, CourseLevel } from "@/types"
+import { formatRating } from "@/lib/utils";
 
 interface CourseCardProps {
   course: {
@@ -120,7 +121,7 @@ export function CourseCard({ course, showActions = true, showInstitution = true 
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 fill-yellow-400 text-warning" />
-            <span className="text-sm font-medium">{course.average_rating.toFixed(1)}</span>
+            <span className="text-sm font-medium">{formatRating(course.average_rating)}</span>
             <span className="text-xs text-muted-foreground">({course.total_reviews})</span>
           </div>
           {course.is_certificate_available && (

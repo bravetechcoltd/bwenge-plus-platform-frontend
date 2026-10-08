@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { AnimatePresence, motion } from "framer-motion";
+import { formatRating } from "@/lib/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const PAGE_SIZE = 15;
@@ -413,7 +414,7 @@ export default function InstructorsPage() {
                           {inst.average_rating && inst.average_rating > 0 ? (
                             <div className="flex items-center justify-center gap-1">
                               <Star className="w-4 h-4 text-warning fill-amber-500" />
-                              <span className="text-sm font-medium text-warning">{inst.average_rating.toFixed(1)}</span>
+                              <span className="text-sm font-medium text-warning">{formatRating(inst.average_rating)}</span>
                             </div>
                           ) : (
                             <span className="text-xs text-muted-foreground">No ratings</span>

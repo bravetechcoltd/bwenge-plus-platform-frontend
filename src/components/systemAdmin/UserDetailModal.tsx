@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import {
   SmartDetailsModal,
@@ -39,6 +33,7 @@ import {
 } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks";
 import { fetchUserDetails } from "@/lib/features/systemAdmin/userManagementSlice";
+import { formatRating } from "@/lib/utils";
 
 interface UserDetailModalProps {
   open: boolean;
@@ -307,7 +302,7 @@ export default function UserDetailModal({
                     <div>
                       <span className="text-muted-foreground">Rating:</span>
                       <span className="font-medium ml-1">
-                        {detailed_statistics?.teaching.average_course_rating?.toFixed(1) || '0.0'}
+                        {formatRating(detailed_statistics?.teaching.average_course_rating, '0.0')}
                       </span>
                     </div>
                     <div>
@@ -515,7 +510,7 @@ export default function UserDetailModal({
                           </div>
                           <div>
                             <span>Rating:</span>
-                            <span className="font-medium ml-1">{course.average_rating?.toFixed(1)}</span>
+                            <span className="font-medium ml-1">{formatRating(course.average_rating)}</span>
                           </div>
                         </div>
                       </div>
