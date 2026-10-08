@@ -15,6 +15,7 @@ import {
   selectUserFilters,
   selectUserStatistics,
   createUser,
+  deleteUser,
   selectIsCreating  
 } from "@/lib/features/systemAdmin/userManagementSlice";
 import {
@@ -83,6 +84,7 @@ export default function SystemAdminUsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToView, setUserToView] = useState<any>(null);
   const [userToDelete, setUserToDelete] = useState<any>(null);
@@ -732,11 +734,45 @@ export default function SystemAdminUsersPage() {
             setUserToDelete(null);
           }}
           user={userToDelete}
-          onConfirm={(options) => {
-            setShowDeleteDialog(false);
-            setUserToDelete(null);
+          /*
+            DEL-001. This closed the dialog and called nothing.
+
+            Both soft and permanent delete appeared to work — the modal shut,
+            the row stayed — because no request was ever made. The thunk
+            below has existed the whole time and was never dispatched.
+          */
+          onConfirm={async (options) => {
+            const target = userToDelete;
+            if (!target) return;
+
+            setIsDeletingUser(true);
+            try {
+              await dispatch(
+                deleteUser({ userId: target.id, options })
+              ).unwrap();
+
+              toast.success(
+                options.permanent
+                  ? `${target.email} was permanently deleted.`
+                  : `${target.email} was deactivated and can be restored.`
+              );
+              setShowDeleteDialog(false);
+              setUserToDelete(null);
+              // The list and the counts both change.
+              dispatch(fetchSystemUsers(filters));
+              dispatch(fetchUserStatistics());
+            } catch (error: any) {
+              /*
+                Left open on failure. Closing would hide the reason, and the
+                server refuses a permanent delete whose courses still need
+                reassigning — which is something the admin has to act on.
+              */
+              toast.error(typeof error === "string" ? error : "Failed to delete the user");
+            } finally {
+              setIsDeletingUser(false);
+            }
           }}
-          isDeleting={false}
+          isDeleting={isDeletingUser}
         />
       )}
     </div>

@@ -70,7 +70,12 @@ export default function UserDeleteDialog({
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent size="lg">
+      {/*
+        DEL-001. The dialog was taller than the viewport, so the title was
+        cut off above and the Cancel and Delete buttons below it — the
+        whole decision was off screen with no way to scroll to it.
+      */}
+      <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl text-destructive flex items-center gap-2">
             <AlertCircle className="w-6 h-6" />

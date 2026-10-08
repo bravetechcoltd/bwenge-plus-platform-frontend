@@ -286,7 +286,10 @@ export const deleteUser = createAsyncThunk(
       if (options.permanent) params.append("permanent", "true");
       if (options.force) params.append("force", "true");
       if (options.reassign_courses_to) {
-        params.append("reassign_courses_to", options.reassign_courses_to);
+        // DEL-001. The server reads reassign_to. Sending reassign_courses_to meant
+        // the successor was silently dropped and the delete was refused for
+        // courses the admin had already chosen a home for.
+        params.append("reassign_to", options.reassign_courses_to);
       }
       
       const response = await api.delete(
