@@ -71,22 +71,34 @@ export default function UserDeleteDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       {/*
-        DEL-001. The dialog was taller than the viewport, so the title was
-        cut off above and the Cancel and Delete buttons below it — the
-        whole decision was off screen with no way to scroll to it.
+        DEL-003. Three regions, not one scrolling block.
+
+        This was max-h with overflow on the whole dialog, so the title
+        scrolled off the top and the Cancel and Delete buttons off the
+        bottom — the decision itself was out of view, which is what made the
+        content look like it was overlapping.
+
+        The header says what this is, the footer what it will do, and only
+        the detail between them moves. p-0 here because each region brings
+        its own padding; without that the inner scroll area inherits the
+        dialog's and the scrollbar sits inside the content.
       */}
-      <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl text-destructive flex items-center gap-2">
-            <AlertCircle className="w-6 h-6" />
+      <DialogContent size="lg" className="flex max-h-[85vh] flex-col gap-0 p-0">
+        <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
+          <DialogTitle className="flex items-center gap-2 text-lg text-destructive">
+            <AlertCircle className="h-5 w-5 shrink-0" />
             Delete User
           </DialogTitle>
-          <DialogDescription>
-            You are about to delete {user.first_name} {user.last_name}
+          <DialogDescription className="text-sm">
+            {/* Neutral: which kind of deletion is chosen below, and the
+                footer states the consequence of the current choice. */}
+            Review what happens to
+            <span className="font-medium text-foreground"> {user.first_name} {user.last_name}</span>
+            {user.email ? <span className="text-muted-foreground"> · {user.email}</span> : null}
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-6">
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           {/* Warning Section */}
           <Alert variant="destructive">
             <AlertCircle className="w-4 h-4" />
@@ -96,9 +108,11 @@ export default function UserDeleteDialog({
           </Alert>
           
           {/* Impact Information */}
-          <div className="space-y-3">
-            <h4 className="font-medium">Impact Analysis</h4>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-foreground">Impact</h4>
+            {/* One column on a phone: two 180px cards side by side wrap into
+                each other and that is the overlap that was reported. */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="p-3 border rounded-lg bg-destructive/10">
                 <div className="flex items-center gap-2 text-destructive">
                   <UserX className="w-4 h-4" />
@@ -152,8 +166,8 @@ export default function UserDeleteDialog({
           <Separator />
           
           {/* Deletion Options */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Deletion Options</h4>
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">How to delete</h4>
             
             <RadioGroup value={deletionType} onValueChange={(v: any) => setDeletionType(v)}>
               <div className="flex items-center space-x-2">
@@ -282,7 +296,17 @@ export default function UserDeleteDialog({
           </div>
         </div>
         
-        <DialogFooter>
+        {/*
+          Outside the scroll area, so the buttons are reachable however long
+          the detail above gets.
+        */}
+        <DialogFooter className="shrink-0 gap-2 border-t border-border px-5 py-4 sm:justify-between">
+          <p className="hidden text-xs text-muted-foreground sm:block">
+            {deletionType === 'soft'
+              ? 'The account is kept and can be restored.'
+              : 'The account and its data are removed for good.'}
+          </p>
+          <div className="flex gap-2">
           <Button variant="outline" onClick={onClose} disabled={isDeleting}>
             Cancel
           </Button>
@@ -306,6 +330,7 @@ export default function UserDeleteDialog({
               </>
             )}
           </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
