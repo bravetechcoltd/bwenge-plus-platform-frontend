@@ -2,7 +2,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CoursePricingField } from "@/components/course/course-pricing-field"
@@ -19,6 +19,11 @@ import { ThumbnailUpload } from "../thumbnail-upload"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Course, User, CourseCategory, Institution } from "@/types"
 import { useDuplicateTitleCheck } from "@/lib/courses/duplicate-check";
+import {
+  accessDefaultsForCourseType,
+  fillAccessDefaults,
+  toggleChecked,
+} from "@/lib/course/access-defaults";
 
 interface CourseDetailsStepProps {
   courseData: Partial<Course>
@@ -128,6 +133,28 @@ export function CourseDetailsStep({
   // CT-001. Needed so an instructor reaching this wizard still gets a course
   // type field; without it the value stayed undefined all the way to submit.
   const isInstructor = userRole === "INSTRUCTOR"
+
+  /*
+   * SPOC-TOGGLE-001 — the switches reflect the type, and so does the payload.
+   *
+   * `accessDefaults` is what the Access & Settings switches should read when
+   * the field has not been decided yet, and the effect below writes those
+   * values into `courseData` so what is submitted matches what is shown.
+   *
+   * Both are needed. The type selectors already applied side effects, but they
+   * are event handlers: an institution admin's type is SPOC from the start, so
+   * nothing fired and the flags stayed undefined — displayed as off by
+   * `|| false`, and submitted as off for the same reason.
+   *
+   * `fillAccessDefaults` returns the same object when there is nothing to
+   * fill, so this cannot loop.
+   */
+  const accessDefaults = accessDefaultsForCourseType(courseData.course_type)
+
+  useEffect(() => {
+    const filled = fillAccessDefaults(courseData)
+    if (filled !== courseData) setCourseData(filled)
+  }, [courseData, setCourseData])
 
   const userInstitution = user?.institution
   const userInstitutionId = user?.primary_institution_id
@@ -363,15 +390,15 @@ export function CourseDetailsStep({
                 value={courseData.course_type || (isSystemAdmin ? "MOOC" : "SPOC")}
                 onChange={(e) => {
                   const value = e.target.value
-                  const updates: any = { course_type: value }
+                  // One rule for the access flags, shared with the other
+                  // selectors and the wizard's `?type=` arrival effect.
+                  const updates: any = {
+                    course_type: value,
+                    ...accessDefaultsForCourseType(value),
+                  }
                   if (value === "MOOC") {
-                    updates.is_public = true
-                    updates.requires_approval = false
-                    updates.is_institution_wide = false
                     if (!courseData.institution_id) updates.institution_id = null
                   } else if (value === "SPOC") {
-                    updates.is_public = false
-                    updates.requires_approval = true
                     if (isInstitutionAdmin && userInstitutionId)
                       updates.institution_id = userInstitutionId
                   }
@@ -745,7 +772,10 @@ export function CourseDetailsStep({
                 icon={<Shield className="w-4 h-4" />}
                 label="Require Enrollment Approval"
                 description="Students need approval before they can join"
-                checked={courseData.requires_approval || false}
+                checked={toggleChecked(
+                  courseData.requires_approval,
+                  accessDefaults.requires_approval
+                )}
                 onCheckedChange={(checked) =>
                   setCourseData({ ...courseData, requires_approval: checked })
                 }
@@ -755,12 +785,18 @@ export function CourseDetailsStep({
                 icon={<Building className="w-4 h-4" />}
                 label="Institution-wide Course"
                 description="Available to all members of the institution automatically"
-                checked={courseData.is_institution_wide || false}
+                checked={toggleChecked(
+                  courseData.is_institution_wide,
+                  accessDefaults.is_institution_wide
+                )}
                 onCheckedChange={(checked) =>
                   setCourseData({ ...courseData, is_institution_wide: checked })
                 }
               />
-              {!courseData.is_institution_wide && (
+              {!toggleChecked(
+                courseData.is_institution_wide,
+                accessDefaults.is_institution_wide
+              ) && (
                 <div className="space-y-1.5 pt-1">
                   <Label htmlFor="max_enrollments" className={lbl}>
                     Maximum Enrollments

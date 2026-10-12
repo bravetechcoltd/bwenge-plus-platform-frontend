@@ -21,6 +21,7 @@ import {
   linkDraftToCourse,
 } from "@/hooks/useCourseDraft"
 import { DraftSaveIndicator } from "@/components/course/draft-save-indicator"
+import { accessDefaultsForCourseType } from "@/lib/course/access-defaults";
 
 interface WizardStep {
   id: string
@@ -535,8 +536,12 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
           : true,
         course_type: courseData.course_type || "MOOC",
         is_public: courseData.is_public !== undefined ? courseData.is_public : true,
-        requires_approval: courseData.requires_approval || false,
-        is_institution_wide: courseData.is_institution_wide || false,
+        requires_approval:
+          courseData.requires_approval ??
+          accessDefaultsForCourseType(courseData.course_type).requires_approval,
+        is_institution_wide:
+          courseData.is_institution_wide ??
+          accessDefaultsForCourseType(courseData.course_type).is_institution_wide,
       }
 
       // ==================== INSTITUTION ID HANDLING ====================

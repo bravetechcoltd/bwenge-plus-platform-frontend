@@ -17,6 +17,7 @@ import Cookies from "js-cookie"
 import { useSearchParams } from "next/navigation"
 import { useCourseDraft, fetchDraft, linkDraftToCourse } from "@/hooks/useCourseDraft"
 import { DraftSaveIndicator } from "@/components/course/draft-save-indicator"
+import { accessDefaultsForCourseType } from "@/lib/course/access-defaults";
 
 interface WizardStep {
   id: string
@@ -126,9 +127,7 @@ export function CourseCreationWizard() {
         course_type: requestedType,
         // The same side effects the type selector applies, so arriving by link
         // and choosing by hand leave the form in the same state.
-        ...(requestedType === "MOOC"
-          ? { is_public: true, requires_approval: false, is_institution_wide: false }
-          : { is_public: false, requires_approval: true }),
+        ...accessDefaultsForCourseType(requestedType),
       }
     })
     // Once, on arrival. Re-running would fight the selector if the user then
@@ -510,7 +509,9 @@ export function CourseCreationWizard() {
             : true,
         course_type: courseData.course_type || "MOOC",
         is_public: courseData.is_public !== undefined ? courseData.is_public : true,
-        requires_approval: courseData.requires_approval || false,
+        requires_approval:
+          courseData.requires_approval ??
+          accessDefaultsForCourseType(courseData.course_type).requires_approval,
         is_institution_wide: courseData.is_institution_wide || false,
       }
 

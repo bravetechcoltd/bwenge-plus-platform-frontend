@@ -20,6 +20,11 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Course, User, CourseCategory, Institution } from "@/types"
 import { useAuth } from "@/hooks/use-auth"
 import { useDuplicateTitleCheck } from "@/lib/courses/duplicate-check";
+import {
+  accessDefaultsForCourseType,
+  fillAccessDefaults,
+  toggleChecked,
+} from "@/lib/course/access-defaults";
 
 interface CourseDetailsStepProps {
   courseData: Partial<Course>
@@ -133,6 +138,28 @@ export function CourseDetailsStep({
   const isSystemAdmin = userRole === "SYSTEM_ADMIN"
   const isInstitutionAdmin = userRole === "INSTITUTION_ADMIN"
   const isInstitutionInstructor = userRole === "INSTRUCTOR" && user?.is_institution_member
+
+  /*
+   * SPOC-TOGGLE-001 — the switches reflect the type, and so does the payload.
+   *
+   * `accessDefaults` is what the Access & Settings switches should read when
+   * the field has not been decided yet, and the effect below writes those
+   * values into `courseData` so what is submitted matches what is shown.
+   *
+   * Both are needed. The type selectors already applied side effects, but they
+   * are event handlers: an institution admin's type is SPOC from the start, so
+   * nothing fired and the flags stayed undefined — displayed as off by
+   * `|| false`, and submitted as off for the same reason.
+   *
+   * `fillAccessDefaults` returns the same object when there is nothing to
+   * fill, so this cannot loop.
+   */
+  const accessDefaults = accessDefaultsForCourseType(courseData.course_type)
+
+  useEffect(() => {
+    const filled = fillAccessDefaults(courseData)
+    if (filled !== courseData) setCourseData(filled)
+  }, [courseData, setCourseData])
   /*
    * PI-001. An instructor who belongs to no institution.
    *
@@ -427,15 +454,13 @@ export function CourseDetailsStep({
                 value={courseData.course_type || "MOOC"}
                 onChange={(e) => {
                   const value = e.target.value
-                  const updates: any = { course_type: value }
+                  const updates: any = {
+                    course_type: value,
+                    ...accessDefaultsForCourseType(value),
+                  }
                   if (value === "MOOC") {
-                    updates.is_public = true
-                    updates.requires_approval = false
-                    updates.is_institution_wide = false
                     if (!courseData.institution_id) updates.institution_id = null
                   } else {
-                    updates.is_public = false
-                    updates.requires_approval = true
                     if (isInstitutionAdmin && userInstitutionId) updates.institution_id = userInstitutionId
                   }
                   setCourseData({ ...courseData, ...updates })
@@ -477,14 +502,10 @@ export function CourseDetailsStep({
                 value={courseData.course_type || "SPOC"}
                 onChange={(e) => {
                   const value = e.target.value
-                  const updates: any = { course_type: value, institution_id: userInstitutionId }
-                  if (value === "MOOC") {
-                    updates.is_public = true
-                    updates.requires_approval = false
-                    updates.is_institution_wide = false
-                  } else {
-                    updates.is_public = false
-                    updates.requires_approval = true
+                  const updates: any = {
+                    course_type: value,
+                    institution_id: userInstitutionId,
+                    ...accessDefaultsForCourseType(value),
                   }
                   setCourseData({ ...courseData, ...updates })
                 }}
@@ -795,16 +816,11 @@ export function CourseDetailsStep({
                 checked={courseData.course_type === "MOOC"}
                 onCheckedChange={(checked) => {
                   const newType = checked ? "MOOC" : "SPOC"
-                  const updates: any = { course_type: newType }
-                  if (newType === "MOOC") {
-                    updates.is_public = true
-                    updates.requires_approval = false
-                    updates.is_institution_wide = false
-                  } else {
-                    updates.is_public = false
-                    updates.requires_approval = true
-                  }
-                  setCourseData({ ...courseData, ...updates })
+                  setCourseData({
+                    ...courseData,
+                    course_type: newType,
+                    ...accessDefaultsForCourseType(newType),
+                  })
                 }}
               />
               <RowDivider />
@@ -818,7 +834,10 @@ export function CourseDetailsStep({
                 icon={<Shield className="w-4 h-4" />}
                 label="Require Enrollment Approval"
                 description="Students must be approved before they can join"
-                checked={courseData.requires_approval || false}
+                checked={toggleChecked(
+                  courseData.requires_approval,
+                  accessDefaults.requires_approval
+                )}
                 onCheckedChange={(checked) => setCourseData({ ...courseData, requires_approval: checked })}
               />
               <RowDivider />
@@ -826,7 +845,10 @@ export function CourseDetailsStep({
                 icon={<Building className="w-4 h-4" />}
                 label="Institution-wide Course"
                 description="Available to all members of your institution automatically"
-                checked={courseData.is_institution_wide || false}
+                checked={toggleChecked(
+                  courseData.is_institution_wide,
+                  accessDefaults.is_institution_wide
+                )}
                 onCheckedChange={(checked) => setCourseData({ ...courseData, is_institution_wide: checked })}
               />
               {!courseData.is_institution_wide && (
