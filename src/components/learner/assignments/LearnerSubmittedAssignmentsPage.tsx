@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/lib/hooks";
+import { useAuth } from "@/hooks/use-auth";
+import { useSession } from "@/lib/auth/session";
+import { cn } from "@/lib/utils";
+import { richTextToPlain } from "@/components/ui/rich-text";
 import {
   Card,
   CardContent,
@@ -99,8 +103,28 @@ interface SubmittedStats {
 export default function LearnerSubmittedAssignmentsPage() {
   
 
-  const { user } = useAppSelector((state) => state.bwengeAuth);
+  /*
+   * LSA-001. The session, from whichever store holds it.
+   *
+   * This read the `bwengeAuth` slice alone. `loading` starts true and the
+   * effect below only fetches `if (user?.id)`, so a session that had been
+   * restored into the AuthProvider context but not back into Redux left the
+   * spinner turning for ever with no request ever sent. The same shape that
+   * froze the institution students list, and the reason `useAuth()` now falls
+   * back to Redux rather than the other way round.
+   */
+  const reduxUser = useAppSelector((state) => state.bwengeAuth.user);
+  const { user: contextUser } = useAuth();
+  const { user: sessionUser, status: sessionStatus } = useSession();
+  const user = reduxUser ?? contextUser ?? sessionUser;
+
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  /* Thumbnails whose URL failed, so the card falls back to the placeholder
+     rather than painting the course title where the picture should be. */
+  const [brokenThumbnails, setBrokenThumbnails] = useState<Set<string>>(
+    new Set()
+  );
   const [submittedAssignments, setSubmittedAssignments] = useState<SubmittedAssignment[]>([]);
   const [stats, setStats] = useState<SubmittedStats | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -113,17 +137,52 @@ export default function LearnerSubmittedAssignmentsPage() {
 
 
   useEffect(() => {
-    if (user?.id) {
-      fetchSubmittedAssignments();
-    }
-  }, [user]);
+    // Wait only while the session is genuinely unresolved. Leaving `loading`
+    // true on a resolved "nobody is signed in" is the spinner that never
+    // stopped.
+    if (sessionStatus === "initializing") return;
 
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    fetchSubmittedAssignments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, sessionStatus]);
+
+  /**
+   * LSA-001. One request.
+   *
+   * ── What this used to do ────────────────────────────────────────────────
+   *
+   * `GET /answers/user/:id` returns one row per *answer* — per question, per
+   * attempt. This then walked that list and, for every row, awaited two more
+   * requests in sequence: `GET /assessments/:id` and `GET /courses/:id`.
+   *
+   * A learner with twenty-four attempts of ten questions has 240 answer rows,
+   * so opening this page fired up to 480 HTTP requests strictly one after
+   * another. That is the "infinite loading indicator": it was not stuck, it
+   * was working through a serial waterfall that would take minutes.
+   *
+   * ── Why none of it was needed ───────────────────────────────────────────
+   *
+   * `AnswerController.getUserAllAnswers` already does this work server-side.
+   * It groups the answers by (assessment, attempt), resolves each assessment
+   * with `relations: ["course", "course.instructor"]`, totals the points,
+   * derives the status, sorts newest-first and returns a `summary` block with
+   * the counts and averages this page's tiles want.
+   *
+   * The response was shaped exactly like the interface above and the page
+   * discarded it to rebuild it one fetch at a time. So: take what the server
+   * sent.
+   */
   const fetchSubmittedAssignments = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const token = localStorage.getItem("bwengeplus_token");
-      
-      // Fetch all answers for the user
+
       const answersResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/answers/user/${user?.id}`,
         {
@@ -134,123 +193,79 @@ export default function LearnerSubmittedAssignmentsPage() {
       );
 
       if (!answersResponse.ok) {
-        throw new Error("Failed to fetch answers");
+        // The server's own message, where it sent one. "Failed to fetch
+        // answers" told a learner nothing they could act on.
+        let message = `Could not load your submissions (${answersResponse.status}).`;
+        try {
+          const body = await answersResponse.json();
+          if (body?.message) message = body.message;
+        } catch {
+          // Not JSON. The status line above is what we have.
+        }
+        throw new Error(message);
       }
 
       const answersData = await answersResponse.json();
-      const answers = answersData.data || [];
+      const submissions: SubmittedAssignment[] = Array.isArray(answersData.data)
+        ? answersData.data
+        : [];
 
-      // Group by assessment to get unique submissions
-      const submissionMap = new Map();
-
-      for (const answer of answers) {
-        const key = `${answer.assessment_id}-${answer.attempt_number}`;
-        
-        if (!submissionMap.has(key) || new Date(answer.created_at) > new Date(submissionMap.get(key).submitted_at)) {
-          // Fetch assessment details
-          const assessmentResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/assessments/${answer.assessment_id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          let assessmentData = null;
-          let courseId = answer.course_id;
-          
-          if (assessmentResponse.ok) {
-            const data = await assessmentResponse.json();
-            assessmentData = data.data;
-            // Get course_id from assessment if not in answer
-            if (!courseId && assessmentData?.course_id) {
-              courseId = assessmentData.course_id;
-            }
-            // Also check in nested course object
-            if (!courseId && assessmentData?.course?.id) {
-              courseId = assessmentData.course.id;
-            }
-          }
-
-          // Fetch course details only if we have a valid course_id
-          let courseData = null;
-          if (courseId) {
-            const courseResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-
-            if (courseResponse.ok) {
-              const data = await courseResponse.json();
-              courseData = data.data;
-            }
-          } else if (assessmentData?.course) {
-            // Use course data from assessment if available
-            courseData = assessmentData.course;
-          }
-
-          // Determine status
-          let status: "PENDING_GRADING" | "GRADED" | "AUTO_GRADED" = "PENDING_GRADING";
-          
-          // Check if this is a quiz (auto-graded)
-          const isQuiz = assessmentData?.type === "QUIZ";
-          
-          if (isQuiz) {
-            status = "AUTO_GRADED";
-          } else if (answer.is_graded) {
-            status = "GRADED";
-          }
-
-          submissionMap.set(key, {
-            id: key,
-            assessment_id: answer.assessment_id,
-            title: assessmentData?.title || "Unknown Assessment",
-            description: assessmentData?.description || "",
-            course: {
-              id: courseId || "unknown",
-              title: courseData?.title || "Unknown Course",
-              thumbnail_url: courseData?.thumbnail_url || null,
-              instructor: {
-                id: courseData?.instructor?.id || courseData?.instructor_id || "",
-                name: courseData?.instructor
-                  ? `${courseData.instructor.first_name || ""} ${courseData.instructor.last_name || ""}`.trim() || "Unknown Instructor"
-                  : "Unknown Instructor",
-              },
-            },
-            submitted_at: answer.created_at || answer.submitted_at || new Date().toISOString(),
-            attempt_number: answer.attempt_number || 1,
-            total_attempts: assessmentData?.max_attempts || 3,
-            answers_count: 1,
-            questions_count: assessmentData?.questions?.length || 0,
-            total_points: assessmentData?.questions?.reduce((sum: number, q: any) => sum + (q.points || 1), 0) || 0,
-            status,
-            score: answer.points_earned,
-            percentage: answer.percentage,
-            passed: answer.passed,
-            feedback: answer.feedback,
-            graded_at: answer.graded_at,
-            graded_by: answer.graded_by_user_id,
-          });
-        }
-      }
-
-      const submissions = Array.from(submissionMap.values()) as SubmittedAssignment[];
       setSubmittedAssignments(submissions);
-      
-      // Calculate statistics
-      const stats = calculateSubmittedStats(submissions);
-      setStats(stats);
-    } catch (error) {
-      toast.error("Failed to load submitted assignments");
+
+      /*
+       * The summary, as sent. Falls back to counting locally when an older
+       * build of the API omits it, so the tiles work either way.
+       */
+      const summary = answersData.summary;
+      setStats(
+        summary
+          ? {
+              total_submitted: Number(summary.total) || submissions.length,
+              pending_grading: Number(summary.pending_grading) || 0,
+              graded: Number(summary.graded) || 0,
+              auto_graded: Number(summary.auto_graded) || 0,
+              average_score: Number(summary.average_score) || 0,
+              pass_rate: Number(summary.pass_rate) || 0,
+              by_course: byCourse(submissions),
+            }
+          : calculateSubmittedStats(submissions)
+      );
+    } catch (error: any) {
+      const message =
+        error?.message || "Something went wrong loading your submissions.";
+      setLoadError(message);
+      setSubmittedAssignments([]);
+      setStats(null);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
+
+  /** Submissions grouped by course, for the course filter. */
+  const byCourse = (submissions: SubmittedAssignment[]) => {
+    const counts = new Map<string, { title: string; count: number }>();
+    submissions.forEach((submission) => {
+      const id = submission.course?.id || "unknown";
+      const existing = counts.get(id);
+      counts.set(id, {
+        title: submission.course?.title || "Unknown course",
+        count: (existing?.count ?? 0) + 1,
+      });
+    });
+    return Array.from(counts.entries()).map(([course_id, value]) => ({
+      course_id,
+      course_title: value.title,
+      count: value.count,
+    }));
+  };
+
+  /*
+   * The 480-request client-side rebuild that used to live here is gone
+   * (LSA-001). `AnswerController.getUserAllAnswers` already groups, joins
+   * and totals everything it was reconstructing, so the fetch above just
+   * takes the response.
+   */
 
   const calculateSubmittedStats = (submissions: SubmittedAssignment[]): SubmittedStats => {
     const pendingGrading = submissions.filter(s => s.status === "PENDING_GRADING").length;
@@ -294,7 +309,13 @@ export default function LearnerSubmittedAssignmentsPage() {
   };
 
   const handleViewResults = (assignment: SubmittedAssignment) => {
-    window.location.href = `/courses/${assignment.course.id}/assessments/${assignment.assessment_id}/results?attempt=${assignment.attempt_number}`;
+    /*
+     * LRN-003. /courses/:id/assessments/:id/results was never a route in
+     * this app, so this 404'd every time. The Learning Space is where the
+     * result actually lives: the runner loads the recorded attempt and
+     * renders it with the release policy and integrity panel applied.
+     */
+    window.location.href = `/courses/${assignment.course.id}/learn?assessment=${assignment.assessment_id}`;
   };
 
   const handleRefresh = async () => {
@@ -391,114 +412,162 @@ export default function LearnerSubmittedAssignmentsPage() {
     submittedAssignments.map(a => [a.course.id, { id: a.course.id, title: a.course.title }])
   ).values()];
 
+  /*
+   * LSA-001. A skeleton that mirrors the page, not a spinner on an empty
+   * screen — and one that is only ever shown while something is genuinely in
+   * flight. The full-height `Loader2` this replaces is what the report saw,
+   * turning indefinitely because the fetch had never been started.
+   */
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="mx-auto w-full max-w-6xl space-y-4 p-4 md:p-6">
+        <div className="space-y-2">
+          <div className="h-6 w-56 animate-pulse rounded bg-muted" />
+          <div className="h-3.5 w-72 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-20 animate-pulse rounded-xl border border-border/60 bg-muted/40"
+            />
+          ))}
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-28 animate-pulse rounded-xl border border-border/60 bg-muted/40"
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
+  const tiles = stats
+    ? [
+        {
+          label: "Submitted",
+          value: stats.total_submitted,
+          icon: FileText,
+          tone: "text-primary bg-primary/10",
+        },
+        {
+          label: "Awaiting marking",
+          value: stats.pending_grading,
+          icon: Clock,
+          tone: "text-warning bg-warning/10",
+        },
+        {
+          label: "Average score",
+          /* Guarded: `average_score` arrives from the API, and a Postgres
+             numeric reaches JSON as a string — `.toFixed` on one of those is
+             the `average_rating?.toFixed is not a function` failure again. */
+          value:
+            stats.graded + stats.auto_graded > 0
+              ? `${(Number(stats.average_score) || 0).toFixed(1)}%`
+              : "—",
+          icon: TrendingUp,
+          tone: "text-success bg-success/10",
+        },
+        {
+          label: "Pass rate",
+          value:
+            stats.graded + stats.auto_graded > 0
+              ? `${(Number(stats.pass_rate) || 0).toFixed(1)}%`
+              : "—",
+          icon: Award,
+          tone: "text-primary bg-primary/10",
+        },
+      ]
+    : [];
+
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="mx-auto w-full max-w-6xl space-y-4 p-4 md:p-6">
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
             Submitted Assignments
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             Track the status of your submitted assignments
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 self-start"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw
+            className={cn("mr-1.5 h-3.5 w-3.5", refreshing && "animate-spin")}
+          />
+          Refresh
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Submitted</p>
-                  <p className="text-3xl font-bold">{stats.total_submitted}</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* ── A failed load, said out loud ────────────────────────────────── */}
+      {loadError ? (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+            <div className="rounded-full bg-destructive/10 p-2.5">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">
+                Could not load your submissions
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending Grading</p>
-                  <p className="text-3xl font-bold text-warning">{stats.pending_grading}</p>
-                </div>
-                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-warning" />
-                </div>
+      {/* ── Figures ─────────────────────────────────────────────────────── */}
+      {tiles.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {tiles.map((tile) => (
+            <div
+              key={tile.label}
+              className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3"
+            >
+              <div className={cn("shrink-0 rounded-lg p-2", tile.tone)}>
+                <tile.icon className="h-4 w-4" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Score</p>
-                  <p className="text-3xl font-bold text-success">{stats.average_score.toFixed(1)}%</p>
-                </div>
-                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-success" />
-                </div>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {tile.label}
+                </p>
+                <p className="text-xl font-bold leading-tight text-foreground">
+                  {tile.value}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pass Rate</p>
-                  <p className="text-3xl font-bold text-primary">{stats.pass_rate.toFixed(1)}%</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <Award className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      {/* ── Filters ─────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search submitted assignments..."
+            placeholder="Search submitted assignments"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="h-9 pl-9 text-[13px]"
           />
         </div>
         <Select value={filterCourse} onValueChange={setFilterCourse}>
-          <SelectTrigger className="w-full md:w-48">
-            <BookOpen className="w-4 h-4 mr-2" />
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-48">
+            <BookOpen className="mr-2 h-3.5 w-3.5" />
             <SelectValue placeholder="All Courses" />
           </SelectTrigger>
           <SelectContent>
@@ -511,8 +580,8 @@ export default function LearnerSubmittedAssignmentsPage() {
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full md:w-40">
-            <Filter className="w-4 h-4 mr-2" />
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-40">
+            <Filter className="mr-2 h-3.5 w-3.5" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -523,8 +592,8 @@ export default function LearnerSubmittedAssignmentsPage() {
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-40">
-            <Filter className="w-4 h-4 mr-2" />
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-40">
+            <Filter className="mr-2 h-3.5 w-3.5" />
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -538,39 +607,53 @@ export default function LearnerSubmittedAssignmentsPage() {
 
       {/* Submitted Assignments List */}
       {filteredAssignments.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
-              No Submitted Assignments
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm
-                ? "No assignments match your search criteria"
-                : "You haven't submitted any assignments yet."}
-            </p>
-            <Button asChild>
+        <Card className="border-dashed border-border/70 bg-muted/20">
+          <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+            <div className="rounded-full bg-background p-3 shadow-sm ring-1 ring-border/60">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="max-w-sm">
+              <p className="font-semibold text-foreground">
+                No submitted assignments
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {searchTerm
+                  ? "No assignments match your search."
+                  : "You haven't submitted any assignments yet."}
+              </p>
+            </div>
+            <Button size="sm" asChild>
               <Link href="/dashboard/learner/assignments/pending">
-                View Pending Assignments
+                View pending assignments
               </Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filteredAssignments.map((assignment) => (
-            <Card key={assignment.id} className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1">
+            <Card key={assignment.id} className="overflow-hidden border-border/60 transition-shadow hover:shadow-md">
               {/* Thumbnail */}
-              <div className="relative h-32">
-                {assignment.course.thumbnail_url ? (
+              <div className="relative h-24 bg-muted">
+                {assignment.course.thumbnail_url &&
+                !brokenThumbnails.has(assignment.id) ? (
                   <img
                     src={assignment.course.thumbnail_url}
-                    alt={assignment.course.title}
-                    className="w-full h-full object-cover"
+                    /* Empty: decorative. A non-empty alt is what paints the
+                       course title into the frame when the URL fails. */
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={() =>
+                      setBrokenThumbnails((previous) => {
+                        const next = new Set(previous);
+                        next.add(assignment.id);
+                        return next;
+                      })
+                    }
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                    <BookOpen className="w-8 h-8 text-white" />
+                  <div className="flex h-full w-full items-center justify-center bg-primary/5">
+                    <BookOpen className="h-5 w-5 text-primary/40" />
                   </div>
                 )}
                 <div className="absolute top-2 right-2">
@@ -584,9 +667,13 @@ export default function LearnerSubmittedAssignmentsPage() {
               </div>
 
               <CardHeader className="pb-2">
-                <CardTitle className="text-base line-clamp-1">{assignment.title}</CardTitle>
-                <CardDescription className="line-clamp-2 text-xs">
-                  {assignment.description || "No description provided"}
+                <CardTitle className="line-clamp-1 text-[14px]">{assignment.title}</CardTitle>
+                <CardDescription className="line-clamp-2 text-[12px] leading-5">
+                  {/* Authored in the rich text editor, so the stored value is
+                      HTML. Rendered raw it reads "<p><span style=…", which is
+                      the same defect LPG-001 fixed on the progress page. */}
+                  {richTextToPlain(assignment.description) ||
+                    "No description provided"}
                 </CardDescription>
               </CardHeader>
 
@@ -614,7 +701,9 @@ export default function LearnerSubmittedAssignmentsPage() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span>Score</span>
-                      <span className="font-bold">{assignment.percentage.toFixed(1)}%</span>
+                      <span className="font-bold">
+                        {(Number(assignment.percentage) || 0).toFixed(1)}%
+                      </span>
                     </div>
                     <Progress value={assignment.percentage} className="h-2" />
                   </div>

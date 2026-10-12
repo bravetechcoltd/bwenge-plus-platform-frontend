@@ -1047,7 +1047,7 @@ const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualR
     >
       <div className="px-3 sm:px-4 py-1.5">
         <div className="flex items-center justify-between gap-2">
-          {/* Left: Mobile menu toggle + title */}
+          {/* Left: Mobile menu toggle + home + title */}
           <div className="flex items-center gap-2 min-w-0">
             {isMobile && (
               <Button
@@ -1059,6 +1059,28 @@ const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualR
                 <Menu className="h-4 w-4 text-foreground" />
               </Button>
             )}
+
+            {/*
+              Back to the public site. Icon-only where space is tight, and
+              labelled from `sm` up — the same breakpoint at which the title
+              block beside it appears. `title` carries the meaning in the
+              icon-only state; there is no global TooltipProvider to lean on.
+            */}
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-7 flex-shrink-0 gap-1.5 rounded-md px-1.5 text-muted-foreground hover:text-foreground sm:px-2"
+              title="Back to Home"
+            >
+              <Link href="/" aria-label="Back to Home page">
+                <Home className="h-3.5 w-3.5" />
+                <span className="hidden text-xs font-medium sm:inline">Home</span>
+              </Link>
+            </Button>
+
+            {/* Separates leaving the dashboard from naming it. */}
+            <span aria-hidden="true" className="hidden h-4 w-px bg-border sm:block" />
 
             <div className="hidden sm:flex flex-col leading-none">
               <h1 className="text-sm font-semibold text-foreground truncate">

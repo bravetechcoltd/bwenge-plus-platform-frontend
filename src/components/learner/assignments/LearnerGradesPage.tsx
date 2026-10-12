@@ -716,7 +716,7 @@ export default function LearnerGradesPage() {
                             variant="ghost"
                             asChild
                           >
-                            <Link href={`/courses/${courseGrade.course_id}/assessments/${assignment.id}/results?attempt=${assignment.attempt}`}>
+                            <Link href={`/courses/${courseGrade.course_id}/learn?assessment=${assignment.id}`}>
                               View Details
                               <ChevronRight className="w-4 h-4 ml-2" />
                             </Link>

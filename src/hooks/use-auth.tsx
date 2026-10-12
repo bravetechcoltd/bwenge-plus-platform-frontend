@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+import { useState, useEffect, useMemo, createContext, useContext, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
+import { authCookieOptions } from "@/lib/auth/cookie-options"
+import { useAppSelector } from "@/lib/hooks"
 import { User, BwengeRole, AccountType, ApiResponse, Institution, InstitutionRole } from "@/types"
 
 interface AuthContextType {
@@ -70,11 +72,7 @@ const safeJSONParse = (value: string | undefined): any => {
  * survivor, which the Redux hydration reads second (AXM-CONS-001 A-13).
  * Deriving it from the actual protocol keeps HTTPS strict and http working.
  */
-const cookieOptions = (): Cookies.CookieAttributes => ({
-  expires: 7,
-  secure: typeof window !== "undefined" && window.location.protocol === "https:",
-  sameSite: "strict",
-})
+const cookieOptions = (): Cookies.CookieAttributes => authCookieOptions()
 
 const storeAuthData = (user: User, token: string) => {
 
@@ -558,12 +556,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * AUTH-001. The session, from whichever of the two stores holds it.
+ *
+ * There are two: this context, rehydrated from cookies inside an effect,
+ * and the `bwengeAuth` slice, written by the live login and persisted by
+ * redux-persist. They resolve at different moments, and a session present in
+ * one but not yet the other made this hook report `token: null` for a user
+ * who was signed in.
+ *
+ * Every page that then wrote `if (!token) return` inside a load effect —
+ * before clearing a `loading` flag that starts `true` — showed a skeleton
+ * that never ended. That is one bug reported seventeen times, not a page
+ * problem, so it is fixed at the boundary the pages read.
+ *
+ * The context wins when it has an answer, which keeps `useSession()`'s
+ * deliberate `redux ?? context` identity precedence intact: Redux is still
+ * consulted first there, and still detects a role conflict between the two.
+ * The fallback only ever turns a wrong `null` into the token that exists.
+ */
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
-  return context
+
+  // `AuthProvider` is mounted inside the Redux `Provider` (components/
+  // providers.tsx), so this selector always has a store to read.
+  const reduxUser = useAppSelector((state) => state.bwengeAuth?.user) ?? null
+  const reduxToken = useAppSelector((state) => state.bwengeAuth?.token) ?? null
+
+  return useMemo(
+    () => ({
+      ...context,
+      user: (context.user ?? (reduxUser as typeof context.user)) ?? null,
+      token: context.token ?? reduxToken ?? null,
+    }),
+    [context, reduxUser, reduxToken]
+  )
 }
 
 // ==================== HELPER FUNCTIONS ====================

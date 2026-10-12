@@ -22,7 +22,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Search, Users, MoreHorizontal, Mail, Calendar, Award, TrendingUp, ChevronLeft, ChevronRight, User, BookOpen, Clock, BarChart3, GraduationCap, CheckCircle2, Star } from "lucide-react"
+import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "@/lib/auth/session"
 import {
   SmartDetailsModal,
   DetailSection,
@@ -223,7 +225,20 @@ export default function StudentsManagement() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { token, user } = useAuth()
+  const { token: contextToken, user: contextUser } = useAuth()
+
+  /*
+   * STU-001. The token from whichever store holds it.
+   *
+   * This read useAuth() alone — the context — while the rest of the
+   * application reads useSession(), which resolves redux.token ??
+   * context.token. A session restored into Redux but not the context left
+   * this page anonymous, the fetch below returned early, and because it
+   * returns before clearing isLoading the skeleton never ended.
+   */
+  const { token: sessionToken, user: sessionUser, status: sessionStatus } = useSession()
+  const token = contextToken ?? sessionToken
+  const user = contextUser ?? sessionUser
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -244,8 +259,19 @@ export default function StudentsManagement() {
 
   useEffect(() => {
     const fetchStudents = async () => {
-      if (!institutionId || !token) return
-      
+      /*
+       * Only wait while the session is genuinely unresolved. Returning here
+       * without clearing isLoading — which starts true — is what turned a
+       * missing token into a skeleton that never ended.
+       */
+      if (sessionStatus === "initializing") return
+
+      if (!institutionId || !token) {
+        // Resolved, and there is nothing to fetch. That is an answer.
+        setIsLoading(false)
+        return
+      }
+
       setIsLoading(true)
       
       try {
@@ -296,7 +322,7 @@ export default function StudentsManagement() {
     }
 
     fetchStudents()
-  }, [institutionId, token])
+  }, [institutionId, token, sessionStatus])
 
   // Filter students based on search term
   const filteredStudents = students.filter(
@@ -348,6 +374,25 @@ export default function StudentsManagement() {
   const averageCompletionRate = totalEnrolledCourses > 0 
     ? Math.round((students.reduce((sum, student) => sum + (student.completed_courses_count ?? 0), 0) / totalEnrolledCourses) * 100)
     : 0
+
+  /*
+   * An account with no institution has no students to show, and that is not
+   * a loading state. Without this it fell through to an empty table that
+   * read as 'this institution has no students'.
+   */
+  if (!isLoading && !institutionId) {
+    return (
+      <div className="p-6">
+        <div className="mx-auto max-w-lg rounded-lg border border-border bg-muted/40 p-6 text-center">
+          <p className="font-semibold text-foreground">No institution on this account</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Students are listed per institution, and this account is not associated with
+            one.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   // Skeleton loading state
   if (isLoading) {
@@ -598,17 +643,29 @@ export default function StudentsManagement() {
                                 View Details
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-primary">
-                                <BookOpen className="mr-2 h-4 w-4" />
-                                View Courses ({student.enrolled_courses_count ?? 0})
+                              <DropdownMenuItem asChild className="text-primary">
+                                <Link
+                                  href={`/dashboard/institution-admin/students/${student.id}/courses`}
+                                >
+                                  <BookOpen className="mr-2 h-4 w-4" />
+                                  View Courses ({student.enrolled_courses_count ?? 0})
+                                </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-success">
-                                <Clock className="mr-2 h-4 w-4" />
-                                Learning Progress
+                              <DropdownMenuItem asChild className="text-success">
+                                <Link
+                                  href={`/dashboard/institution-admin/students/${student.id}/progress`}
+                                >
+                                  <Clock className="mr-2 h-4 w-4" />
+                                  Learning Progress
+                                </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-primary">
-                                <GraduationCap className="mr-2 h-4 w-4" />
-                                Certificates ({student.certificates_earned ?? 0})
+                              <DropdownMenuItem asChild className="text-primary">
+                                <Link
+                                  href={`/dashboard/institution-admin/students/${student.id}/certificates`}
+                                >
+                                  <GraduationCap className="mr-2 h-4 w-4" />
+                                  Certificates ({student.certificates_earned ?? 0})
+                                </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

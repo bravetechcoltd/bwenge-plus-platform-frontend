@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/use-auth"
 import { 
   Camera, 
@@ -32,6 +31,15 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { Progress } from "@/components/ui/progress"
+/*
+ * PRF-003. The same document preview the rest of the app uses.
+ *
+ * useDocumentPreview() is what the lesson editor, the content editor and the
+ * instructor materials page open files with. The CV was the one document
+ * still handed to the browser with target="_blank" — which for a Cloudinary
+ * PDF means a download or a bare viewer, outside the app entirely.
+ */
+import { useDocumentPreview } from "@/components/course/SmartDocumentPreview"
 
 // Academic level options matching backend enum
 const ACADEMIC_LEVELS = [
@@ -73,6 +81,10 @@ export default function CompleteProfilePage() {
     missing_fields: []
   })
   
+  // PRF-003. `documentPreview` is the modal; it is null until `open` is called.
+  const { open: openDocumentPreview, preview: documentPreview } =
+    useDocumentPreview()
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cvInputRef = useRef<HTMLInputElement>(null)
   
@@ -205,7 +217,17 @@ export default function CompleteProfilePage() {
 
     try {
       const uploadFormData = new FormData()
-      uploadFormData.append("file", file)
+      /*
+       * PRF-001. The field is "document", not "file".
+       *
+       * Both upload routes here go through uploadSingle, which is
+       * multer.single("document"). Sending it as "file" made multer reject
+       * the request with LIMIT_UNEXPECTED_FILE before the controller ever
+       * ran — and because authRoutes had no multer error handler, that
+       * surfaced as a 500 "Something went wrong on our end" rather than as
+       * the 400 it is. Neither upload has ever worked.
+       */
+      uploadFormData.append("document", file)
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/picture`, {
         method: "POST",
@@ -270,7 +292,17 @@ export default function CompleteProfilePage() {
 
     try {
       const uploadFormData = new FormData()
-      uploadFormData.append("file", file)
+      /*
+       * PRF-001. The field is "document", not "file".
+       *
+       * Both upload routes here go through uploadSingle, which is
+       * multer.single("document"). Sending it as "file" made multer reject
+       * the request with LIMIT_UNEXPECTED_FILE before the controller ever
+       * ran — and because authRoutes had no multer error handler, that
+       * surfaced as a 500 "Something went wrong on our end" rather than as
+       * the 400 it is. Neither upload has ever worked.
+       */
+      uploadFormData.append("document", file)
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/cv`, {
         method: "POST",
@@ -584,11 +616,15 @@ export default function CompleteProfilePage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {formData.cv_file_url && (
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href={formData.cv_file_url} target="_blank" rel="noopener noreferrer">
-                    <FileText className="w-4 h-4 mr-2" />
-                    View CV
-                  </a>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    openDocumentPreview(formData.cv_file_url, "Curriculum Vitae")
+                  }
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  View CV
                 </Button>
               )}
               {formData.orcid_id && (
@@ -754,14 +790,18 @@ export default function CompleteProfilePage() {
                       {formData.cv_file_url ? (
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
-                          <a 
-                            href={formData.cv_file_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openDocumentPreview(
+                                formData.cv_file_url,
+                                "Curriculum Vitae"
+                              )
+                            }
                             className="text-primary hover:underline"
                           >
                             View Current CV
-                          </a>
+                          </button>
                           {isEditing && (
                             <Button
                               size="sm"
@@ -1153,6 +1193,16 @@ export default function CompleteProfilePage() {
           )}
         </div>
       </div>
+
+      {/*
+        PRF-003. The preview modal.
+
+        Rendered once at the root rather than beside either trigger, so the
+        two entry points — Quick Links and the CV field — share one instance
+        and cannot open two overlapping viewers. Null until something calls
+        `openDocumentPreview`.
+      */}
+      {documentPreview}
     </div>
   )
 }

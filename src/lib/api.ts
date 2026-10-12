@@ -1,5 +1,6 @@
 import axios from "axios"
 import Cookies from "js-cookie"
+import { hardSignOut } from "./auth/hard-sign-out"
 import { toast } from "sonner"
 import { ApiError, kindForStatus, REQUEST_TIMEOUT_MS } from "./api/api-error"
 
@@ -70,8 +71,22 @@ function signOutAndReturnToLogin() {
 
   redirectingToLogin = true
 
-  Cookies.remove("bwenge_token")
-  Cookies.remove("bwenge_user")
+  /*
+   * Clear the whole session, not two cookies (AUTH-COOKIE-001).
+   *
+   * These two `Cookies.remove` calls left the rest of the session in place —
+   * most importantly redux-persist's store, which holds the token and the
+   * user under a `persist:` key in localStorage. So a 401 produced a *partial*
+   * sign-out: no cookie, therefore no `Authorization` header on any later
+   * request, but Redux still rehydrated as authenticated on the next load.
+   *
+   * That is why signing in was not reproducible. The first attempt ran from a
+   * clean browser and the second ran from this half-cleared state, so the two
+   * attempts took different paths through the guards and behaved differently.
+   * `hardSignOut` sweeps cookies, localStorage and sessionStorage by prefix,
+   * so whatever happens next starts from the same place every time.
+   */
+  hardSignOut()
 
   toast.error("Your session has ended. Please sign in again.")
 

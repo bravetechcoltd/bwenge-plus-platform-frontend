@@ -1346,6 +1346,7 @@ function TopInstructors() {
   )
 }
 // Platform Features (Preserved 100%)
+
 function PlatformFeatures() {
   const features = [
     { icon: Laptop, title: "Interactive", description: "Hands-on projects", color: "#8B5CF6" },
@@ -1699,19 +1700,9 @@ export default function BwengePlusPage() {
           activeCategory={activeCategory}
         />
         <FeaturedCourses key={activeCategory} activeCategory={activeCategory} />
-        <TopInstructors />
-        {/*
-          HP-002. About BWENGE+ → Who We Are → Vision + Mission → Core Values,
-          after the existing homepage content rather than above it: the hero
-          and the course sections are what a returning visitor comes for, and
-          the institutional reading belongs below them.
-
-          PR-001. The products used to sit here as a band. They are a page of
-          their own now (/our-products): as a section they competed with the
-          catalogue for the same scroll and had nowhere to grow, and a page
-          can be linked to, shared and bookmarked.
-        */}
+      
         <AboutSections />
+        <TopInstructors />
         <PlatformFeatures />
         <NewsletterCTA />
         <FinalCTA />

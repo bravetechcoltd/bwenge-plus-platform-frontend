@@ -119,6 +119,52 @@ interface ScheduleStats {
   live_sessions_today: number;
 }
 
+
+/**
+ * One figure in the header strip (UI-001).
+ *
+ * Replaces a <Card> with pt-6, a 48px icon medallion and a 30px numeral —
+ * four of which filled most of the viewport before any content appeared.
+ * Same data, about a third of the height.
+ */
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tone = "primary",
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: React.ReactNode
+  hint?: string
+  tone?: "primary" | "success" | "warning" | "destructive"
+}) {
+  const tones = {
+    primary: "bg-primary/10 text-primary",
+    success: "bg-success/10 text-success",
+    warning: "bg-warning/15 text-warning",
+    destructive: "bg-destructive/10 text-destructive",
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3 transition-shadow hover:shadow-sm">
+      <div className={`shrink-0 rounded-lg p-2 ${tones[tone]}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-xl font-bold leading-tight text-foreground">{value}</p>
+        {hint ? (
+          <p className="truncate text-[11px] text-muted-foreground">{hint}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 export default function InstructorTeachingSchedulePage() {
   const { user } = useAppSelector((state) => state.bwengeAuth);
   
@@ -236,7 +282,7 @@ export default function InstructorTeachingSchedulePage() {
     try {
       const token = localStorage.getItem("bwengeplus_token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/instructor/courses?limit=100`,
+        `${process.env.NEXT_PUBLIC_API_URL}/instructor/my-courses`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -452,10 +498,20 @@ export default function InstructorTeachingSchedulePage() {
       );
 
       if (response.ok) {
-        toast.success("Reminder sent to all participants");
+        /*
+         * EVT-001. The server's own wording.
+         *
+         * This said "Reminder sent to all participants", which is not what
+         * happens — the reminder goes to the instructor who scheduled the
+         * event, the same recipient the automatic one-day, two-hour and
+         * one-hour reminders use. Claiming it reached the learners would be
+         * worse than saying nothing.
+         */
+        const body = await response.json().catch(() => null);
+        toast.success(body?.message || "Reminder emailed to you");
       } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to send reminder");
+        const error = await response.json().catch(() => null);
+        toast.error(error?.message || "Failed to send reminder");
       }
     } catch (error) {
       toast.error("Failed to send reminder");
@@ -557,42 +613,46 @@ export default function InstructorTeachingSchedulePage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+    <div className="mx-auto w-full max-w-6xl space-y-4 p-4 md:p-6">
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
             Teaching Schedule
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             Manage your classes, office hours, and deadlines
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
+            className="h-8"
             onClick={() => setShowRemindersDialog(true)}
           >
-            <Bell className="w-4 h-4 mr-2" />
+            <Bell className="mr-1.5 h-3.5 w-3.5" />
             Reminders
             {upcomingReminders.length > 0 && (
-              <Badge className="ml-2 bg-destructive/100 text-white">
+              <span className="ml-1.5 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-destructive-foreground">
                 {upcomingReminders.length}
-              </Badge>
+              </span>
             )}
           </Button>
           <Button
             variant="outline"
             size="sm"
+            className="h-8"
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button size="sm" className="h-8" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             New Event
           </Button>
         </div>
@@ -600,62 +660,33 @@ export default function InstructorTeachingSchedulePage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Today's Schedule</p>
-                  <p className="text-3xl font-bold text-primary">{stats.events_today}</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Upcoming Events</p>
-                  <p className="text-3xl font-bold text-success">{stats.upcoming_events}</p>
-                </div>
-                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Live Sessions Today</p>
-                  <p className="text-3xl font-bold text-primary">{stats.live_sessions_today}</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <Video className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Upcoming Deadlines</p>
-                  <p className="text-3xl font-bold text-warning">{stats.upcoming_deadlines}</p>
-                </div>
-                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-warning" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatTile
+            icon={CalendarIcon}
+            label="Today"
+            value={stats.events_today}
+            hint="scheduled"
+          />
+          <StatTile
+            icon={Clock}
+            label="Upcoming"
+            value={stats.upcoming_events}
+            hint="still to come"
+            tone="success"
+          />
+          <StatTile
+            icon={Video}
+            label="Live today"
+            value={stats.live_sessions_today}
+            hint="sessions"
+          />
+          <StatTile
+            icon={AlertCircle}
+            label="Deadlines"
+            value={stats.upcoming_deadlines}
+            hint="approaching"
+            tone="warning"
+          />
         </div>
       )}
 
@@ -680,19 +711,19 @@ export default function InstructorTeachingSchedulePage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search events..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 w-64"
+              className="h-9 w-full pl-9 text-[13px] sm:w-64"
             />
           </div>
           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-            <SelectTrigger className="w-48">
-              <BookOpen className="w-4 h-4 mr-2" />
+            <SelectTrigger className="h-9 w-full text-[13px] sm:w-48">
+              <BookOpen className="mr-2 h-3.5 w-3.5" />
               <SelectValue placeholder="All Courses" />
             </SelectTrigger>
             <SelectContent>
@@ -709,7 +740,7 @@ export default function InstructorTeachingSchedulePage() {
 
       {/* Calendar View */}
       {viewMode === "calendar" && (
-        <Card className="p-4">
+        <Card className="border-border/60 p-3">
           <div className="h-[600px]">
             <Calendar
               localizer={localizer}
@@ -754,9 +785,9 @@ export default function InstructorTeachingSchedulePage() {
         <div className="space-y-6">
           {filteredEvents.length === 0 ? (
             <Card>
-              <CardContent className="p-8 text-center">
-                <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+              <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">
                   No Events Found
                 </h3>
                 <p className="text-muted-foreground mb-4">

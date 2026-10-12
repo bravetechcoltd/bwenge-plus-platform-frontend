@@ -114,7 +114,15 @@ export function ModulesListComponent({
         const moduleData: any = {
           title: module.title,
           description: module.description || "",
-          order_index: module.order_index || index + 1,
+          /*
+           * DND-002. Position, not the stored value.
+           *
+           * This screen builds its own payload rather than using the
+           * builder's, and this line still read
+           * `module.order_index || index + 1` — so a drag here would have
+           * been saved back in the old order. Same defect, second copy.
+           */
+          order_index: index + 1,
           estimated_duration_hours: module.estimated_duration_hours || 0,
           lessons: module.lessons?.map((lesson: any, lessonIndex: number) => {
             const lessonData: any = {
@@ -123,7 +131,8 @@ export function ModulesListComponent({
               video_url: lesson.video_url || "",
               thumbnail_url: lesson.thumbnail_url || "",
               duration_minutes: lesson.duration_minutes || 0,
-              order_index: lesson.order_index || lessonIndex + 1,
+              // DND-002: position, as above.
+              order_index: lessonIndex + 1,
               type: lesson.type || "VIDEO",
               is_preview: lesson.is_preview || false,
               resources: lesson.resources || [],

@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   AlertCircle,
+  ArrowLeft,
   BookOpen,
   Clock,
+  Compass,
+  FileStack,
   Lock,
   RefreshCw,
   WifiOff,
@@ -131,6 +134,100 @@ export function LearningEmptyState({
           {action.label}
         </Button>
       )}
+    </div>
+  )
+}
+
+// ============================================================================
+// NO CONTENT
+// ============================================================================
+
+/**
+ * The course exists, the learner is enrolled — and there are no lessons in it.
+ *
+ * ── Why this is its own state (LRN-001) ──────────────────────────────────
+ *
+ * This case used to be rendered by `LearningErrorState` with a hand-written
+ * `LearningApiError(404, "NOT_FOUND", "This course has no content yet.")`.
+ * The message was right and it never reached the screen: the `NOT_FOUND`
+ * branch below keys off the *status*, and for 404 it replaces the caller's
+ * message with "This content no longer exists."
+ *
+ * So a learner enrolled in a published course that simply has not been built
+ * yet was told their course had been deleted, with "Browse courses" as the
+ * only way out. One of these is a dead end; the other is a course waiting on
+ * its instructor. They are not the same thing and must not read the same.
+ *
+ * An empty course is also not an error — nothing failed, there is nothing to
+ * retry — which is why this is a sibling of `LearningEmptyState` rather than
+ * another branch of the error component.
+ */
+export function LearningNoContentState({
+  courseTitle,
+  isPrivileged = false,
+  courseId,
+}: {
+  courseTitle?: string | null
+  /** An instructor or admin gets told how to fix it, not just that it is empty. */
+  isPrivileged?: boolean
+  courseId?: string
+}) {
+  const router = useRouter()
+
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center px-6">
+      <div className="w-full max-w-md text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+          <FileStack className="h-5 w-5 text-primary" />
+        </div>
+
+        <h2 className="text-lg font-semibold text-foreground">
+          No lessons yet
+        </h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          {isPrivileged ? (
+            <>
+              {courseTitle ? `"${courseTitle}"` : "This course"} is published
+              but has no modules or lessons, so there is nothing for learners to
+              open. Add a module and its lessons to make it available.
+            </>
+          ) : (
+            <>
+              Your enrolment is active and{" "}
+              {courseTitle ? `"${courseTitle}"` : "this course"} has not had its
+              lessons added yet. Nothing is wrong with your access — check back,
+              or ask your instructor when the content will be published.
+            </>
+          )}
+        </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {isPrivileged && courseId ? (
+            <Button
+              size="sm"
+              onClick={() =>
+                router.push(`/dashboard/instructor/courses/${courseId}`)
+              }
+            >
+              Add content
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => router.push("/dashboard/learner")}>
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+              Back to My Learning
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push("/courses")}
+          >
+            <Compass className="mr-1.5 h-3.5 w-3.5" />
+            Browse courses
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -280,7 +377,22 @@ export function LearningErrorState({
         return {
           icon: AlertCircle,
           title: "Not found",
-          body: status === 404 ? "This content no longer exists." : error.message,
+          /*
+           * The caller's message wins (LRN-001).
+           *
+           * This read `status === 404 ? "This content no longer exists." :
+           * error.message`, which threw away every specific message a 404 ever
+           * carried — and a 404 is precisely when the message is specific.
+           * An enrolled learner opening a published course with no lessons was
+           * told the course had been deleted.
+           *
+           * The generic line is now the fallback it should always have been.
+           */
+          body:
+            error.message ||
+            (status === 404
+              ? "This content no longer exists."
+              : "We couldn't find what you asked for."),
           primary: { label: "Browse courses", onClick: () => router.push("/courses") },
         }
       default:

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -38,6 +39,7 @@ export function LearningHeader({
   onOpenNotes,
   onOpenShortcuts,
   notesOpen,
+  timer,
 }: {
   path: LearningPath
   currentStep: LearningStepNode | undefined
@@ -46,6 +48,15 @@ export function LearningHeader({
   onOpenNotes: () => void
   onOpenShortcuts: () => void
   notesOpen: boolean
+  /**
+   * The learning timer, shown in this row's free space (LTM-008).
+   *
+   * Passed in rather than built here: the player owns the engagement state,
+   * and a second subscription would be a second opinion about elapsed time.
+   * It sits in the navigation row itself, so it stays on screen for the whole
+   * lesson instead of scrolling away with the content.
+   */
+  timer?: React.ReactNode
 }) {
   const router = useRouter()
   const { course, summary } = path
@@ -61,16 +72,54 @@ export function LearningHeader({
   const exitPath = learningExitPath(user?.bwenge_role, course.id)
   const exitLabel = learningExitLabel(user?.bwenge_role)
 
+  /*
+   * The header publishes its own height (LTM-007).
+   *
+   * The sidebar is pinned with `top-14 h-[calc(100vh-3.5rem)]` and the
+   * content column with a matching `min-h`, both of which assumed this
+   * region was exactly 56px. It no longer is while the learning timer is
+   * shown, and a taller sticky header would hide the top of the sidebar
+   * behind itself.
+   *
+   * Measured rather than derived: the alternative is for the page to
+   * recompute the panel's visibility rule — `requiredMs !== null &&
+   * !canComplete && !is_completed` — which is the same "two opinions" trap
+   * the timer props exist to avoid. The element knows how tall it is.
+   */
+  const headerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const element = headerRef.current
+    if (!element) return
+
+    const root = document.documentElement
+    const apply = () =>
+      root.style.setProperty("--learn-header-h", `${element.offsetHeight}px`)
+
+    apply()
+    const observer = new ResizeObserver(apply)
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+      // Left set, the next page without this header would inherit it.
+      root.style.removeProperty("--learn-header-h")
+    }
+  }, [])
+
   const daysRemaining = course.days_remaining
   const showDeadline =
     daysRemaining !== null && daysRemaining !== undefined && daysRemaining <= 7
 
   return (
     <header
-      className="sticky top-0 z-40 h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      ref={headerRef}
+      /* No fixed height: the timer sits inside this sticky container, below
+         the 56px nav row, so the region grows only while it is shown. */
+      className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
       role="banner"
     >
-      <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
+      <div className="relative flex h-14 items-center gap-2 px-3 sm:px-4">
         {/* Back */}
         <Button
           variant="ghost"
@@ -96,8 +145,9 @@ export function LearningHeader({
           </span>
         </Button>
 
-        {/* Breadcrumb: Course › Module › Lesson */}
-        <div className="min-w-0 flex-1">
+        {/* Breadcrumb: Course › Module › Lesson.
+            Capped so a long title cannot run under the centred button. */}
+        <div className="min-w-0 flex-1 sm:max-w-[32%]">
           <div className="flex items-baseline gap-1.5 truncate">
             <span className="truncate text-sm font-semibold text-foreground">
               {course.title}
@@ -119,6 +169,60 @@ export function LearningHeader({
             </p>
           )}
         </div>
+
+        {/* Pushes what follows away from the capped breadcrumb. */}
+        <div className="hidden flex-1 sm:block" aria-hidden="true" />
+
+        {/*
+          Back to My Learning (LRN-002), and the learning timer beside it
+          (LTM-009).
+
+          The icon button at the far left exits to wherever the viewer came
+          from — `/courses/:id` for a learner, their own courses list for an
+          instructor — which is useful but is not the learner's home. There
+          was no route from the player back to /dashboard/learner at all.
+
+          ── Why this is no longer absolutely centred ───────────────────────
+
+          It used to be `absolute left-1/2 -translate-x-1/2`, so that it held
+          the centre whatever the course title's length. Once the timer took
+          the row's free space the two occupied the same place and the button
+          disappeared behind it — an absolutely positioned element cannot
+          participate in the flex row's spacing, so nothing was keeping them
+          apart.
+
+          Both are flow items now, in one group, so the layout itself
+          guarantees they never overlap. The pair sits just left of centre
+          rather than dead centre, which is a small price for a button that
+          is always visible.
+        */}
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 shrink-0 gap-1.5 px-2 sm:px-3"
+            onClick={() => router.push("/dashboard/learner")}
+            aria-label="Back to My Learning"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span className="hidden text-xs font-medium sm:inline">
+              My Learning
+            </span>
+          </Button>
+
+          {/*
+            Rendered at `md` and up: below that the row cannot hold both, and
+            `LessonTimerNotice` carries the same state beside the completion
+            button there. It renders nothing at all when the lesson has no
+            time requirement or the gate is already satisfied, so the space
+            simply returns to the spacers.
+          */}
+          {timer ? <div className="hidden md:block">{timer}</div> : null}
+        </div>
+
+        {/* And a second spacer, so the pair sits in the gap rather than flush
+            against the progress group. */}
+        <div className="hidden flex-1 sm:block" aria-hidden="true" />
 
         {/* Deadline chip — a single line, not a full-width alert block */}
         {showDeadline && (
@@ -187,6 +291,14 @@ export function LearningHeader({
           </div>
         )}
 
+        {/*
+          The learning timer used to sit here, top-right (LTM-001), and was
+          moved into the content column (LTM-004): at 56px, sharing this row
+          with the breadcrumb, the progress bar and three icon buttons, it was
+          reported as not visible. `LessonTimerPanel` in the player renders it
+          now.
+        */}
+
         {/* Actions */}
         <div className="flex shrink-0 items-center gap-0.5">
           <TooltipProvider delayDuration={300}>
@@ -232,6 +344,13 @@ export function LearningHeader({
           aria-label={`Course progress: ${summary.percent} percent`}
         />
       </div>
+
+      {/*
+        LTM-008. The timer moved up into the navigation row itself, into the
+        free space beside "My Learning" — see the slot above. It was briefly a
+        full-width strip here, beneath the row (LTM-007), which read as a
+        separate band rather than as part of the navigation.
+      */}
     </header>
   )
 }

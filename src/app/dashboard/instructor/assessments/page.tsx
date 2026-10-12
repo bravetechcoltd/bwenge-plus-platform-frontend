@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Clock, CheckCircle, XCircle, FileText, User, Calendar, Award, ArrowLeft, TrendingUp, TrendingDown, Check, X, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "@/lib/auth/session"
 import { useToast } from "@/hooks/use-toast"
 
 interface PendingSubmission {
@@ -67,15 +68,57 @@ export default function InstructorAssessmentsPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<PendingSubmission | null>(null)
   const [gradingAnswers, setGradingAnswers] = useState<Record<string, { pointsEarned: number; feedback: string }>>({})
   const [submittingGrade, setSubmittingGrade] = useState(false)
-  const { token, user } = useAuth()
+  const { token: contextToken, user: contextUser } = useAuth()
+
+  /*
+   * ASMT-001 — the skeleton that never ended.
+   *
+   * Two defects compounded here, and either alone was enough to hang the page:
+   *
+   *  1. The effect was `}, [])`, so it ran exactly once, on mount. At that
+   *     point the session has usually not resolved, so there was no token.
+   *  2. `fetchPendingSubmissions` returned on `!token || !user` *before* the
+   *     `try`, which is the only thing that clears `loading` — and `loading`
+   *     starts `true`. So the one attempt bailed out and left the spinner up
+   *     for ever, with nothing scheduled to try again.
+   *
+   * Same root cause as STU-001 on the institution students page: this read
+   * `useAuth()` alone while the rest of the application reads `useSession()`,
+   * which resolves `redux.token ?? context.token`. A session restored into
+   * Redux but not into the context left the page anonymous.
+   *
+   * The session tri-state is what makes the gate correct rather than merely
+   * later: only "initializing" waits. Once resolved, no token is an *answer*,
+   * so the spinner stops and the empty state shows.
+   */
+  const {
+    token: sessionToken,
+    user: sessionUser,
+    status: sessionStatus,
+  } = useSession()
+  const token = contextToken ?? sessionToken
+  const user = contextUser ?? sessionUser
   const { toast } = useToast()
 
   useEffect(() => {
-    fetchPendingSubmissions()
-  }, [])
+    if (sessionStatus === "initializing") return
+
+    if (!token || !user) {
+      // Resolved, and there is nothing to fetch. That is an answer.
+      setLoading(false)
+      return
+    }
+
+    void fetchPendingSubmissions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionStatus, token, user])
 
   const fetchPendingSubmissions = async () => {
-    if (!token || !user) return
+    if (!token || !user) {
+      // Never leave the caller on a spinner, even on this guard.
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/answers/pending-submissions`, {

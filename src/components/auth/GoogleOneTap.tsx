@@ -8,6 +8,7 @@ import type { RootState } from '@/lib/store'
 import { toast } from 'sonner'
 import api from '@/lib/api'
 import Cookies from 'js-cookie'
+import { authCookieOptions } from '@/lib/auth/cookie-options'
 
 interface GoogleOneTapProps {
   onSuccess?: (user: any) => void
@@ -46,8 +47,8 @@ function getRoleDashboardPath(role: string | undefined): string {
 }
 
 const storeAuthData = (user: any, token: string) => {
-  Cookies.set("bwenge_token", token, { expires: 7, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
-  Cookies.set("bwenge_user", JSON.stringify(user), { expires: 7, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+  Cookies.set("bwenge_token", token, authCookieOptions())
+  Cookies.set("bwenge_user", JSON.stringify(user), authCookieOptions())
   
   if (typeof window !== 'undefined') {
     localStorage.setItem("bwengeplus_token", token)

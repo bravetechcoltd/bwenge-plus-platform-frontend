@@ -324,7 +324,9 @@ export default function LearnerGradedAssignmentsPage() {
   };
 
   const handleViewResults = (assignment: GradedAssignment) => {
-    window.location.href = `/courses/${assignment.course.id}/assessments/${assignment.assessment_id}/results?attempt=${assignment.attempt_number}`;
+    // LRN-003: the results route did not exist. Opens the player on the
+    // assessment, which shows the recorded result.
+    window.location.href = `/courses/${assignment.course.id}/learn?assessment=${assignment.assessment_id}`;
   };
 
   const handleRefresh = async () => {

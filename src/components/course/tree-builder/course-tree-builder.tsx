@@ -8,13 +8,121 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { BookOpen, ChevronDown, ChevronRight, Plus, Trash2, Trophy, Loader2, Save, Video, PanelLeftClose, PanelLeftOpen, Image as ImageIcon, Paperclip } from "lucide-react"
+import { BookOpen, ChevronDown, ChevronRight, Plus, Trash2, Trophy, Loader2, Save, Video, PanelLeftClose, PanelLeftOpen, Image as ImageIcon, Paperclip, GripVertical } from "lucide-react"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 // import type { Module, Lesson, Assessment } from "@/types"
 import { ContentEditor } from "./content-editor"
 import { useAuth } from "@/hooks/use-auth"
 import { generateTempId, isTempId } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+
+/**
+ * ============================================================================
+ * Drag-and-drop ordering (DND-001)
+ * ============================================================================
+ *
+ * Modules reorder among themselves; lessons reorder within their own module.
+ * A lesson cannot be dragged into a different module — its `module_id`, its
+ * assessments and its uploads all hang off that relationship, and moving it
+ * across is a different operation from reordering.
+ *
+ * ── Position is the number ────────────────────────────────────────────────
+ *
+ * The displayed "Module 2" and "2.3" are computed from the array index at
+ * render time; nothing stores them. `order_index` is written from the index
+ * too, on reorder and again on save, so the array is the single source of
+ * order and the two can never disagree.
+ *
+ * ── Why the save had to change ────────────────────────────────────────────
+ *
+ * It read `order_index: module.order_index || index + 1`, so a stored value
+ * always beat the array position. Reordering the list would have looked right
+ * until the next save wrote the old numbers back. It is `index + 1` now.
+ */
+
+/** A row that can be dragged. The handle is passed back to the caller so it
+ *  can sit inside the existing row layout rather than wrapping it. */
+function SortableRow({
+  id,
+  disabled,
+  children,
+}: {
+  id: string
+  disabled?: boolean
+  children: (state: {
+    attributes: any
+    listeners: any
+    isDragging: boolean
+  }) => React.ReactNode
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={
+        isDragging
+          ? "relative z-20 rounded-lg ring-2 ring-primary/40 bg-background shadow-lg"
+          : undefined
+      }
+    >
+      {children({ attributes, listeners, isDragging })}
+    </div>
+  )
+}
+
+/**
+ * Stamps `order_index` from array position and marks what moved.
+ *
+ * A row the server already knows about has to become `modified`, or the save
+ * would skip it and the new order would never leave the browser. A `local`
+ * row stays local — it is new either way — and a row being deleted is left
+ * alone.
+ */
+function renumber<T extends { order_index?: number; _status?: string }>(
+  items: T[]
+): T[] {
+  return items.map((item, index) => {
+    const nextIndex = index + 1
+    if (item.order_index === nextIndex) return item
+
+    return {
+      ...item,
+      order_index: nextIndex,
+      _status:
+        item._status === "local" || item._status === "deleting"
+          ? item._status
+          : "modified",
+    }
+  })
+}
 
 // Enhanced types with status tracking
 interface BaseEntity {
@@ -186,6 +294,79 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
   }
 
   // Add new module
+  /*
+   * DND-001. Pointer and keyboard dragging.
+   *
+   * The 6px activation distance is what keeps the existing click-to-select
+   * behaviour: without it, every click on a row would start a drag and
+   * selecting a module would stop working. Keyboard sorting comes free and
+   * makes the feature usable without a mouse.
+   */
+  const dragSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  /** Modules among themselves. */
+  const handleModuleDragEnd = useCallback(
+    (event: any) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      setModules((current) => {
+        const from = current.findIndex((m) => m.id === active.id)
+        const to = current.findIndex((m) => m.id === over.id)
+        // Either id missing means the list changed under the drag; doing
+        // nothing is better than reordering by a stale index.
+        if (from === -1 || to === -1) return current
+
+        return renumber(arrayMove(current, from, to))
+      })
+    },
+    []
+  )
+
+  /**
+   * Lessons within one module.
+   *
+   * Scoped to the module the drag started in. Each module renders its own
+   * SortableContext, so a lesson cannot be dropped into another module's
+   * list — moving a lesson between modules would have to carry its
+   * module_id, its assessments and its uploads with it, which is a different
+   * operation from reordering.
+   */
+  const handleLessonDragEnd = useCallback(
+    (moduleId: string, event: any) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      setModules((current) =>
+        current.map((module) => {
+          if (module.id !== moduleId) return module
+
+          const lessons = module.lessons || []
+          const from = lessons.findIndex((l) => l.id === active.id)
+          const to = lessons.findIndex((l) => l.id === over.id)
+          if (from === -1 || to === -1) return module
+
+          return {
+            ...module,
+            lessons: renumber(arrayMove(lessons, from, to)),
+            // The module itself did not move, but its children did, so it has
+            // to be in the payload for the new lesson order to be saved.
+            _status:
+              module._status === "local" || module._status === "deleting"
+                ? module._status
+                : "modified",
+          }
+        })
+      )
+    },
+    []
+  )
+
   const addModule = () => {
     const moduleId = generateTempId()
     const newModule: Module = {
@@ -657,7 +838,15 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
         const moduleData: any = {
           title: module.title,
           description: module.description || "",
-          order_index: module.order_index || index + 1,
+          /*
+           * DND-001. The array position, not the stored value.
+           *
+           * This read `module.order_index || index + 1`, so a stored number
+           * always won and a reordered list would have been written back in
+           * its old order the next time the course was saved. The array is
+           * the order; this writes it down.
+           */
+          order_index: index + 1,
           estimated_duration_hours: module.estimated_duration_hours || 0,
           lessons: module.lessons?.map((lesson, lessonIndex) => {
             const lessonData: any = {
@@ -669,7 +858,8 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                 : lesson.video_url || "",
               thumbnail_url: lesson.thumbnail_url || "",
               duration_minutes: lesson.duration_minutes || 0,
-              order_index: lesson.order_index || lessonIndex + 1,
+              // DND-001: position, for the same reason as the module above.
+              order_index: lessonIndex + 1,
               type: lesson.type || "VIDEO",
               is_preview: lesson.is_preview || false,
               resources: lesson.resources || [],
@@ -1007,11 +1197,31 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                     <p className="text-xs mt-1">Click "Add Module" above to get started</p>
                   </div>
                 ) : (
-                  modules.map((module) => (
-                    <div key={module.id} className="space-y-1">
-                      {/* Module Node */}
+                  <DndContext
+                    sensors={dragSensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleModuleDragEnd}
+                  >
+                    <SortableContext
+                      items={modules.map((m) => m.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                  {modules.map((module, moduleIndex) => (
+                    <SortableRow
+                      key={module.id}
+                      id={module.id}
+                      disabled={module._status === "deleting"}
+                    >
+                      {({ attributes: moduleDragAttrs, listeners: moduleDragHandle }) => (
+                    <div className="space-y-1">
+                      {/* Module Node — the whole row is the drag surface
+                          (DND-002). The 6px activation threshold is what lets
+                          it stay clickable: a click moves less than that and
+                          still selects. */}
                       <div
-                        className={`flex items-center gap-1 p-2 rounded-lg cursor-pointer transition-colors group ${
+                        {...moduleDragAttrs}
+                        {...moduleDragHandle}
+                        className={`flex items-center gap-1 p-2 rounded-lg cursor-grab active:cursor-grabbing transition-colors group touch-none ${
                           selectedItem?.id === module.id
                             ? "bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800"
                             : "hover:bg-muted/50 dark:hover:bg-card"
@@ -1049,7 +1259,21 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                         ) : (
                           <div className="w-4 h-4 p-1" />
                         )}
+                        {/* The affordance. The listeners live on the row
+                            above, so this is a hint rather than the only
+                            place a drag can start. */}
+                        <GripVertical
+                          aria-hidden="true"
+                          className="w-3.5 h-3.5 -ml-0.5 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground"
+                        />
+
                         <BookOpen className="w-4 h-4 text-primary-600 flex-shrink-0" />
+
+                        {/* Position, computed at render. Never stored. */}
+                        <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary">
+                          {moduleIndex + 1}
+                        </span>
+
                         <span className="flex-1 text-sm font-medium truncate">{module.title || "Untitled Module"}</span>
 
                         {/* Status Badge */}
@@ -1082,10 +1306,29 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                       {/* Lessons */}
                       {expandedModules.has(module.id) && (
                         <div className="ml-4 space-y-1 border-l border-border dark:border-border pl-2">
-                          {(module.lessons || []).map((lesson) => (
-                            <div key={lesson.id} className="space-y-1">
+                          <DndContext
+                            sensors={dragSensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={(event) =>
+                              handleLessonDragEnd(module.id, event)
+                            }
+                          >
+                            <SortableContext
+                              items={(module.lessons || []).map((l) => l.id)}
+                              strategy={verticalListSortingStrategy}
+                            >
+                          {(module.lessons || []).map((lesson, lessonIndex) => (
+                            <SortableRow
+                              key={lesson.id}
+                              id={lesson.id}
+                              disabled={lesson._status === "deleting"}
+                            >
+                              {({ attributes: lessonDragAttrs, listeners: lessonDragHandle }) => (
+                            <div className="space-y-1">
                               <div
-                                className={`flex items-center gap-1 p-2 rounded-lg cursor-pointer transition-colors group ${
+                                {...lessonDragAttrs}
+                                {...lessonDragHandle}
+                                className={`flex items-center gap-1 p-2 rounded-lg cursor-grab active:cursor-grabbing transition-colors group touch-none ${
                                   selectedItem?.id === lesson.id
                                     ? "bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800"
                                     : "hover:bg-muted/50 dark:hover:bg-card"
@@ -1124,7 +1367,18 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                                 ) : (
                                   <div className="w-4 h-4 p-1" />
                                 )}
+                                <GripVertical
+                                  aria-hidden="true"
+                                  className="w-3 h-3 -ml-0.5 shrink-0 text-muted-foreground/30 group-hover:text-muted-foreground"
+                                />
+
                                 <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0" />
+
+                                {/* module.lesson, both from position. */}
+                                <span className="shrink-0 text-[10px] font-semibold tabular-nums text-muted-foreground">
+                                  {moduleIndex + 1}.{lessonIndex + 1}
+                                </span>
+
                                 <span className="flex-1 text-xs font-medium truncate">
                                   {lesson.title || "Untitled Lesson"}
                                 </span>
@@ -1246,7 +1500,11 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                                 Add Assessment
                               </button>
                             </div>
+                              )}
+                            </SortableRow>
                           ))}
+                            </SortableContext>
+                          </DndContext>
 
                           {/* Add Lesson — inline text button inside module */}
                           <button
@@ -1338,7 +1596,11 @@ export function CourseTreeBuilder({ modules, setModules, onNext, onPrevious, typ
                         </div>
                       )}
                     </div>
-                  ))
+                      )}
+                    </SortableRow>
+                  ))}
+                    </SortableContext>
+                  </DndContext>
                 )}
               </div>
             </CardContent>

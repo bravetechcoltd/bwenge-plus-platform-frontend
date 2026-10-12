@@ -1,7 +1,11 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { learningApi, type EvidenceReport } from "@/lib/learning/api"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  learningApi,
+  type EvidenceReport,
+  type LessonEvidenceEvaluation,
+} from "@/lib/learning/api"
 
 /**
  * ============================================================================
@@ -101,6 +105,19 @@ export interface UseLessonEngagementOptions {
   /** Server-known starting point, so resume does not reset evidence. */
   initialPositionSeconds?: number
   initialWatchedPct?: number
+  /**
+   * The server's evaluation, from the lesson payload (LTM-001).
+   *
+   * Without it the gate falls back to the local `estimate` until the first
+   * heartbeat lands. That estimate is derived from the lesson's content and
+   * knows nothing about `require_lesson_duration`, so on a duration-gated
+   * lesson it would report "met" and enable the button for the opening
+   * seconds — which the server would then refuse with a 422. Seeding from the
+   * payload starts the button in the state the server would enforce, and lets
+   * a learner returning to a half-finished lesson resume their accumulated
+   * time instead of starting over.
+   */
+  initialEvidence?: LessonEvidenceEvaluation | null
   enabled?: boolean
 }
 
@@ -113,6 +130,33 @@ export interface UseLessonEngagementResult {
   reason: string | null
   snapshot: EngagementSnapshot
   serverReport: EvidenceReport | null
+
+  /**
+   * The lesson's time requirement, for the learning timer (LTM-001).
+   *
+   * `requiredMs` is null when this lesson has no time component at all, which
+   * is how the timer knows not to render. Everything here comes from the
+   * server — the payload's evaluation first, then each heartbeat — so the
+   * countdown and the completion endpoint can never disagree about the number.
+   */
+  timeGate: {
+    /** null when the lesson imposes no dwell requirement. */
+    requiredMs: number | null
+    /** Accumulated dwell the server has acknowledged. */
+    serverObservedMs: number
+    /**
+     * Server-acknowledged dwell plus the unreported remainder, read live.
+     *
+     * A function rather than a value: between heartbeats the accumulator is a
+     * ref, so reading it does not re-render the whole player once a second.
+     * It is visibility-aware through the same `collectDwell` the heartbeat
+     * uses, so a learner on another tab accrues nothing here and nothing on
+     * the server either.
+     */
+    observedMs: () => number
+    /** Whether the time component alone is satisfied. */
+    met: boolean
+  }
 
   /** Report a watched interval from the player. */
   reportWatched: (from: number, to: number, duration: number) => void
@@ -170,6 +214,7 @@ export function useLessonEngagement(
     hasMeasurableVideo = false,
     alreadyCompleted = false,
     initialPositionSeconds = 0,
+    initialEvidence = null,
     enabled = true,
   } = options
 
@@ -503,7 +548,19 @@ export function useLessonEngagement(
   const estimate = localEstimate()
 
   // The server's verdict wins whenever we have one.
-  const canComplete = alreadyCompleted || (serverReport?.can_complete ?? estimate.met)
+  /*
+   * LTM-001. The payload's evaluation sits between the two.
+   *
+   * `estimate` is the local fallback, computed from the lesson's content. It
+   * cannot know about `require_lesson_duration`, so on a duration-gated
+   * lesson it reported "met" and enabled the button for the opening seconds —
+   * a click the server then refused with a 422. The seed is the server's own
+   * verdict for this lesson, so the button opens in the right state and the
+   * estimate is only reached when there is no server statement at all.
+   */
+  const canComplete =
+    alreadyCompleted ||
+    (serverReport?.can_complete ?? initialEvidence?.met ?? estimate.met)
   const progressPct = alreadyCompleted
     ? 100
     : serverReport
@@ -522,12 +579,140 @@ export function useLessonEngagement(
     ? null
     : (describeShortfall(serverReport) ?? serverReport?.reason ?? estimate.reason)
 
+  /*
+   * ── The time gate (LTM-001) ───────────────────────────────────────────
+   *
+   * Read from whichever server statement is freshest: a heartbeat report if
+   * one has arrived, otherwise the evaluation the lesson payload carried. The
+   * requirement is never computed here — duplicating `requiredDwellMs`, with
+   * its video/text branching and its duration clamp, is how the countdown and
+   * the server's refusal would come to disagree.
+   */
+  const gateSource = serverReport ?? initialEvidence
+  const rawRequired = gateSource?.required?.dwell_ms
+
+  /*
+   * LTM-003. Only a duration-derived requirement is a learning timer.
+   *
+   * `required.dwell_ms` carries three different things. The default is the
+   * five-second `min_dwell_seconds` floor, which exists so a lesson shorter
+   * than the viewport cannot be completed in the frame it paints — not a
+   * learning time. Counting it down meant that on any lesson with dwell
+   * already accumulated (369s on the first lesson of the reported course) the
+   * timer opened on its end state and never visibly counted.
+   *
+   * The server says which branch produced the number, so this needs no second
+   * copy of that rule. No duration, no timer.
+   */
+  /*
+   * LTM-005. The label survives a report that does not carry it.
+   *
+   * The heartbeat response used to omit `dwell_source` entirely, so the
+   * countdown appeared from the lesson payload and then disappeared seconds
+   * later when the first beat replaced it — the freshest statement losing
+   * information the first one had. The server sends it on both now; this
+   * falls back to the payload's label regardless, so a deployment running an
+   * older API keeps a working timer instead of a flickering one.
+   */
+  const dwellSource =
+    (serverReport as { dwell_source?: string } | null)?.dwell_source ??
+    (initialEvidence as { dwell_source?: string } | null)?.dwell_source
+
+  const requiredMs =
+    (dwellSource === "duration" || dwellSource === "required") &&
+    typeof rawRequired === "number" &&
+    Number.isFinite(rawRequired) &&
+    rawRequired > 0
+      ? rawRequired
+      : null
+
+  const rawObserved = gateSource?.observed?.dwell_ms
+  const serverObservedMs =
+    typeof rawObserved === "number" && Number.isFinite(rawObserved)
+      ? rawObserved
+      : 0
+
+  /*
+   * Live observed dwell: what the server has plus what has not been sent yet.
+   *
+   * `collectDwell()` first, so the elapsed-but-uncounted slice since the last
+   * tick is folded in — the same call the heartbeat makes, which is what keeps
+   * the two reading the same clock and makes hidden tabs accrue nothing.
+   */
+  const observedMs = useCallback(() => {
+    collectDwell()
+    return serverObservedMs + dwellRef.current
+  }, [collectDwell, serverObservedMs])
+
+  /*
+   * The moment the countdown reaches zero, ask the server (LTM-001).
+   *
+   * `canComplete` follows the server, and heartbeats are fifteen seconds
+   * apart — so without this the timer would read 00:00 and the button would
+   * stay disabled for up to another fifteen seconds. On a gate the learner
+   * has just waited twenty minutes for, that final stall is the part they
+   * would report as broken.
+   *
+   * So a one-second poll, alive only while a time gate is pending, fires a
+   * single heartbeat on the crossing. The server still decides: this asks the
+   * question earlier, it does not answer it. `firedRef` keeps it to one
+   * request per crossing, and the interval tears down as soon as the gate is
+   * satisfied, so a lesson with no time requirement never starts it at all.
+   */
+  const crossingFiredRef = useRef(false)
+
+  useEffect(() => {
+    crossingFiredRef.current = false
+  }, [lessonId])
+
+  useEffect(() => {
+    if (!enabled || alreadyCompleted) return
+    if (requiredMs === null) return
+    if (serverReport?.can_complete) return
+    if (crossingFiredRef.current) return
+
+    const id = window.setInterval(() => {
+      collectDwell()
+      if (serverObservedMs + dwellRef.current < requiredMs) return
+
+      crossingFiredRef.current = true
+      window.clearInterval(id)
+      void sendHeartbeat()
+    }, 1000)
+
+    return () => window.clearInterval(id)
+  }, [
+    enabled,
+    alreadyCompleted,
+    requiredMs,
+    serverObservedMs,
+    serverReport?.can_complete,
+    collectDwell,
+    sendHeartbeat,
+  ])
+
+  const timeGate = useMemo(
+    () => ({
+      requiredMs,
+      serverObservedMs,
+      observedMs,
+      // A completed lesson has nothing left to wait for, and a lesson with no
+      // requirement is met by definition.
+      met:
+        alreadyCompleted ||
+        requiredMs === null ||
+        serverObservedMs + dwellRef.current >= requiredMs,
+    }),
+    [requiredMs, serverObservedMs, observedMs, alreadyCompleted]
+  )
+
   return {
     canComplete,
     progressPct,
     reason,
     snapshot,
     serverReport,
+    timeGate,
     reportWatched,
     reportPosition,
     flush: sendHeartbeat,

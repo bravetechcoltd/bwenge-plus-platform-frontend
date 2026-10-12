@@ -133,7 +133,7 @@ export function LearningSidebar(props: LearningSidebarProps) {
         className="hidden w-[19rem] shrink-0 border-r border-border bg-sidebar xl:w-80 lg:block"
         aria-label="Course contents"
       >
-        <div className="sticky top-14 h-[calc(100vh-3.5rem)]">
+        <div className="sticky top-[var(--learn-header-h,3.5rem)] h-[calc(100vh-var(--learn-header-h,3.5rem))]">
           <SidebarBody {...props} />
         </div>
       </aside>
@@ -144,7 +144,7 @@ export function LearningSidebar(props: LearningSidebarProps) {
           <SheetHeader className="border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">Course contents</SheetTitle>
           </SheetHeader>
-          <div className="h-[calc(100vh-3.5rem)]">
+          <div className="h-[calc(100vh-var(--learn-header-h,3.5rem))]">
             <SidebarBody {...props} />
           </div>
         </SheetContent>

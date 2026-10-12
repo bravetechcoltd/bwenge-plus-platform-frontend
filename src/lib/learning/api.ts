@@ -465,7 +465,27 @@ export interface LessonPayload {
     min_scroll_percent: number
     min_interactions: number
     read_time_wpm: number
+    /** LTM-001. True when the gate is the lesson's own estimated duration. */
+    require_lesson_duration?: boolean
+    max_duration_gate_minutes?: number
+    min_dwell_seconds?: number | null
   }
+
+  /**
+   * This lesson's completion criteria, already evaluated by the server
+   * (LTM-001).
+   *
+   * Unlike `policy`, this one *is* load-bearing — it is what the learning
+   * timer counts down and what seeds the completion gate before the first
+   * heartbeat. It is still the server's evaluation rather than inputs for the
+   * client to redo: `required.dwell_ms` here is by construction the number
+   * `POST /learning/lessons/:id/complete` will enforce.
+   *
+   * Optional because a deployment serving an older build of the API will not
+   * send it, and the gate must fall back to the existing behaviour rather
+   * than break.
+   */
+  evidence?: LessonEvidenceEvaluation
 }
 
 export interface SanitizedQuestion {
@@ -755,8 +775,45 @@ export interface EvidenceReport {
   required: Record<string, number>
   observed: Record<string, number>
   reason: string | null
+  /** LTM-005. Same label the lesson payload carries. See the type below. */
+  dwell_source?: 'duration' | 'required' | 'floor' | 'estimate'
   completion_percentage: number
   last_position_seconds: number
+}
+
+/**
+ * The server's evaluation of a lesson's completion criteria, as the lesson
+ * payload now carries it (LTM-001).
+ *
+ * The same `required`/`observed` pair as `EvidenceReport` and as the 422
+ * `INSUFFICIENT_EVIDENCE` body, so one piece of client code reads all three.
+ * It is on the payload so the learning timer knows the requirement and the
+ * accumulated dwell on first render — without it the countdown has nothing to
+ * count until the first heartbeat lands, and a learner returning to a
+ * half-finished lesson would watch it restart from the top.
+ *
+ * `met` rather than `can_complete`: this is an evaluation of evidence, not a
+ * permission. Locks, prerequisites and privilege are decided elsewhere.
+ */
+export interface LessonEvidenceEvaluation {
+  met: boolean
+  required: Record<string, number | boolean>
+  observed: Record<string, number | boolean>
+  reason: string | null
+  /**
+   * Where `required.dwell_ms` came from (LTM-003).
+   *
+   * `"duration"` is the only one the learning timer counts down.
+   *
+   * `"floor"` is `min_dwell_seconds`, five seconds by default — an
+   * anti-instant-complete guard rather than a learning time. The timer
+   * rendered it as a duration, so on any lesson with dwell already
+   * accumulated it opened on its end state and never visibly counted.
+   *
+   * `"estimate"` is a word-count reading estimate. The number alone cannot
+   * distinguish the three, which is why the server says which it is.
+   */
+  dwell_source?: "duration" | "required" | "floor" | "estimate"
 }
 
 // ============================================================================

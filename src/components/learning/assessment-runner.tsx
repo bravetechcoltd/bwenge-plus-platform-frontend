@@ -1914,6 +1914,77 @@ function ResultView({
   )
 }
 
+/**
+ * The verdict on one answer (PCR-001).
+ *
+ * ── What was wrong ────────────────────────────────────────────────────────
+ *
+ * This card decided with `answer.is_correct === true` and printed "Incorrect"
+ * for everything else — beside a points line that said "89 / 100 points". An
+ * essay marked 89 out of 100 by its instructor, in an attempt the same screen
+ * reported as **Passed**, was labelled wrong.
+ *
+ * `is_correct` is a boolean, and a written answer is not. Checked against the
+ * stored rows for the reported assessment — one ESSAY question worth 100,
+ * pass mark 70 — the grader sets it `true` only at full marks:
+ *
+ *   100/100 -> is_correct true      89/100 -> is_correct false
+ *    65/100 -> is_correct false      0/100 -> is_correct false
+ *
+ * So on a manually marked question the flag means "full marks", and reading
+ * it as "correct" turns every partial credit into a failure. Two graded rows
+ * on this platform carry partial credit and both displayed as "Incorrect".
+ *
+ * ── The rule ──────────────────────────────────────────────────────────────
+ *
+ * The points are the authoritative record, so the verdict is derived from
+ * them and `is_correct` is kept only as the fallback for an auto-graded
+ * question that carries no denominator.
+ */
+type AnswerVerdict =
+  | "ungraded"
+  | "withheld"
+  | "correct"
+  | "partial"
+  | "incorrect"
+
+function answerVerdict(
+  answer: AttemptResult["answers"][number]
+): AnswerVerdict {
+  if (answer.is_graded === false) return "ungraded"
+
+  /*
+   * The score may be deliberately withheld.
+   *
+   * `buildReview` sends `points_earned: scoreReleased ? ... : null` and
+   * `is_correct: scoreReleased ? ... : null`, while `points_possible` stays a
+   * real number. Treating that absent numerator as a zero would announce a
+   * wrong answer on an assessment whose results have not been released —
+   * which is what the previous `is_correct === true` test did, since null is
+   * not true. An unknown result is not a negative one.
+   */
+  if (answer.points_earned === null || answer.points_earned === undefined) {
+    if (answer.is_correct === true) return "correct"
+    if (answer.is_correct === null || answer.is_correct === undefined) {
+      return "withheld"
+    }
+    return "incorrect"
+  }
+
+  const possible = Number(answer.points_possible)
+  const earned = Number(answer.points_earned)
+
+  if (Number.isFinite(possible) && possible > 0 && Number.isFinite(earned)) {
+    if (earned >= possible) return "correct"
+    if (earned > 0) return "partial"
+    return "incorrect"
+  }
+
+  // No usable denominator — an auto-graded item whose points were not
+  // recorded. The flag is all there is.
+  return answer.is_correct === true ? "correct" : "incorrect"
+}
+
 function AnswerReviewCard({
   answer,
   index,
@@ -1923,8 +1994,40 @@ function AnswerReviewCard({
   index: number
   showCorrect: boolean
 }) {
-  const ungraded = answer.is_graded === false
-  const correct = answer.is_correct === true
+  const verdict = answerVerdict(answer)
+  const ungraded = verdict === "ungraded"
+  const withheld = verdict === "withheld"
+  const correct = verdict === "correct"
+  const partial = verdict === "partial"
+
+  // Partial credit is its own colour. Red for 89/100 reads as a failure, and
+  // green would hide that marks were lost.
+  const tone: "warning" | "success" | "primary" | "destructive" | "muted" =
+    ungraded
+      ? "warning"
+      : withheld
+        ? "muted"
+        : correct
+          ? "success"
+          : partial
+            ? "primary"
+            : "destructive"
+
+  const toneText = {
+    warning: "text-warning",
+    success: "text-success",
+    primary: "text-primary",
+    destructive: "text-destructive",
+    muted: "text-muted-foreground",
+  }[tone]
+
+  const toneBadge = {
+    warning: "bg-warning/15 text-warning",
+    success: "bg-success/15 text-success",
+    primary: "bg-primary/15 text-primary",
+    destructive: "bg-destructive/15 text-destructive",
+    muted: "bg-muted text-muted-foreground",
+  }[tone]
 
   return (
     <Card className="shadow-none">
@@ -1933,11 +2036,7 @@ function AnswerReviewCard({
           <span
             className={cn(
               "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
-              ungraded
-                ? "bg-warning/15 text-warning"
-                : correct
-                  ? "bg-success/15 text-success"
-                  : "bg-destructive/15 text-destructive"
+              toneBadge
             )}
           >
             {index + 1}
@@ -1952,16 +2051,25 @@ function AnswerReviewCard({
               <span
                 className={cn(
                   "flex items-center gap-1 text-xs font-medium",
-                  ungraded ? "text-warning" : correct ? "text-success" : "text-destructive"
+                  toneText
                 )}
               >
                 {ungraded ? (
                   <>
                     <Clock className="h-3.5 w-3.5" /> Awaiting grading
                   </>
+                ) : withheld ? (
+                  <>
+                    <Lock className="h-3.5 w-3.5" /> Result not released
+                  </>
                 ) : correct ? (
                   <>
                     <CheckCircle2 className="h-3.5 w-3.5" /> Correct
+                  </>
+                ) : partial ? (
+                  <>
+                    {/* The mark the instructor actually gave, named. */}
+                    <Check className="h-3.5 w-3.5" /> Partial credit
                   </>
                 ) : (
                   <>
@@ -1970,7 +2078,12 @@ function AnswerReviewCard({
                 )}
               </span>
               <span className="text-xs tabular-nums text-muted-foreground">
-                {answer.points_earned ?? 0} / {answer.points_possible} points
+                {/* An em dash, not 0, for a mark that is withheld or not yet
+                    given: "0 / 100" reads as a mark of zero. */}
+                {answer.points_earned === null ||
+                answer.points_earned === undefined
+                  ? `— / ${answer.points_possible} points`
+                  : `${answer.points_earned} / ${answer.points_possible} points`}
               </span>
             </div>
 

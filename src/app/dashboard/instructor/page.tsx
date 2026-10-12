@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useCallback } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import {
@@ -28,6 +29,7 @@ import {
   BarChart3,
   ChevronRight,
   Image,
+  ArrowLeft,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -178,6 +180,20 @@ export default function InstructorDashboard() {
           <p className="text-sm text-muted-foreground mt-0.5">Your courses and learner activity</p>
         </div>
         <div className="flex items-center gap-3">
+          {/*
+            Back to My Learning (LRN-002).
+
+            An instructor is also a learner — they enrol in courses like anyone
+            else — and nothing on this dashboard led to /dashboard/learner, so
+            the only way there was to type the URL. Placed beside the refresh
+            control, where this header's other navigation already lives.
+          */}
+          <Button variant="outline" size="sm" asChild className="h-8">
+            <Link href="/dashboard/learner">
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+              My Learning
+            </Link>
+          </Button>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {loading ? "Refreshing..." : "Just updated"}

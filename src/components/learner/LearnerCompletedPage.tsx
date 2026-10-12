@@ -66,20 +66,14 @@ interface CompletedCourse {
   } | null;
   completion: {
     date: string;
-    score: number;
+    /** `null` when the course was certified on completion rather than a mark. */
+    score: number | null;
     time_spent_minutes: number;
     lessons_completed: number;
     total_lessons: number;
     certificate_issued: boolean;
-    certificate_id?: string;
+    certificate_id?: string | null;
     certificate_url?: string;
-  };
-  achievements: {
-    quizzes_passed: number;
-    assignments_completed: number;
-    perfect_scores: number;
-    early_bird: boolean;
-    top_performer: boolean;
   };
   review?: {
     rating: number;
@@ -92,9 +86,11 @@ interface CompletionStats {
   total_completed: number;
   total_time_spent_hours: number;
   total_lessons_completed: number;
-  average_score: number;
+  /** `null` when no completed course carries a mark. Never NaN. */
+  average_score: number | null;
+  /** How many courses the average is based on. */
+  scored_courses: number;
   certificates_earned: number;
-  achievements_count: number;
   completion_by_month: {
     month: string;
     count: number;
@@ -157,14 +153,33 @@ export default function LearnerCompletedPage() {
         
         // Transform completed courses data
         const transformed = data.data.map((enrollment: any) => {
-          // Mock achievements for demo
-          const achievements = {
-            quizzes_passed: Math.floor(Math.random() * 10) + 5,
-            assignments_completed: Math.floor(Math.random() * 5) + 2,
-            perfect_scores: Math.floor(Math.random() * 3),
-            early_bird: new Date(enrollment.completion_date).getDate() <= 15,
-            top_performer: Math.random() > 0.7,
-          };
+          /*
+           * LCP-001. The score, as a number, or nothing at all.
+           *
+           * Two defects met here and produced the reported "NaN%".
+           *
+           * `final_score` is a Postgres numeric, so node-postgres hands it
+           * over as a *string* — "85.00", not 85. The average is a `reduce`
+           * with a `+`, so the strings concatenated instead of adding:
+           * 0 + "85.00" + "90.00" = "085.0090.00", and dividing that by two
+           * is NaN. One scored course still looked right, which is why this
+           * survived. Same root cause as the `average_rating?.toFixed is not
+           * a function` failure.
+           *
+           * The fallback was the other half: `Math.floor(Math.random() * 15)
+           * + 85` invented a grade between 85 and 99 for any course without a
+           * real one. A fabricated mark, shown to the learner who supposedly
+           * earned it, is worse than no mark — an unscored course is null now
+           * and the page says "Not scored".
+           */
+          const parsedScore = Number(enrollment.final_score);
+          const score =
+            enrollment.final_score === null ||
+            enrollment.final_score === undefined ||
+            enrollment.final_score === "" ||
+            !Number.isFinite(parsedScore)
+              ? null
+              : parsedScore;
 
           return {
             id: enrollment.course.id,
@@ -183,15 +198,23 @@ export default function LearnerCompletedPage() {
             },
             completion: {
               date: enrollment.completion_date || enrollment.enrolled_at,
-              score: enrollment.final_score || Math.floor(Math.random() * 15) + 85,
+              score,
               time_spent_minutes: enrollment.total_time_spent_minutes || 0,
               lessons_completed: enrollment.completed_lessons || 0,
               total_lessons: enrollment.course.total_lessons || 0,
               certificate_issued: enrollment.certificate_issued || false,
-              certificate_id: enrollment.certificate_id || `CERT-${Math.random().toString(36).toUpperCase()}`,
+              /*
+               * No invented certificate number.
+               *
+               * This read `CERT-${Math.random().toString(36).toUpperCase()}`,
+               * so a course with no certificate still showed an official
+               * looking reference — one that changed on every render and
+               * matched nothing in the database. A learner could have quoted
+               * it to an employer.
+               */
+              certificate_id: enrollment.certificate_id || null,
               certificate_url: enrollment.certificate_url,
             },
-            achievements,
           };
         });
 
@@ -219,9 +242,25 @@ export default function LearnerCompletedPage() {
       0
     );
 
-    const averageScore = courses.length > 0
-      ? courses.reduce((sum, c) => sum + c.completion.score, 0) / courses.length
-      : 0;
+    /*
+     * LCP-001. Averaged over the courses that actually have a score.
+     *
+     * The old line divided by `courses.length`, so an unscored course pulled
+     * the average down as if the learner had been marked zero — which is why
+     * the invented 85-99 fallback existed in the first place. Each defect was
+     * covering for the other.
+     *
+     * `null` when nothing is scored. An average of no marks is not 0%, and it
+     * is certainly not NaN%.
+     */
+    const scored = courses
+      .map((c) => c.completion.score)
+      .filter((value): value is number => typeof value === "number");
+
+    const averageScore =
+      scored.length > 0
+        ? scored.reduce((sum, value) => sum + value, 0) / scored.length
+        : null;
 
     // Group by month
     const monthCounts: Record<string, number> = {};
@@ -252,12 +291,10 @@ export default function LearnerCompletedPage() {
       total_completed: courses.length,
       total_time_spent_hours: Math.round(totalTimeSpent / 60),
       total_lessons_completed: totalLessons,
-      average_score: Math.round(averageScore),
+      average_score: averageScore === null ? null : Math.round(averageScore),
+      /** How many courses that average is actually based on. */
+      scored_courses: scored.length,
       certificates_earned: courses.filter(c => c.completion.certificate_issued).length,
-      achievements_count: courses.reduce(
-        (sum, c) => sum + c.achievements.quizzes_passed + c.achievements.assignments_completed,
-        0
-      ),
       completion_by_month: completionByMonth,
       by_level: byLevel,
       by_type: byType,
@@ -418,9 +455,28 @@ export default function LearnerCompletedPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Average Score</p>
-                  <p className="text-3xl font-bold">{stats.average_score}%</p>
-                  <p className="text-xs text-primary mt-1">
-                    Top performer in {stats.by_level.length} levels
+                  {/* LCP-001. "NaN%" came from averaging numeric strings; the
+                      em dash is what an absent average should always have
+                      looked like. */}
+                  <p className="text-3xl font-bold">
+                    {stats.average_score === null
+                      ? "—"
+                      : `${stats.average_score}%`}
+                  </p>
+                  {/*
+                    This said "Top performer in N levels", where N was simply
+                    the number of distinct difficulty levels among the
+                    learner's courses — it measured nothing about performance
+                    and was true of everybody. Replaced with what the average
+                    is actually based on, which is the one thing a reader of
+                    this figure needs to know.
+                  */}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stats.average_score === null
+                      ? "No marked courses yet"
+                      : `across ${stats.scored_courses} marked course${
+                          stats.scored_courses === 1 ? "" : "s"
+                        }`}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
@@ -434,10 +490,19 @@ export default function LearnerCompletedPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Achievements</p>
-                  <p className="text-3xl font-bold">{stats.achievements_count}</p>
+                  {/*
+                    Was "Achievements / N badges earned", where N was
+                    `Math.random() * 10 + 5` quizzes plus `Math.random() * 5
+                    + 2` assignments per course — a badge count invented on
+                    every load. Certificates are the real, verifiable thing
+                    this page already knows about.
+                  */}
+                  <p className="text-sm text-muted-foreground">Certificates</p>
+                  <p className="text-3xl font-bold">
+                    {stats.certificates_earned}
+                  </p>
                   <p className="text-xs text-warning mt-1">
-                    badges earned
+                    of {stats.total_completed} completed
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
@@ -535,7 +600,12 @@ export default function LearnerCompletedPage() {
                 completed_lessons: course.completion.lessons_completed,
                 total_lessons_count: course.completion.total_lessons,
                 certificate_issued: course.completion.certificate_issued,
-                final_score: String(course.completion.score),
+                /* Null, not the string "null", when unscored — the card omits
+                   the field instead of printing it (LCP-001). */
+                final_score:
+                  course.completion.score === null
+                    ? null
+                    : String(course.completion.score),
                 action_href: `/courses/${course.id}/learn`,
                 animate: true,
               }}

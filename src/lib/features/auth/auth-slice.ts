@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import api from "@/lib/api";
 import Cookies from "js-cookie";
+import { isSecureOrigin } from "@/lib/auth/cookie-options";
 import { hardSignOut } from "@/lib/auth/hard-sign-out";
 
 // ==================== ENHANCED ENUMS ====================
@@ -444,12 +445,12 @@ const storeAuthData = (user: BwengeUser, token: string) => {
 
   Cookies.set("bwenge_token", token, {
     expires: 7,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureOrigin(),
     sameSite: "strict",
   });
   Cookies.set("bwenge_user", JSON.stringify(protectedUser), {
     expires: 7,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureOrigin(),
     sameSite: "strict",
   });
 
@@ -471,7 +472,7 @@ const storeAuthData = (user: BwengeUser, token: string) => {
     if (value) {
       Cookies.set(name, value, {
         expires: 7,
-        secure: process.env.NODE_ENV === "production",
+        secure: isSecureOrigin(),
       });
     } else {
       Cookies.remove(name);

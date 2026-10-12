@@ -167,9 +167,10 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Duration (minutes)</Label>
+                  <Label>Estimated learning duration (minutes)</Label>
                   <Input
                     type="number"
+                    min={0}
                     value={lesson.duration_minutes || 0}
                     onChange={(e) => {
                       onUpdate({ duration_minutes: Number(e.target.value) })
@@ -177,6 +178,23 @@ export function LessonEditor({ lesson, onUpdate, onDelete }: LessonEditorProps) 
                     }}
                     placeholder="15"
                   />
+                  {/*
+                    LTM-001. This field stopped being decoration.
+
+                    It has always been shown to learners on the lesson. It is
+                    now also the source for the learning timer, on any course
+                    whose learning policy sets `require_lesson_duration` — so
+                    an instructor typing a number here should know it can
+                    become a gate and not just a label. The second sentence
+                    says the gate is conditional, because for most courses it
+                    is still only a label.
+                  */}
+                  <p className="text-[12px] text-muted-foreground">
+                    Shown to learners on this lesson. If this course requires
+                    the estimated learning time, it is also the countdown a
+                    learner completes before &ldquo;Mark complete&rdquo;
+                    unlocks.
+                  </p>
                 </div>
 
                 <div className="space-y-4 pt-4 border-t">

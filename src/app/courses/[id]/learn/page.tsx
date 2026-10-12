@@ -2,7 +2,7 @@
 
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import useSWR from "swr"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -36,9 +36,14 @@ import {
   AssessmentSkeleton,
   LearningErrorState,
   LearningLockedState,
+  LearningNoContentState,
   LearningPageSkeleton,
   OfflineBanner,
 } from "@/components/learning/learning-states"
+import {
+  LessonTimerNotice,
+  LessonTimerChip,
+} from "@/components/learning/lesson-timer"
 
 /**
  * ============================================================================
@@ -96,6 +101,7 @@ export default function CourseLearningPage({
 }) {
   const { id: courseId } = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isLoading: authLoading } = useAuth()
   const { toast } = useToast()
 
@@ -173,6 +179,67 @@ export default function CourseLearningPage({
     refresh: refreshPath,
   } = useLearningProgress(courseId, selectedStepId)
 
+  /*
+   * LRN-003. Opening the player at a particular step.
+   *
+   * ── What was broken ──────────────────────────────────────────────────────
+   *
+   * Three pages offered "View result" and sent the learner to
+   *
+   *   /courses/:id/assessments/:assessmentId/results?attempt=1
+   *
+   * which is not a route in this application and never has been — the only
+   * routes under /courses are `[id]` and `[id]/learn`. All three produced a
+   * 404. The progress page's "Continue" links on each module carried
+   * `?module=<id>` for the same purpose, and this page read no query
+   * parameters at all, so those silently landed on the resume step instead.
+   *
+   * ── Why a parameter rather than a results page ───────────────────────────
+   *
+   * The result screen already exists: `AssessmentRunner` loads the latest
+   * result for a finished attempt and renders `ResultView`, honouring the
+   * release policy and carrying the integrity panel with it. A separate
+   * results route would be a second implementation of that screen, which is
+   * how this codebase ended up with five certificate designs.
+   *
+   * `alias_ids` is matched too — it exists for precisely this, "a client
+   * holding a retired id can still recognise which step it belongs to".
+   */
+  const deepLinkRef =
+    searchParams.get("assessment") ||
+    searchParams.get("lesson") ||
+    searchParams.get("step") ||
+    null
+  const deepLinkModule = searchParams.get("module")
+  const [deepLinkApplied, setDeepLinkApplied] = useState(false)
+
+  useEffect(() => {
+    // Once only, and only once the path is in hand: after that the learner's
+    // own navigation owns the selection, so a re-render must not drag them
+    // back to where the link pointed.
+    if (deepLinkApplied || !steps || steps.length === 0) return
+    if (!deepLinkRef && !deepLinkModule) {
+      setDeepLinkApplied(true)
+      return
+    }
+
+    const match = deepLinkRef
+      ? steps.find(
+          (step: any) =>
+            step.step_id === deepLinkRef ||
+            step.ref_id === deepLinkRef ||
+            step.lesson_id === deepLinkRef ||
+            (Array.isArray(step.alias_ids) &&
+              step.alias_ids.includes(deepLinkRef))
+        )
+      : // A module link opens that module's first step, which is what
+        // "Continue" on a module card means.
+        steps.find((step: any) => step.module_id === deepLinkModule)
+
+    if (match) setSelectedStepId(match.step_id)
+    setDeepLinkApplied(true)
+  }, [deepLinkApplied, deepLinkRef, deepLinkModule, steps])
+
   // Land the learner where the server says they left off.
   const activeStepId = selectedStepId ?? path?.summary.current_step_id ?? null
   const isCompletionView = activeStepId === COMPLETION_STEP_ID
@@ -229,6 +296,16 @@ export default function CourseLearningPage({
     // finished months ago re-open its gate and then refuse to complete (G-01).
     alreadyCompleted: activeStep?.is_completed === true,
     initialPositionSeconds: lessonPayload?.learner_state.last_position_seconds ?? 0,
+    /*
+     * LTM-001. The server's own evaluation for this lesson.
+     *
+     * Carries the dwell requirement and the dwell already accumulated, so the
+     * learning timer has real figures on the first render and a refresh
+     * resumes the countdown instead of restarting it. Also what keeps the
+     * button disabled from the opening frame on a duration-gated lesson,
+     * rather than relying on the local estimate that cannot see the gate.
+     */
+    initialEvidence: lessonPayload?.evidence ?? null,
     enabled: !!lessonId && !isOffline,
   })
 
@@ -594,6 +671,30 @@ export default function CourseLearningPage({
         onOpenNotes={() => setNotesOpen(true)}
         onOpenShortcuts={() => setShortcutsOpen(true)}
         notesOpen={notesOpen}
+        timer={
+          /*
+           * The learning timer, pinned under the nav row (LTM-007).
+           *
+           * In the navigation region rather than the content column, so it
+           * stays on screen for the whole lesson instead of scrolling away —
+           * and immediately below "My Learning", where it was asked for.
+           * Lessons only: an assessment has its own clock, and two countdowns
+           * at once would be worse than neither.
+           *
+           * `canComplete` and `reason` are the same two values
+           * `primaryAction` builds the button from, so the panel and the
+           * button cannot disagree (LTM-002).
+           */
+          activeStep?.kind === "lesson" ? (
+            <LessonTimerChip
+              requiredMs={engagement.timeGate.requiredMs}
+              observedMs={engagement.timeGate.observedMs}
+              isCompleted={activeStep?.is_completed === true}
+              canComplete={engagement.canComplete}
+              blockedReason={engagement.reason}
+            />
+          ) : null
+        }
       />
 
       <OfflineBanner isOffline={isOffline} />
@@ -610,14 +711,30 @@ export default function CourseLearningPage({
           onMobileOpenChange={setSidebarOpen}
         />
 
-        <div className="flex min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 flex-col">
+        <div className="flex min-h-[calc(100vh-var(--learn-header-h,3.5rem))] min-w-0 flex-1 flex-col">
           <main id="lesson-content" className="flex-1" tabIndex={-1}>
             {steps.length === 0 ? (
-              <LearningErrorState
-                error={
-                  new LearningApiError(404, "NOT_FOUND", "This course has no content yet.")
-                }
+              /*
+               * LRN-001. A course with no lessons is not a missing course.
+               *
+               * This passed a hand-made 404 to LearningErrorState with the
+               * message "This course has no content yet." — which never
+               * reached the screen, because that component's NOT_FOUND branch
+               * replaced the caller's message with "This content no longer
+               * exists." whenever the status was 404. An enrolled learner
+               * opening a published course that had not been authored yet was
+               * told it had been deleted, with "Browse courses" as the only
+               * way out.
+               *
+               * The empty case now has its own state, which says what is
+               * actually true and offers the way back to My Learning.
+               */
+              <LearningNoContentState
+                courseTitle={path.course.title}
                 courseId={courseId}
+                isPrivileged={["INSTRUCTOR", "SYSTEM_ADMIN"].includes(
+                  String(user?.bwenge_role ?? "").toUpperCase()
+                )}
               />
             ) : isCompletionView ? (
               <div className="mx-auto w-full max-w-[820px] space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -672,14 +789,35 @@ export default function CourseLearningPage({
           </main>
 
           {!isCompletionView && activeStep && steps.length > 0 && (
-            <LearningActionBar
-              previousStep={previousStep(activeStep.step_id)}
-              nextStep={nextStep(activeStep.step_id)}
-              onNavigate={goToStep}
-              primary={primaryAction}
-              gateProgress={activeStep.kind === "lesson" ? engagement.progressPct : null}
-              isCurrentStepComplete={activeStep.is_completed}
-            />
+            <>
+              {/*
+                The same gate, said next to the button it governs (LTM-001).
+
+                The header is the top-right corner the timer belongs in, but
+                on a phone that is a screen away from "Mark complete" — and a
+                disabled button with its explanation off-screen is the thing
+                support tickets are made of. Renders nothing once the time has
+                elapsed, or when the lesson has no time requirement.
+              */}
+              {activeStep.kind === "lesson" ? (
+                <LessonTimerNotice
+                  requiredMs={engagement.timeGate.requiredMs}
+                  observedMs={engagement.timeGate.observedMs}
+                  isCompleted={activeStep.is_completed === true}
+                />
+              ) : null}
+
+              <LearningActionBar
+                previousStep={previousStep(activeStep.step_id)}
+                nextStep={nextStep(activeStep.step_id)}
+                onNavigate={goToStep}
+                primary={primaryAction}
+                gateProgress={
+                  activeStep.kind === "lesson" ? engagement.progressPct : null
+                }
+                isCurrentStepComplete={activeStep.is_completed}
+              />
+            </>
           )}
         </div>
       </div>

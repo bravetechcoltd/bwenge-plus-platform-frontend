@@ -178,6 +178,52 @@ const SELECT_VALUES = {
   NONE: "none",
 };
 
+
+/**
+ * One figure in the header strip (UI-001).
+ *
+ * Replaces a <Card> with pt-6, a 48px icon medallion and a 30px numeral —
+ * four of which filled most of the viewport before any content appeared.
+ * Same data, about a third of the height.
+ */
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tone = "primary",
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: React.ReactNode
+  hint?: string
+  tone?: "primary" | "success" | "warning" | "destructive"
+}) {
+  const tones = {
+    primary: "bg-primary/10 text-primary",
+    success: "bg-success/10 text-success",
+    warning: "bg-warning/15 text-warning",
+    destructive: "bg-destructive/10 text-destructive",
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3 transition-shadow hover:shadow-sm">
+      <div className={`shrink-0 rounded-lg p-2 ${tones[tone]}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
+        <p className="text-xl font-bold leading-tight text-foreground">{value}</p>
+        {hint ? (
+          <p className="truncate text-[11px] text-muted-foreground">{hint}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 export default function InstructorCourseMaterialsPage() {
   const { user } = useAppSelector((state) => state.bwengeAuth);
   
@@ -229,7 +275,7 @@ export default function InstructorCourseMaterialsPage() {
     try {
       const token = localStorage.getItem("bwengeplus_token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/instructor/courses?limit=100`,
+        `${process.env.NEXT_PUBLIC_API_URL}/instructor/my-courses`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -541,29 +587,32 @@ export default function InstructorCourseMaterialsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+    <div className="mx-auto w-full max-w-6xl space-y-4 p-4 md:p-6">
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
             Course Materials
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             Manage and organize all your course files and resources
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
+            className="h-8"
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-1.5 h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowUploadDialog(true)}>
-            <Upload className="w-4 h-4 mr-2" />
+          <Button size="sm" className="h-8" onClick={() => setShowUploadDialog(true)}>
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
             Upload
           </Button>
         </div>
@@ -571,62 +620,34 @@ export default function InstructorCourseMaterialsPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Materials</p>
-                  <p className="text-3xl font-bold">{stats.total_materials}</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatTile
+            icon={FileText}
+            label="Materials"
+            value={stats.total_materials}
+            hint="files in total"
+          />
+          <StatTile
+            icon={Folder}
+            label="Storage"
+            value={`${stats.total_size_mb.toFixed(1)} MB`}
+            hint="across all courses"
+            tone="success"
+          />
+          <StatTile
+            icon={Download}
+            label="Downloads"
+            value={stats.total_downloads.toLocaleString()}
+            hint="by learners"
+          />
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Storage</p>
-                  <p className="text-3xl font-bold">{stats.total_size_mb.toFixed(1)} MB</p>
-                </div>
-                <div className="w-12 h-12 bg-success/15 rounded-full flex items-center justify-center">
-                  <Folder className="w-6 h-6 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Downloads</p>
-                  <p className="text-3xl font-bold">{stats.total_downloads.toLocaleString()}</p>
-                </div>
-                <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center">
-                  <Download className="w-6 h-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Storage Used</p>
-                  <p className="text-3xl font-bold">{stats.storage_used_percentage.toFixed(1)}%</p>
-                </div>
-                <div className="w-12 h-12 bg-warning/15 rounded-full flex items-center justify-center">
-                  <Archive className="w-6 h-6 text-warning" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatTile
+            icon={Archive}
+            label="Quota used"
+            value={`${stats.storage_used_percentage.toFixed(1)}%`}
+            hint="of the allowance"
+            tone="warning"
+          />
         </div>
       )}
 
@@ -638,11 +659,11 @@ export default function InstructorCourseMaterialsPage() {
             placeholder="Search materials..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="h-9 pl-9 text-[13px]"
           />
         </div>
         <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-          <SelectTrigger className="w-full md:w-48">
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-48">
             <BookOpen className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Courses" />
           </SelectTrigger>
@@ -656,7 +677,7 @@ export default function InstructorCourseMaterialsPage() {
           </SelectContent>
         </Select>
         <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-full md:w-40">
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-40">
             <FileText className="w-4 h-4 mr-2" />
             <SelectValue placeholder="File Type" />
           </SelectTrigger>
@@ -673,7 +694,7 @@ export default function InstructorCourseMaterialsPage() {
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-40">
+          <SelectTrigger className="h-9 w-full text-[13px] sm:w-40">
             <SortAsc className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -708,9 +729,9 @@ export default function InstructorCourseMaterialsPage() {
       {/* Materials Display */}
       {filteredMaterials.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center">
-            <Folder className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+          <CardContent className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+            <Folder className="h-5 w-5 text-muted-foreground" />
+            <h3 className="font-semibold text-foreground">
               No Materials Found
             </h3>
             <p className="text-muted-foreground mb-4">
@@ -729,7 +750,7 @@ export default function InstructorCourseMaterialsPage() {
           {filteredMaterials.map((material) => (
             <Card
               key={material.id}
-              className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group"
+              className="overflow-hidden border-border/60 transition-shadow hover:shadow-md cursor-pointer group"
               onClick={() => {
                 setSelectedMaterial(material);
                 setShowMaterialDialog(true);
