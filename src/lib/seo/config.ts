@@ -282,8 +282,42 @@ export const SITE_KEYWORDS = [
  * Nothing is verified until the real tokens are set and the site is deployed;
  * see the setup steps reported alongside this change.
  */
+
+/**
+ * The tokens Google issued for this site.
+ *
+ * Both are kept because Search Console issues a separate token per property,
+ * and this domain has two: the apex (bwengeplus.com) and the www prefix that
+ * it redirects to. Google accepts more than one verification tag on a page
+ * and matches whichever belongs to the property being verified, so listing
+ * both verifies both properties from one deployment.
+ *
+ * These are committed rather than left to environment variables on purpose.
+ * A verification token is not a secret — it is served in the HTML of every
+ * page, and anyone can read it. Requiring an env var would mean verification
+ * silently fails on any deployment where someone forgot to set it, which is
+ * exactly the failure this is meant to avoid. An env var still overrides,
+ * for a property created later.
+ */
+const GOOGLE_TOKENS = [
+  "vJrdo22dU4sSHPtpQPJ2MOk3nnZXJ82-_czTDzVvydg",
+  "BidL7x14xNtlH7mqwT1ryoq_5q30d-kboJg_1lj8wWQ",
+] as const
+
 export const VERIFICATION = {
-  google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? [process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION]
+    : [...GOOGLE_TOKENS],
   bing: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || undefined,
   yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || undefined,
 } as const
+
+/**
+ * The file-based verification Google also offers.
+ *
+ * `public/googlede57741f1e204520.html` is served at the site root. It is
+ * recorded here so the test suite can assert it still exists: Search Console
+ * re-checks it periodically and un-verifies the property if it disappears,
+ * which is an easy thing to delete by accident during a tidy-up.
+ */
+export const GOOGLE_VERIFICATION_FILE = "googlede57741f1e204520.html"

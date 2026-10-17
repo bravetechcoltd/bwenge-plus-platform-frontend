@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest"
+import { existsSync, readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import {
   SITE,
   PUBLIC_API,
@@ -6,6 +8,8 @@ import {
   INDEXABLE_PAGES,
   NOINDEX_ROUTES,
   SITE_KEYWORDS,
+  VERIFICATION,
+  GOOGLE_VERIFICATION_FILE,
 } from "./config"
 import { buildMetadata, buildNoIndexMetadata } from "./metadata"
 import {
@@ -267,5 +271,33 @@ describe("course descriptions", () => {
     const b = courseDescription({ id: "2", title: "Advanced SQL" })
     expect(a).not.toBe(b)
     expect(a).toContain("Intro to Python")
+  })
+})
+
+describe("search-engine verification (SEO-003)", () => {
+  it("carries both tokens Google issued for this domain", () => {
+    // Search Console issues one token per property; this domain has the apex
+    // and the www prefix it redirects to.
+    expect(VERIFICATION.google).toContain(
+      "vJrdo22dU4sSHPtpQPJ2MOk3nnZXJ82-_czTDzVvydg"
+    )
+    expect(VERIFICATION.google).toContain(
+      "BidL7x14xNtlH7mqwT1ryoq_5q30d-kboJg_1lj8wWQ"
+    )
+  })
+
+  it("records the HTML-file method's filename", () => {
+    expect(GOOGLE_VERIFICATION_FILE).toBe("googlede57741f1e204520.html")
+  })
+
+  it("serves that file from public/, the only directory Next exposes", () => {
+    // It was at the repository root, where Next never serves it, and was
+    // untracked by git so it would not have deployed at all.
+    const onDisk = resolve(__dirname, "../../../public", GOOGLE_VERIFICATION_FILE)
+    expect(existsSync(onDisk)).toBe(true)
+    // Google checks the exact contents, not just that the URL responds.
+    expect(readFileSync(onDisk, "utf8").trim()).toBe(
+      `google-site-verification: ${GOOGLE_VERIFICATION_FILE}`
+    )
   })
 })

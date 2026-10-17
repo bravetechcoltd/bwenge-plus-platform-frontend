@@ -124,7 +124,7 @@ export const metadata: Metadata = {
    * renders nothing at all rather than an empty, invalid meta tag.
    */
   verification: {
-    ...(VERIFICATION.google ? { google: VERIFICATION.google } : {}),
+    ...(VERIFICATION.google.length ? { google: VERIFICATION.google } : {}),
     ...(VERIFICATION.yandex ? { yandex: VERIFICATION.yandex } : {}),
     ...(VERIFICATION.bing ? { other: { "msvalidate.01": VERIFICATION.bing } } : {}),
   },
