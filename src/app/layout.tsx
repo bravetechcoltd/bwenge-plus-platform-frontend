@@ -1,9 +1,12 @@
 // @ts-nocheck
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { SITE, SITE_KEYWORDS, INDEXABLE_PAGES, VERIFICATION } from "@/lib/seo/config";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationSchema, websiteSchema } from "@/lib/seo/structured-data";
 
 /*
  * Fonts are served from this repository, not fetched at build time.
@@ -61,9 +64,80 @@ const dancingScript = localFont({
   fallback: ["cursive"],
 });
 
+/**
+ * Site-wide metadata and the homepage's own (SEO-001).
+ *
+ * This layout renders "/" as well as everything under it, so its title and
+ * description ARE the homepage's. The previous pair said "Premium online
+ * courses, MOOC & SPOC education platform integrated with Ongera" on every
+ * single page of the site, which gave 23 public pages one identical snippet
+ * to compete with.
+ *
+ * `metadataBase` is what makes relative image paths and canonicals resolve to
+ * absolute URLs. Without it Next warns at build time and emits relative OG
+ * image URLs, which most social scrapers refuse to fetch.
+ *
+ * `title.template` appends the brand to child pages, so each route sets only
+ * its own name and cannot forget the suffix. `title.default` is used for the
+ * homepage itself, where the template would read "BwengePlus | BwengePlus".
+ */
 export const metadata: Metadata = {
-  title: "BwengePlus - E-Learning Platform",
-  description: "Premium online courses, MOOC & SPOC education platform integrated with Ongera",
+  metadataBase: new URL(SITE.url),
+  title: {
+    default: INDEXABLE_PAGES.home.title,
+    template: `%s | ${SITE.name}`,
+  },
+  description: INDEXABLE_PAGES.home.description,
+  applicationName: SITE.name,
+  keywords: SITE_KEYWORDS,
+  alternates: { canonical: SITE.url },
+  manifest: "/manifest.webmanifest",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: SITE.locale,
+    url: SITE.url,
+    title: INDEXABLE_PAGES.home.title,
+    description: INDEXABLE_PAGES.home.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: INDEXABLE_PAGES.home.title,
+    description: INDEXABLE_PAGES.home.description,
+  },
+  formatDetection: { telephone: false, address: false, email: false },
+  /*
+   * Search-engine ownership verification.
+   *
+   * Next omits any key whose value is undefined, so with no tokens set this
+   * renders nothing at all rather than an empty, invalid meta tag.
+   */
+  verification: {
+    ...(VERIFICATION.google ? { google: VERIFICATION.google } : {}),
+    ...(VERIFICATION.yandex ? { yandex: VERIFICATION.yandex } : {}),
+    ...(VERIFICATION.bing ? { other: { "msvalidate.01": VERIFICATION.bing } } : {}),
+  },
+};
+
+/**
+ * Separate from `metadata` because Next 14+ moved it there; leaving
+ * `themeColor` inside `metadata` logs a deprecation warning on every build.
+ */
+export const viewport: Viewport = {
+  themeColor: SITE.themeColor,
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -78,6 +152,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={fontVariables}>
       <body className={inter.className}>
+        {/*
+          Organisation and site schema, rendered on the server.
+
+          This is deliberate and load-bearing: every public page is a client
+          component, so the HTML a crawler receives contains almost no text.
+          These two blocks are machine-readable content that is present
+          without executing any JavaScript.
+        */}
+        <JsonLd data={[organizationSchema(), websiteSchema()]} />
         {googleClientId ? (
           <GoogleOAuthProvider clientId={googleClientId}>
             <Providers>
