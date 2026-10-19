@@ -34,8 +34,12 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 export default function PaymentIntegrationPage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
   const { paymentIntegrations, paymentProviders, isLoading } = useAppSelector(
     (state) => state.systemSettings
@@ -94,7 +98,14 @@ export default function PaymentIntegrationPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this payment integration?")) return;
+    const ok = await confirm({
+      title: "Delete this payment integration?",
+      description:
+        "Payments stop being processed through it as soon as it is removed. Existing transactions are not affected.",
+      confirmLabel: "Delete integration",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(deletePaymentIntegration(id)).unwrap();

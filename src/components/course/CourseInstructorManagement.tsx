@@ -78,6 +78,7 @@ import {
 import { toast } from "sonner";
 
 import { InstructorCard } from "@/components/instructors/InstructorCard";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import { InstructorSelector } from "@/components/instructors/InstructorSelector";
 import { PermissionsConfig } from "@/components/instructors/PermissionsConfig";
 
@@ -94,6 +95,9 @@ export default function CourseInstructorManagement({
   courseName,
   canManage,
 }: CourseInstructorManagementProps) {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
 
   // Redux state
@@ -268,7 +272,14 @@ export default function CourseInstructorManagement({
   };
 
   const handleRemoveInstructor = async (instructorId: string, instructorName: string) => {
-    if (!confirm(`Are you sure you want to remove ${instructorName} from this course?`)) {
+    const ok = await confirm({
+      title: `Remove ${instructorName} from this course?`,
+      description:
+        "They lose access to the course and to anything their permissions allowed, such as grading. The course itself is unchanged.",
+      confirmLabel: "Remove instructor",
+      destructive: true,
+    });
+    if (!ok) {
       return;
     }
 

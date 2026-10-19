@@ -29,8 +29,12 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 export default function PlatformConfigPage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
   const { platformConfigs, platformConfigTypes, isLoading } = useAppSelector(
     (state) => state.systemSettings
@@ -85,7 +89,14 @@ export default function PlatformConfigPage() {
   };
 
   const handleDelete = async (key: string) => {
-    if (!confirm("Are you sure you want to delete this configuration?")) return;
+    const ok = await confirm({
+      title: "Delete this configuration?",
+      description:
+        "The platform falls back to its default for this setting as soon as the entry is removed.",
+      confirmLabel: "Delete configuration",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(deletePlatformConfig(key)).unwrap();

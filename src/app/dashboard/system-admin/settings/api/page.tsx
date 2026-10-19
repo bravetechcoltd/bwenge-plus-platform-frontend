@@ -38,8 +38,12 @@ import {
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 export default function ApiManagementPage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
   const { apiKeys, apiPermissions, isLoading } = useAppSelector(
     (state) => state.systemSettings
@@ -101,7 +105,14 @@ export default function ApiManagementPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this API key? This action cannot be undone.")) return;
+    const ok = await confirm({
+      title: "Delete this API key?",
+      description:
+        "Anything still authenticating with it stops working immediately, and the key cannot be recovered.",
+      confirmLabel: "Delete key",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(deleteApiKey(id)).unwrap();
@@ -112,7 +123,14 @@ export default function ApiManagementPage() {
   };
 
   const handleRevoke = async (id: string) => {
-    if (!confirm("Are you sure you want to revoke this API key? It will immediately stop working.")) return;
+    const ok = await confirm({
+      title: "Revoke this API key?",
+      description:
+        "It stops working immediately. The key stays listed so you can see it was revoked and when.",
+      confirmLabel: "Revoke key",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(revokeApiKey(id)).unwrap();
@@ -124,7 +142,14 @@ export default function ApiManagementPage() {
   };
 
   const handleRegenerate = async (id: string) => {
-    if (!confirm("Regenerating will create a new key. The old key will stop working immediately. Continue?")) return;
+    const ok = await confirm({
+      title: "Regenerate this API key?",
+      description:
+        "A new key is issued and the current one stops working immediately. Update anything using it before you continue.",
+      confirmLabel: "Regenerate",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       const result = await dispatch(regenerateApiKey(id)).unwrap();

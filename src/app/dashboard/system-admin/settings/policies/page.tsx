@@ -33,8 +33,12 @@ import {
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 export default function GlobalPoliciesPage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
   const { globalPolicies, policyTypes, isLoading } = useAppSelector(
     (state) => state.systemSettings
@@ -87,7 +91,14 @@ export default function GlobalPoliciesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this policy?")) return;
+    const ok = await confirm({
+      title: "Delete this policy?",
+      description:
+        "It stops applying immediately. Courses and assessments relying on it fall back to the platform default.",
+      confirmLabel: "Delete policy",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(deleteGlobalPolicy(id)).unwrap();

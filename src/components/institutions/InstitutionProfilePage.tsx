@@ -78,6 +78,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import { Separator } from "@/components/ui/separator";
 import AddMemberDialog from "@/components/institutions/AddMemberDialog";
 import { useInstitutionCapability } from "@/lib/auth/use-access";
@@ -388,10 +389,21 @@ export default function InstitutionProfilePage() {
     }
   };
 
+  /** CONF-001. Replaces the native confirm() this used. */
+  const confirm = useConfirm();
+
   const handleRemoveMember = async (memberId: string) => {
     if (!institutionId || !hasAccess) return;
 
-    if (confirm("Are you sure you want to remove this member?")) {
+    const ok = await confirm({
+      title: "Remove this member?",
+      description:
+        "They lose access to this institution and to any courses it provides. Their account and their completed work are kept.",
+      confirmLabel: "Remove member",
+      destructive: true,
+    });
+
+    if (ok) {
       try {
         await dispatch(
           removeMemberFromInstitution({

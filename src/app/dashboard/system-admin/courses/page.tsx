@@ -34,6 +34,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 /**
  * SAC-001. What the "All" page size asks for.
@@ -66,6 +67,9 @@ const parseNumber = (value: any): number => {
 };
 
 export default function AllCoursesPage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { courses, categories, isLoading, pagination, filters } = useAppSelector(
@@ -162,9 +166,16 @@ export default function AllCoursesPage() {
   };
 
   const handleDelete = async (courseId: string) => {
-    if (!confirm("Are you sure you want to delete this course?")) return;
+    const ok = await confirm({
+      title: "Delete this course permanently?",
+      description:
+        "The course is removed from the database along with its modules, lessons, assessments and enrolment records. Anyone enrolled loses access and their progress in it goes with it. This cannot be undone — archive it instead if you only want it hidden from learners.",
+      confirmLabel: "Delete course",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
-      await dispatch(deleteCourse(courseId)).unwrap();
+      await dispatch(deleteCourse({ id: courseId, permanent: true })).unwrap();
       toast.success("Course deleted successfully!");
       fetchCourses(pagination.page);
     } catch (error: any) {
@@ -187,13 +198,25 @@ export default function AllCoursesPage() {
       toast.error("Please select courses first");
       return;
     }
-    if (!confirm(`Are you sure you want to ${action} ${selectedCourses.length} courses?`)) return;
+    const ok = await confirm({
+      title: `${action === "delete" ? "Delete" : action === "publish" ? "Publish" : "Unpublish"} ${selectedCourses.length} course${selectedCourses.length === 1 ? "" : "s"}?`,
+      description:
+        action === "delete"
+          ? "They are removed from the database along with their modules, lessons, assessments and enrolment records, and anyone enrolled loses access. This cannot be undone."
+          : action === "publish"
+            ? "They become visible to learners straight away."
+            : "They are hidden from learners. Anyone already enrolled keeps their place and their progress.",
+      confirmLabel:
+        action === "delete" ? "Delete" : action === "publish" ? "Publish" : "Unpublish",
+      destructive: action === "delete",
+    });
+    if (!ok) return;
     try {
       const promises = selectedCourses.map((id) => {
         switch (action) {
           case "publish": return dispatch(publishCourse(id)).unwrap();
           case "unpublish": return dispatch(unpublishCourse(id)).unwrap();
-          case "delete": return dispatch(deleteCourse(id)).unwrap();
+          case "delete": return dispatch(deleteCourse({ id, permanent: true })).unwrap();
           default: return Promise.resolve();
         }
       });

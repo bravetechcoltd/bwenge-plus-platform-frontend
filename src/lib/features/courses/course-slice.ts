@@ -822,11 +822,35 @@ export const unpublishCourse = createAsyncThunk(
 );
 
 // Delete course
+/**
+ * Remove a course, or archive it (DEL-001).
+ *
+ * The endpoint archives unless asked otherwise: without `permanent` the
+ * course keeps its row and moves to ARCHIVED, which hides it from learners
+ * but leaves it in the database. Only `permanent: true` removes it along
+ * with its modules, lessons, assessments and enrolments.
+ *
+ * The flag is explicit rather than defaulted either way, because both
+ * behaviours are wanted: archiving is the safe default for most callers, and
+ * a system administrator pressing Delete after a dialog that says the course
+ * will be removed should get exactly that.
+ *
+ * A plain string id is still accepted, and archives, so existing callers
+ * behave as they always did.
+ */
 export const deleteCourse = createAsyncThunk(
   "courses/delete",
-  async (id: string, { rejectWithValue }) => {
+  async (
+    payload: string | { id: string; permanent?: boolean },
+    { rejectWithValue }
+  ) => {
+    const id = typeof payload === "string" ? payload : payload.id;
+    const permanent = typeof payload === "string" ? false : payload.permanent === true;
+
     try {
-      const response = await api.delete(`/courses/${id}`);
+      const response = await api.delete(
+        `/courses/${id}${permanent ? "?permanent=true" : ""}`
+      );
       return response.data.success ? id : rejectWithValue(response.data.message);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to delete course");

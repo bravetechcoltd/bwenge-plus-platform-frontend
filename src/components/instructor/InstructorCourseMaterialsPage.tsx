@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useConfirm } from "@/components/ui/confirm-provider";
 import {
   Select,
   SelectContent,
@@ -227,6 +228,19 @@ function StatTile({
 export default function InstructorCourseMaterialsPage() {
   const { user } = useAppSelector((state) => state.bwengeAuth);
   
+  /** CONF-001. Replaces the native confirm() this used. */
+  const confirm = useConfirm();
+
+  /** Asked from two places; kept here so the wording cannot drift. */
+  const confirmDeleteMaterial = () =>
+    confirm({
+      title: "Delete this material?",
+      description:
+        "The file is removed from the course and learners can no longer download it. This cannot be undone.",
+      confirmLabel: "Delete material",
+      destructive: true,
+    });
+
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [allMaterials, setAllMaterials] = useState<Material[]>([]);
@@ -884,8 +898,8 @@ export default function InstructorCourseMaterialsPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="text-destructive"
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this material?")) {
+                      onClick={async () => {
+                        if (await confirmDeleteMaterial()) {
                           handleDeleteMaterial(material.id);
                         }
                       }}
@@ -991,8 +1005,8 @@ export default function InstructorCourseMaterialsPage() {
                 )}
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this material?")) {
+                  onClick={async () => {
+                    if (await confirmDeleteMaterial()) {
                       handleDeleteMaterial(selectedMaterial.id);
                     }
                   }}

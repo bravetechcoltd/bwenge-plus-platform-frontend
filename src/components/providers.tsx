@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { CoursesProvider } from "@/hooks/use-courses";
 import { OfflineGate } from "@/components/system/offline-gate";
 import { Toaster } from "sonner";
+import { ConfirmProvider } from "@/components/ui/confirm-provider";
 
 /**
  * Application providers.
@@ -62,7 +63,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
               this news and vanish four seconds later (E-07, E-10). The
               gate overlays rather than replaces, so the tree underneath
               keeps its state and its route (§7). */}
-          <OfflineGate>{children}</OfflineGate>
+          {/*
+            CONF-001. One confirmation dialog for the whole application,
+            so the fourteen native confirm() calls become an awaited
+            question rather than per-page dialog state.
+          */}
+          <ConfirmProvider>
+            <OfflineGate>{children}</OfflineGate>
+          </ConfirmProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </CoursesProvider>

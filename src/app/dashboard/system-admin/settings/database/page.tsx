@@ -45,8 +45,12 @@ import {
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, formatDistanceToNow } from "date-fns";
+import { useConfirm } from "@/components/ui/confirm-provider";
 
 export default function DatabasePage() {
+  /** CONF-001. Replaces the native confirm() these handlers used. */
+  const confirm = useConfirm();
+
   const dispatch = useAppDispatch();
   const {
     databaseBackups,
@@ -108,7 +112,14 @@ export default function DatabasePage() {
   };
 
   const handleDeleteBackup = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this backup?")) return;
+    const ok = await confirm({
+      title: "Delete this backup?",
+      description:
+        "The backup file is removed and can no longer be restored from. This cannot be undone.",
+      confirmLabel: "Delete backup",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(deleteDatabaseBackup(id)).unwrap();
@@ -120,7 +131,14 @@ export default function DatabasePage() {
   };
 
   const handleTerminateQuery = async (pid: number) => {
-    if (!confirm(`Are you sure you want to terminate query ${pid}?`)) return;
+    const ok = await confirm({
+      title: `Terminate query ${pid}?`,
+      description:
+        "The query is cancelled and whatever issued it receives an error. Work already committed is unaffected.",
+      confirmLabel: "Terminate",
+      destructive: true,
+    });
+    if (!ok) return;
 
     try {
       await dispatch(terminateQuery(pid)).unwrap();
