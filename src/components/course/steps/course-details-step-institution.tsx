@@ -20,6 +20,9 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Course, User, CourseCategory, Institution } from "@/types"
 import { useAuth } from "@/hooks/use-auth"
 import { useDuplicateTitleCheck } from "@/lib/courses/duplicate-check";
+import { CoInstructorsField } from "@/components/course/co-instructors-field";
+import { AddCategoryDialog } from "@/components/course/add-category-dialog";
+import type { GlobalCategory } from "@/lib/categories/global-categories-api";
 import {
   accessDefaultsForCourseType,
   fillAccessDefaults,
@@ -130,6 +133,16 @@ export function CourseDetailsStep({
 }: CourseDetailsStepProps) {
   const [currentTag, setCurrentTag] = useState("")
   const [institutionCategories, setInstitutionCategories] = useState<CourseCategory[]>([])
+
+  /*
+   * CAT-002. A category added from this form.
+   *
+   * Held locally and merged into the options below, so the author can select
+   * it at once. The server already has it; this only avoids waiting for a
+   * refetch that would not otherwise happen until the page reloads.
+   */
+  const [addedCategories, setAddedCategories] = useState<CourseCategory[]>([])
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [loadingCategories, setLoadingCategories] = useState(false)
   const { token } = useAuth()
 
@@ -244,7 +257,20 @@ export function CourseDetailsStep({
    * that institution's categories, and a platform course uses the platform's.
    */
   const usesInstitutionCategories = !!getInstitutionIdForCategories()
-  const categoryOptions = usesInstitutionCategories ? institutionCategories : categories
+  const baseCategoryOptions = usesInstitutionCategories
+    ? institutionCategories
+    : categories
+
+  /*
+   * Anything added from this form is offered too, and only once: a refetch
+   * elsewhere may already have picked it up.
+   */
+  const categoryOptions = [
+    ...baseCategoryOptions,
+    ...addedCategories.filter(
+      (added) => !baseCategoryOptions.some((existing: any) => existing.id === added.id)
+    ),
+  ]
 
   // ── Fetch institution categories ────────────────────────
   useEffect(() => {
@@ -562,6 +588,36 @@ export function CourseDetailsStep({
             </select>
           </div>
 
+          {/*
+            CI-001. A course can be taught by more than one person.
+
+            The course row holds a single `instructor_id` — the owner — and
+            `course_instructors` holds the rest with their own permissions.
+            These are assigned after the course exists, because the bulk
+            endpoint is keyed by course id.
+
+            Only for institution courses: the server validates each additional
+            instructor against the course's institution membership, so a MOOC
+            with no institution has nobody it can accept. Saying that here is
+            better than letting the author pick people and watching the
+            assignment fail after the course is created.
+          */}
+          <CoInstructorsField
+            instructors={getAvailableInstructors()}
+            primaryInstructorId={courseData.instructor_id}
+            selectedIds={courseData.co_instructor_ids || []}
+            onChange={(ids) =>
+              setCourseData({ ...courseData, co_instructor_ids: ids })
+            }
+            disabled={inLoading}
+            labelClassName={lbl}
+            unavailableReason={
+              courseData.course_type === "MOOC"
+                ? "A MOOC belongs to the platform rather than one institution, so additional instructors cannot be assigned here. Add them from the course once it exists."
+                : null
+            }
+          />
+
           {/* Level & Language — side by side */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -618,7 +674,24 @@ export function CourseDetailsStep({
 
           {/* Category */}
           <div className="space-y-1.5">
-            <Label htmlFor="category_id" className={lbl}>Category</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="category_id" className={lbl}>Category</Label>
+              {/*
+                CAT-002. The category the author needs may not exist yet.
+
+                Writes to the platform category list, which is what
+                /dashboard/instructor/categories shows, so a category added
+                here appears there too. The endpoint is open to instructors.
+              */}
+              <button
+                type="button"
+                onClick={() => setCategoryDialogOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-medium text-primary transition-colors hover:bg-primary/10"
+              >
+                <Plus className="h-3 w-3" />
+                New category
+              </button>
+            </div>
             <div className="relative">
               <select
                 id="category_id"
@@ -895,6 +968,27 @@ export function CourseDetailsStep({
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
+
+      {/*
+        CAT-002. The create-category dialog.
+
+        Rendered once at the form root rather than inside the field, so
+        opening it cannot be affected by the conditional branches around the
+        category select. On success the new category is added to the options
+        and selected, so the author carries straight on.
+      */}
+      <AddCategoryDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        onCreated={(created: GlobalCategory) => {
+          setAddedCategories((previous) =>
+            previous.some((c) => c.id === created.id)
+              ? previous
+              : [...previous, created as unknown as CourseCategory]
+          )
+          setCourseData({ ...courseData, category_id: created.id })
+        }}
+      />
 
     </form>
   )

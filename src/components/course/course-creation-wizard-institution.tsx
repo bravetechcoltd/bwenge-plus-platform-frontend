@@ -356,8 +356,19 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
          */
         const targetInstitution = institutionId || user.primary_institution_id
         if (targetInstitution) {
+          /*
+           * CI-001. Everyone the server will actually accept.
+           *
+           * This asked for role=INSTRUCTOR only, but the co-instructor rule
+           * on the server admits INSTRUCTOR *or* ADMIN
+           * (`role: In(["INSTRUCTOR", "ADMIN"])`). An institution admin who
+           * teaches was therefore missing from a list the server would have
+           * accepted them for.
+           *
+           * The role filter is dropped and applied below instead, so the two
+           * definitions cannot drift apart again.
+           */
           const params = new URLSearchParams({
-            role: "INSTRUCTOR",
             is_active: "true",
             limit: "200",
           })
@@ -370,8 +381,15 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
             const members = data.data?.members || data.data || []
             // The endpoint returns membership rows; the select needs the
             // people inside them.
+            const TEACHING_ROLES = new Set(["INSTRUCTOR", "ADMIN"])
             setInstructors(
               members
+                .filter((m: any) => {
+                  // The membership role, which is what the server checks —
+                  // not the account's platform-wide bwenge_role.
+                  const role = String(m.role ?? m.user?.role ?? "").toUpperCase()
+                  return role ? TEACHING_ROLES.has(role) : true
+                })
                 .map((m: any) => m.user ?? m)
                 .filter((u: any) => u && u.id)
             )
@@ -756,6 +774,79 @@ export function CourseCreationWizard({ institutionId }: { institutionId?: string
       const newCourseId = result?.data?.id ?? result?.data?.course?.id
       if (draftId && newCourseId) {
         await linkDraftToCourse(draftId, newCourseId)
+      }
+
+      /*
+       * CI-001. Assign the other instructors.
+       *
+       * This runs after creation because `course_instructors` is keyed by
+       * course id, which does not exist until the course does. The bulk
+       * endpoint validates each person against the course's institution
+       * membership and reports per-instructor failures rather than refusing
+       * the whole batch.
+       *
+       * A failure here must not fail the course creation. The course exists
+       * and is correct; the author is told what did not get assigned and can
+       * add them from the course itself. Throwing would leave them believing
+       * nothing was saved.
+       */
+      const coInstructorIds: string[] = Array.isArray(courseData.co_instructor_ids)
+        ? courseData.co_instructor_ids.filter(
+            (id: string) => id && id !== courseData.instructor_id
+          )
+        : []
+
+      if (newCourseId && coInstructorIds.length > 0) {
+        try {
+          const assignResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/course-instructors/courses/${newCourseId}/instructors/bulk`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                instructors: coInstructorIds.map((instructor_id) => ({
+                  instructor_id,
+                  permissions: {
+                    can_grade_assignments: true,
+                    can_manage_enrollments: false,
+                    can_edit_course_content: false,
+                  },
+                })),
+              }),
+            }
+          )
+
+          const assignResult = await assignResponse.json().catch(() => null)
+
+          if (!assignResponse.ok) {
+            toast.warning(
+              assignResult?.message ||
+                "The course was created, but the additional instructors could not be assigned."
+            )
+          } else {
+            const failed = Array.isArray(assignResult?.data?.errors)
+              ? assignResult.data.errors.length
+              : 0
+            const added = coInstructorIds.length - failed
+            if (added > 0) {
+              toast.success(
+                `${added} additional instructor${added === 1 ? "" : "s"} assigned.`
+              )
+            }
+            if (failed > 0) {
+              toast.warning(
+                `${failed} instructor${failed === 1 ? " was" : "s were"} not assigned. Add them from the course.`
+              )
+            }
+          }
+        } catch {
+          toast.warning(
+            "The course was created, but the additional instructors could not be assigned."
+          )
+        }
       }
 
       clearStorageOnSuccess()
