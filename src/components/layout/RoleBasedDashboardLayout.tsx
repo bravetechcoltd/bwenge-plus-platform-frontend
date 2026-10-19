@@ -7,8 +7,7 @@ import {
   canAccessPath,
   dashboardForRole,
   getRoleDisplayName,
-  isRoleOwnedPath,
-} from "@/app/utils/roleNavigation"
+  isRoleOwnedPath, profilePathForRole, settingsPathForRole } from "@/app/utils/roleNavigation"
 import { useSession } from "@/lib/auth/session"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import { logoutBwenge, validateProtectionStatus, manualSyncCrossSystemData } from "@/lib/features/auth/auth-slice"
@@ -1148,13 +1147,13 @@ const Header = ({ user, roleInfo, toggleSidebar, isMobile, handleLogout, actualR
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 rounded-xl" align="end" forceMount>
                 <DropdownMenuItem asChild>
-                  <Link href={`/dashboard/${actualRole.toLowerCase()}/profile`}>
+                  <Link href={profilePathForRole(actualRole) ?? "#"}>
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/dashboard/${actualRole.toLowerCase()}/settings`}>
+                  <Link href={settingsPathForRole(actualRole) ?? "#"}>
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>
@@ -1618,13 +1617,13 @@ export default function RoleBasedDashboardLayout({
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/${actualRole.toLowerCase()}/profile`} className="cursor-pointer rounded-lg">
+                    <Link href={profilePathForRole(actualRole) ?? "#"} className="cursor-pointer rounded-lg">
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/${actualRole.toLowerCase()}/settings`} className="cursor-pointer rounded-lg">
+                    <Link href={settingsPathForRole(actualRole) ?? "#"} className="cursor-pointer rounded-lg">
                       <Cog className="mr-2 h-4 w-4" />
                       Settings
                     </Link>
@@ -1720,13 +1719,13 @@ export default function RoleBasedDashboardLayout({
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${actualRole.toLowerCase()}/profile`} className="cursor-pointer rounded-lg">
+                      <Link href={profilePathForRole(actualRole) ?? "#"} className="cursor-pointer rounded-lg">
                         <User className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${actualRole.toLowerCase()}/settings`} className="cursor-pointer rounded-lg">
+                      <Link href={settingsPathForRole(actualRole) ?? "#"} className="cursor-pointer rounded-lg">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </Link>
@@ -1805,7 +1804,7 @@ export default function RoleBasedDashboardLayout({
                     className="flex-1 hover:bg-muted rounded-xl h-9 transition-all duration-300"
                     asChild
                   >
-                    <Link href={`/dashboard/${actualRole.toLowerCase()}/settings`}>
+                    <Link href={settingsPathForRole(actualRole) ?? "#"}>
                       <Cog className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   </Button>

@@ -27,8 +27,7 @@ import { logoutBwenge } from "@/lib/features/auth/auth-slice"
 import {
   getRoleDisplayName,
   getRoleDashboardPath,
-  normaliseRole,
-} from "@/app/utils/roleNavigation"
+  normaliseRole, profilePathForRole, settingsPathForRole } from "@/app/utils/roleNavigation"
 import { CourseSearch } from "./course-search"
 
 /**
@@ -288,7 +287,7 @@ export function CatalogueNav({ children, searchValue, institutionId }: Catalogue
                       {isLearner ? "My Learning" : "Dashboard"}
                     </Link>
                     <Link
-                      href={`/dashboard/${role.toLowerCase()}/profile`}
+                      href={profilePathForRole(role) ?? "#"}
                       onClick={() => setShowUserMenu(false)}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
                     >
@@ -296,7 +295,7 @@ export function CatalogueNav({ children, searchValue, institutionId }: Catalogue
                       Profile
                     </Link>
                     <Link
-                      href={`/dashboard/${role.toLowerCase()}/settings`}
+                      href={settingsPathForRole(role) ?? "#"}
                       onClick={() => setShowUserMenu(false)}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
                     >

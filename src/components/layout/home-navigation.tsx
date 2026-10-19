@@ -41,6 +41,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { toast } from "sonner"
 import Cookies from "js-cookie"
 import { GoogleLogin } from "@react-oauth/google"
+import { profilePathForRole, settingsPathForRole } from "@/app/utils/roleNavigation"
 import {
   Menu,
   X,
@@ -733,7 +734,7 @@ export default function HomeNavigation() {
                           </Link>
 
                           <Link
-                            href={`/dashboard/${actualRole.toLowerCase()}/profile`}
+                            href={profilePathForRole(actualRole) ?? "#"}
                             className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
@@ -742,7 +743,7 @@ export default function HomeNavigation() {
                           </Link>
 
                           <Link
-                            href={`/dashboard/${actualRole.toLowerCase()}/settings`}
+                            href={settingsPathForRole(actualRole) ?? "#"}
                             className="flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >
@@ -960,7 +961,7 @@ export default function HomeNavigation() {
                       </Link>
 
                       <Link
-                        href={`/dashboard/${actualRole.toLowerCase()}/profile`}
+                        href={profilePathForRole(actualRole) ?? "#"}
                         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -969,7 +970,7 @@ export default function HomeNavigation() {
                       </Link>
 
                       <Link
-                        href={`/dashboard/${actualRole.toLowerCase()}/settings`}
+                        href={settingsPathForRole(actualRole) ?? "#"}
                         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >

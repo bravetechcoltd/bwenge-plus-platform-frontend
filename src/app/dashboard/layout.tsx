@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useCrossSystemAuth } from "@/lib/hooks/useCrossSystemAuth"
@@ -79,6 +79,25 @@ export default function DashboardLayout({
   // Remembers the last path we sent the router to, so a re-render does not
   // fire the same navigation twice. It is a de-duplicator, not a gate: it
   // never decides what the user sees.
+  /**
+   * False until the browser has taken over.
+   *
+   * SEO-004 made the application server-render, so this guard now runs on the
+   * server as well. There it has no cookies, no localStorage and no Redux, so
+   * it reached a different conclusion from the first render in the browser and
+   * React reported a hydration mismatch on every dashboard route.
+   *
+   * Pinning both to one output fixes it: the server and the first client
+   * render always produce the loader below, and the real decision is taken
+   * from the second render, once storage has been read.
+   *
+   * Nothing is lost. The dashboard sits behind a login and is excluded from
+   * search indexing, so it has no reason to be in the server HTML. The public
+   * pages, which do, are unaffected.
+   */
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   const lastPush = useRef<string | null>(null)
 
   /*
@@ -154,12 +173,26 @@ export default function DashboardLayout({
     }
   }, [isResolving, isAuthenticated, decision, roleConflict, router, abandonSession])
 
-  if (isResolving || decision.action === "WAIT") {
-    return (
-      <DashboardStatus
-        message={decision.action === "WAIT" ? "Preparing your workspace…" : "Signing you in…"}
-      />
-    )
+  if (!mounted || isResolving || decision.action === "WAIT") {
+    /*
+     * The message is pinned too, not just the branch.
+     *
+     * Taking the `!mounted` path still left `message` derived from
+     * `decision`, which the server and the browser resolve differently — the
+     * server has no storage, so it said "Signing you in…" where the client
+     * said "Preparing your workspace…". React compares text, so the mismatch
+     * survived even though both rendered the same element.
+     *
+     * Before mount there is exactly one thing that can honestly be said, and
+     * both sides now say it.
+     */
+    const message = !mounted
+      ? "Loading…"
+      : decision.action === "WAIT"
+        ? "Preparing your workspace…"
+        : "Signing you in…"
+
+    return <DashboardStatus message={message} />
   }
 
   if (!isAuthenticated) return <DashboardStatus message="Redirecting to sign in…" />

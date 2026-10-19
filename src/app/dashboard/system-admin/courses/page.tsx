@@ -35,6 +35,27 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+/**
+ * SAC-001. What the "All" page size asks for.
+ *
+ * A ceiling rather than an unbounded query: the endpoint still paginates,
+ * and a number this size covers every course the platform is likely to hold
+ * while keeping a single request bounded.
+ */
+/**
+ * The page sizes offered, and what "All" means.
+ *
+ * "All" is a ceiling rather than an unbounded query: the endpoint still
+ * paginates, and this covers every course the platform is likely to hold
+ * while keeping a single request bounded.
+ */
+const PAGE_SIZES: { value: number; label: string }[] = [
+  { value: 20, label: "20" },
+  { value: 50, label: "50" },
+  { value: 100, label: "100" },
+  { value: 1000, label: "All" },
+];
+
 const parseNumber = (value: any): number => {
   if (typeof value === "number") return value;
   if (typeof value === "string") {
@@ -50,6 +71,9 @@ export default function AllCoursesPage() {
   const { courses, categories, isLoading, pagination, filters } = useAppSelector(
     (state) => state.courses
   );
+  /** SAC-001. Chosen page size; see changePerPage. */
+  const [perPage, setPerPage] = useState(20)
+
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -71,7 +95,28 @@ export default function AllCoursesPage() {
     dispatch(
       getAllCoursesWithFullInfo({
         page,
-        limit: pagination.limit,
+        // SAC-001. The chosen page size, not the slice default of 20.
+        limit: perPage,
+        ...filters,
+        search: searchQuery,
+      })
+    );
+  };
+
+  /*
+   * SAC-001. How many courses to show at once.
+   *
+   * The list was pinned to the slice default of 20 and offered no way to
+   * change it, so finding a course meant paging. "All" asks for a page large
+   * enough to hold every course the platform has; the server still paginates,
+   * so this is a ceiling rather than an unbounded query.
+   */
+  const changePerPage = (next: number) => {
+    setPerPage(next);
+    dispatch(
+      getAllCoursesWithFullInfo({
+        page: 1,
+        limit: next,
         ...filters,
         search: searchQuery,
       })
@@ -607,6 +652,28 @@ export default function AllCoursesPage() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* SAC-001. Page size, including everything at once. */}
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <label
+            htmlFor="per_page"
+            className="text-sm text-muted-foreground"
+          >
+            Courses per page
+          </label>
+          <select
+            id="per_page"
+            value={perPage}
+            onChange={(e) => changePerPage(Number(e.target.value))}
+            className="h-9 rounded-lg border border-border bg-background px-2 text-sm text-foreground"
+          >
+            {PAGE_SIZES.map((size) => (
+              <option key={size.value} value={size.value}>
+                {size.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Pagination */}

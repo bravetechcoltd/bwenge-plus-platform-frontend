@@ -19,6 +19,8 @@ import { ThumbnailUpload } from "../thumbnail-upload"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import type { Course, User, CourseCategory, Institution } from "@/types"
 import { useDuplicateTitleCheck } from "@/lib/courses/duplicate-check";
+import { AddCategoryDialog } from "@/components/course/add-category-dialog";
+import type { GlobalCategory } from "@/lib/categories/global-categories-api";
 import {
   accessDefaultsForCourseType,
   fillAccessDefaults,
@@ -125,6 +127,27 @@ export function CourseDetailsStep({
   inLoading,
 }: CourseDetailsStepProps) {
   const [currentTag, setCurrentTag] = useState("")
+
+  /*
+   * CAT-002. A category added from this form.
+   *
+   * Same behaviour as the institution step: held locally so the author can
+   * select it at once, rather than waiting for a refetch that will not happen
+   * until the page reloads.
+   */
+  const [addedCategories, setAddedCategories] = useState<CourseCategory[]>([])
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+
+  /** The fetched categories plus anything added here, without duplicates. */
+  const categoryOptions = [
+    ...(Array.isArray(categories) ? categories : []),
+    ...addedCategories.filter(
+      (added) =>
+        !(Array.isArray(categories) ? categories : []).some(
+          (existing: any) => existing.id === added.id
+        )
+    ),
+  ]
 
   // ── Role flags (System Admin unique) ─────────────────────────
   const userRole = user?.bwenge_role
@@ -580,7 +603,22 @@ export function CourseDetailsStep({
 
           {/* Category */}
           <div className="space-y-1.5">
-            <Label htmlFor="category_id" className={lbl}>Category</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="category_id" className={lbl}>Category</Label>
+              {/*
+                CAT-002. Adds to the platform category list, which is what
+                /dashboard/instructor/categories shows, so the new category is
+                visible there as well as here.
+              */}
+              <button
+                type="button"
+                onClick={() => setCategoryDialogOpen(true)}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-medium text-primary transition-colors hover:bg-primary/10"
+              >
+                <Plus className="h-3 w-3" />
+                New category
+              </button>
+            </div>
             <div className="relative">
               <select
                 id="category_id"
@@ -594,8 +632,8 @@ export function CourseDetailsStep({
                 <option value="">Select category</option>
                 {inLoading ? (
                   <option value="" disabled>Loading categories...</option>
-                ) : Array.isArray(categories) && categories.length > 0 ? (
-                  categories.map((category) => (
+                ) : categoryOptions.length > 0 ? (
+                  categoryOptions.map((category: any) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -849,6 +887,19 @@ export function CourseDetailsStep({
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
+
+      <AddCategoryDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        onCreated={(created: GlobalCategory) => {
+          setAddedCategories((previous) =>
+            previous.some((c) => c.id === created.id)
+              ? previous
+              : [...previous, created as unknown as CourseCategory]
+          )
+          setCourseData({ ...courseData, category_id: created.id })
+        }}
+      />
 
     </form>
   )

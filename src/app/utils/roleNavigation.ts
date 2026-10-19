@@ -173,3 +173,64 @@ export function resolveDashboardRedirect(
 
   return { action: "REDIRECT", path: home, reason: "WRONG_ROLE" }
 }
+
+/**
+ * Where "Profile" and "Settings" actually live, per role (NAV-001).
+ *
+ * ── The bug this replaces ──────────────────────────────────────────────────
+ *
+ * Twelve call sites across the header, the home navigation and the catalogue
+ * nav built these links as `/dashboard/${role.toLowerCase()}/profile`.
+ * `"INSTITUTION_ADMIN".toLowerCase()` is `institution_admin`, but the route
+ * segment is `institution-admin`, so every one of those links 404'd. The same
+ * applied to `SYSTEM_ADMIN` → `system_admin`.
+ *
+ * ── Why a table and not just a hyphen ──────────────────────────────────────
+ *
+ * Correcting the separator alone would still have produced two dead links,
+ * because the routes are not uniform:
+ *
+ *   institution-admin  profile  exists
+ *                      settings does NOT — it is institution/settings
+ *   system-admin       settings exists
+ *                      profile  does NOT exist at all
+ *
+ * So the destinations are listed explicitly and each was checked against a
+ * real `page.tsx`. A system admin has no personal profile page, so the entry
+ * is null and the caller omits the link rather than offering a 404.
+ */
+const ROLE_ACCOUNT_LINKS: Record<
+  string,
+  { profile: string | null; settings: string | null }
+> = {
+  LEARNER: {
+    profile: "/dashboard/learner/profile",
+    settings: "/dashboard/learner/settings",
+  },
+  INSTRUCTOR: {
+    profile: "/dashboard/instructor/profile",
+    settings: "/dashboard/instructor/settings",
+  },
+  INSTITUTION_ADMIN: {
+    profile: "/dashboard/institution-admin/profile",
+    // The admin's own settings screen is the institution's.
+    settings: "/dashboard/institution-admin/institution/settings",
+  },
+  SYSTEM_ADMIN: {
+    // No personal profile page exists for this role.
+    profile: null,
+    settings: "/dashboard/system-admin/settings",
+  },
+}
+
+/** The profile page for a role, or null when the role has none. */
+export function profilePathForRole(role: unknown): string | null {
+  const known = normaliseRole(role)
+  return known ? (ROLE_ACCOUNT_LINKS[known]?.profile ?? null) : null
+}
+
+/** The settings page for a role, or null when the role has none. */
+export function settingsPathForRole(role: unknown): string | null {
+  const known = normaliseRole(role)
+  return known ? (ROLE_ACCOUNT_LINKS[known]?.settings ?? null) : null
+}
