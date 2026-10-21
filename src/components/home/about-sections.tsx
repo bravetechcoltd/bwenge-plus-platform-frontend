@@ -346,33 +346,49 @@ function AboutBwengeSection() {
               the same file and the same treatment as the navigation bar, so
               the two agree.
             */}
-            <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-border/70 bg-white/70 py-2 pl-2.5 pr-4 backdrop-blur-sm">
-              {/* A plain img, as everything else in this file uses. */}
-              <img
-                src="/bwenge-plus-mark.png"
-                alt="BWENGE+"
-                className="h-[22px] w-auto object-contain"
-              />
-              <span className="h-4 w-px bg-border" aria-hidden />
-              <span
-                className="text-[12.5px] font-semibold tracking-tight"
-                style={{ color: "var(--bw-primary)" }}
-              >
-                MOOC &amp; SPOC
-              </span>
-            </div>
+            {/*
+              One row, one height (HOME-005).
 
-            <a
-              href="#who-we-are"
-              className="mt-7 inline-flex items-center gap-3 rounded-full py-3 pl-6 pr-4 text-[12.5px] font-semibold text-white transition-transform hover:-translate-y-0.5"
-              style={{
-                background: "linear-gradient(135deg, #6C5BA8, var(--bw-deep))",
-                boxShadow: "0 8px 20px rgba(91,78,150,0.32)",
-              }}
-            >
-              Learn More
-              <ArrowRight className="h-4 w-4" />
-            </a>
+              The lockup and the button were siblings, each `inline-flex`
+              with its own top margin. They therefore flowed onto the same
+              line with nothing controlling the space between them, and at
+              two different heights — `py-2` against `py-3` — so they read
+              as two things that had collided rather than a pair.
+
+              A flex row with a gap puts a real space between them, `h-11`
+              gives them the same height so their rounded ends line up, and
+              `flex-wrap` lets the button drop beneath the lockup on a narrow
+              screen instead of squeezing.
+            */}
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="inline-flex h-11 items-center gap-2.5 rounded-full border border-border/70 bg-white/70 pl-3 pr-4 backdrop-blur-sm">
+                {/* A plain img, as everything else in this file uses. */}
+                <img
+                  src="/bwenge-plus-mark.png"
+                  alt="BWENGE+"
+                  className="h-[20px] w-auto object-contain"
+                />
+                <span className="h-4 w-px bg-border" aria-hidden />
+                <span
+                  className="whitespace-nowrap text-[12.5px] font-semibold tracking-tight"
+                  style={{ color: "var(--bw-primary)" }}
+                >
+                  MOOC &amp; SPOC
+                </span>
+              </div>
+
+              <a
+                href="#who-we-are"
+                className="inline-flex h-11 items-center gap-2.5 rounded-full pl-6 pr-5 text-[12.5px] font-semibold text-white transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "linear-gradient(135deg, #6C5BA8, var(--bw-deep))",
+                  boxShadow: "0 8px 20px rgba(91,78,150,0.32)",
+                }}
+              >
+                Learn More
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
 
             <div className="mt-9 grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4">
               {ABOUT_INDICATORS.map((item) => (
