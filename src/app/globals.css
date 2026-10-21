@@ -2,6 +2,128 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.bwenge-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse at 50% 42%, color-mix(in oklch, var(--primary) 9%, transparent), transparent 55%),
+    var(--background);
+  color: var(--foreground);
+}
+
+.bwenge-loading__card {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  width: min(100%, 19rem);
+  padding: 2rem 2.25rem;
+  border: 1px solid color-mix(in oklch, var(--primary) 15%, var(--border));
+  border-radius: 1.5rem;
+  background: color-mix(in oklch, var(--card) 94%, transparent);
+  box-shadow: 0 1.5rem 4rem color-mix(in oklch, var(--primary) 10%, transparent);
+  text-align: center;
+}
+
+.bwenge-loading__logo-wrap {
+  position: relative;
+  display: grid;
+  width: 6rem;
+  height: 6rem;
+  place-items: center;
+}
+
+.bwenge-loading__orbit {
+  position: absolute;
+  inset: 0;
+  border: 2px solid color-mix(in oklch, var(--primary) 16%, transparent);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: bwenge-loading-spin 1.25s linear infinite;
+}
+
+.bwenge-loading__logo {
+  width: 4.25rem;
+  height: 4.25rem;
+  object-fit: contain;
+  animation: bwenge-loading-pulse 1.8s ease-in-out infinite;
+}
+
+.bwenge-loading__label {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.bwenge-loading__progress {
+  overflow: hidden;
+  width: 7rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 14%, var(--muted));
+}
+
+.bwenge-loading__progress span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  animation: bwenge-loading-progress 1.5s ease-in-out infinite;
+}
+
+.bwenge-loading__sr-only {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes bwenge-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bwenge-loading-pulse {
+  50% {
+    transform: scale(0.92);
+    opacity: 0.82;
+  }
+}
+
+@keyframes bwenge-loading-progress {
+  0% {
+    transform: translateX(-115%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bwenge-loading__orbit,
+  .bwenge-loading__logo,
+  .bwenge-loading__progress span {
+    animation: none;
+  }
+
+  .bwenge-loading__progress span {
+    width: 100%;
+    transform: none;
+  }
+}
+
 /* ============================================================
    COLOR-SCHEME LOCK
    Pins the browser's native element rendering (inputs, selects,

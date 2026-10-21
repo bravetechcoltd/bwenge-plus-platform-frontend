@@ -185,6 +185,31 @@ function GoogleLoginButton() {
     toast.error('Google login failed. Please try again.')
   }
 
+  /*
+   * AUTH-GOOG-002. Do not render the viewer's identity into the page.
+   *
+   * Google Identity Services personalises its own button: given an active
+   * Google session and a previous consent for this client, it draws
+   * "Continue as <first name>" with the account's email and avatar.
+   *
+   * renderButton has no prop for this - GIS decides it, not the props below.
+   * disableAutoSelect() clears the stored "this user is signed in here" state
+   * that the personalised rendering is built on.
+   */
+  useEffect(() => {
+    const clear = () => {
+      try {
+        ;(window as any)?.google?.accounts?.id?.disableAutoSelect?.()
+      } catch {
+        // GIS not loaded, or blocked. The button still works.
+      }
+    }
+
+    clear()
+    const retry = window.setTimeout(clear, 600)
+    return () => window.clearTimeout(retry)
+  }, [])
+
   return (
     <div className="relative w-full">
       {isLoggingIn && (
@@ -193,16 +218,26 @@ function GoogleLoginButton() {
         </div>
       )}
 
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        type="standard"
-        theme="outline"
-        size="large"
-        text="continue_with"
-        shape="rectangular"
-        logo_alignment="left"
-      />
+      {/*
+        Centre the button itself, not the box around it.
+
+        GIS renders into an iframe of its own width, anchored at the start of
+        whatever contains it, so a centred container still left-aligned the
+        button. The flex row centres whatever width Google gives it - and
+        that width is Google's to choose, changing with the label and locale.
+      */}
+      <div className="flex w-full justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          type="standard"
+          theme="outline"
+          size="large"
+          text="signin_with"
+          shape="rectangular"
+          logo_alignment="left"
+        />
+      </div>
     </div>
   )
 }

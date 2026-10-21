@@ -121,18 +121,25 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
         </div>
       )}
       
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        type="standard"
-        theme="outline"
-        size="large"
-        // "Sign in with Google", not "Continue with".
-        text="signin_with"
-        shape="rectangular"
-        logo_alignment="left"
-        width="100%"
-      />
+      {/*
+        Centre the button, and let GIS size it.
+
+        width="100%" is not a width GIS accepts - it wants a number of pixels
+        - so it was dropped rather than guessed at. Google sizes the button to
+        its label, and the flex row centres whatever that comes to.
+      */}
+      <div className="flex w-full justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          type="standard"
+          theme="outline"
+          size="large"
+          text="signin_with"
+          shape="rectangular"
+          logo_alignment="left"
+        />
+      </div>
     </div>
   )
 }
