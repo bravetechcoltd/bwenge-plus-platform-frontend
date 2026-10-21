@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useState } from "react"
 import {
   ArrowRight,
@@ -341,7 +342,12 @@ function AboutBwengeSection() {
               {ABOUT_INDICATORS.map((item) => (
                 <div key={item.label} className="flex flex-col items-start gap-3">
                   <Chip icon={item.icon} tint={item.tint} />
-                  <span className="text-[11.5px] font-semibold leading-[1.35] text-foreground">
+                  {/*
+                    HOME-003. "Collaborative Learning" on one line where the
+                    column allows it, so it matches the other labels rather
+                    than wrapping onto two while they sit on one.
+                  */}
+                  <span className="whitespace-nowrap text-[11.5px] font-semibold leading-[1.35] text-foreground">
                     {item.label}
                   </span>
                 </div>
@@ -533,16 +539,38 @@ function BwengeEcosystem() {
         </div>
       </div>
 
-      <div className="mt-7 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2">
+      {/*
+        Connect - Collaborate - Learn - Share - Grow (HOME-003).
+
+        The document asks for it slightly larger, because at 12.5px it read
+        as a caption rather than as the statement of how the platform works,
+        and for the sequence to be animated if it can be.
+
+        Each word fades up in turn on first view, left to right, so the order
+        is felt rather than only read. `whileInView` with `once` means it
+        plays when the section is reached and not again on every scroll.
+        Under `prefers-reduced-motion` the words are simply present.
+      */}
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5">
         {PROCESS.map((step, index) => (
-          <span key={step} className="flex items-center gap-3.5">
-            <span className="text-[12.5px] font-semibold" style={{ color: "var(--bw-primary)" }}>
+          <motion.span
+            key={step}
+            className="flex items-center gap-4"
+            initial={{ opacity: 0, y: 6 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.35, delay: index * 0.09, ease: "easeOut" }}
+          >
+            <span
+              className="text-[15px] font-semibold tracking-tight sm:text-base"
+              style={{ color: "var(--bw-primary)" }}
+            >
               {step}
             </span>
             {index < PROCESS.length - 1 && (
-              <ArrowRight aria-hidden className="h-3.5 w-3.5 text-muted-foreground/50" />
+              <ArrowRight aria-hidden className="h-4 w-4 text-muted-foreground/50" />
             )}
-          </span>
+          </motion.span>
         ))}
       </div>
     </div>
@@ -654,9 +682,9 @@ function VisionSection() {
       <Eyebrow>Our Vision</Eyebrow>
       <Heading size="md">Our Vision</Heading>
       <p className="mt-4 max-w-[27rem] text-[12.5px] leading-[1.85] text-muted-foreground">
-        To transform education through standardized educational content, collaborative
-        learning, and accessible digital knowledge, contributing to an inclusive and
-        knowledge-based economy in Rwanda.
+        To build a future where collaboration makes quality digital education
+        accessible to all
+        
       </p>
 
       {/*
@@ -727,9 +755,9 @@ function MissionSection() {
       <Eyebrow>Our Mission</Eyebrow>
       <Heading size="md">Our Mission</Heading>
       <p className="mt-4 text-[12.5px] leading-[1.85] text-muted-foreground">
-        To connect universities, companies, educators, industry experts, and learners through an
-        inclusive digital MOOC and SPOC platform that promotes standardized educational content,
-        collaborative course development, and shared teaching and learning.
+        To connect universities, educators, industry experts, companies, and
+        learners through a collaborative digital platform to create and share
+        quality courses, build practical skills, and inspire lifelong learning.
       </p>
 
       <ul className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
@@ -803,42 +831,42 @@ const CORE_VALUES: {
     number: "01",
     icon: Users2,
     title: "Collaboration",
-    body: "We believe that meaningful progress comes through working together. We promote collaboration among universities, companies, educators, and learners to develop and share knowledge.",
+    body: "We encourage all educators to create quality courses and strengthen learning through collaboration.",
     tint: "purple",
   },
   {
     number: "02",
     icon: Users,
     title: "Inclusivity and Accessibility",
-    body: "We believe that everyone deserves an opportunity to learn. We promote accessible and inclusive digital education for learners and educators from different backgrounds and institutions.",
+    body: "We believe everyone deserves the opportunity to learn. We strive to make quality digital education accessible to all.",
     tint: "blue",
   },
   {
     number: "03",
     icon: ShieldCheck,
     title: "Quality and Standards",
-    body: "We are committed to promoting quality learning content aligned with relevant national education standards, professional requirements, and industry needs.",
+    body: "We champion accurate, relevant, and engaging educational content aligned with applicable educational standards.",
     tint: "green",
   },
   {
     number: "04",
     icon: Lightbulb,
     title: "Innovation",
-    body: "We embrace digital technologies and innovative teaching methods to improve learning experiences and expand access to knowledge.",
+    body: "We embrace technology and creative teaching methods to enrich learning experiences that have impact.",
     tint: "amber",
   },
   {
     number: "05",
     icon: InfinityIcon,
     title: "Never Stop Learning",
-    body: "We encourage continuous learning, self-development, knowledge sharing, and lifelong learning. We believe that everyone has something valuable to learn and teach.",
+    body: "We nurture curiosity, continuous growth, and remind that everyone has something valuable to share.",
     tint: "cyan",
   },
   {
     number: "06",
     icon: BarChart3,
     title: "National Development and Impact",
-    body: "We align our efforts with Rwanda's knowledge economy ambitions by supporting skills development, education-industry collaboration, and access to relevant knowledge.",
+    body: "We contribute to Rwanda's knowledge-based economy by strengthening collaborative teaching and learning.",
     tint: "violet",
   },
 ]

@@ -688,21 +688,49 @@ function SearchSection() {
     // Fetch real stats
     const fetchStats = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/all`)
+        /*
+         * HOME-002. Every figure here is one the API actually reports.
+         *
+         * Three of the four were not:
+         *
+         *   certificatesIssued  counted the courses that *offer* a
+         *                       certificate and multiplied by 100. Ten such
+         *                       courses became "1K+ Certificates" — a number
+         *                       with no relationship to any certificate
+         *                       issued to anybody.
+         *   completionRate      hardcoded 89.
+         *   partnerInstitutions hardcoded 35.
+         *
+         * And coursesCount used `courses.length`, which is the length of one
+         * page, not the catalogue: twenty of twenty-eight courses were
+         * reported as "20+ Courses". The total lives in `pagination.total`.
+         *
+         * A large limit is requested so the learner and instructor figures
+         * aggregate over the whole catalogue rather than the first page.
+         * Anything the API does not report is left at zero and not shown.
+         */
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/courses/all?page=1&limit=500`
+        )
         const data = await response.json()
 
         if (data.success) {
           const courses = data.data.courses || []
-          const uniqueInstructors = new Set(courses.map((c: any) => c.instructor_id)).size
+          const uniqueInstructors = new Set(
+            courses.map((c: any) => c.instructor_id).filter(Boolean)
+          ).size
 
-          setStats({
-            coursesCount: courses.length,
-            learnersCount: courses.reduce((acc: number, c: any) => acc + (c.enrollment_count || 0), 0),
+          setStats((previous) => ({
+            ...previous,
+            coursesCount: Number(data.data?.pagination?.total) || courses.length,
+            learnersCount: courses.reduce(
+              (acc: number, c: any) => acc + (Number(c.enrollment_count) || 0),
+              0
+            ),
             instructorsCount: uniqueInstructors,
-            certificatesIssued: courses.filter((c: any) => c.is_certificate_available).length * 100,
-            completionRate: 89,
-            partnerInstitutions: 35
-          })
+            // Not reported by this endpoint. Shown only when it is.
+            certificatesIssued: 0,
+          }))
         }
       } catch (error) {
       }
@@ -764,9 +792,15 @@ function SearchSection() {
   return (
     <div className="bg-card rounded-xl shadow-sm p-6 mb-8 border border-border" ref={searchRef}>
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3 text-center">
-          Find Your Perfect Course
-        </h2>
+        <div className="mb-4 text-center">
+          <h2 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+            Find Your Perfect Course
+          </h2>
+          <p className="mx-auto mt-1.5 max-w-xl text-[13px] text-muted-foreground">
+            Search open courses and institution programmes by subject, skill or
+            instructor.
+          </p>
+        </div>
 
         {/* Search Bar with Autocomplete */}
         <form onSubmit={handleSearchSubmit} className="relative mb-4">
@@ -844,28 +878,39 @@ function SearchSection() {
           </AnimatePresence>
         </form>
 
-        {/* Stats Row - Dynamic */}
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-primary" />
-            <span className="font-medium">{stats.coursesCount.toLocaleString()}+</span>
-            <span>Courses</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-success" />
-            <span className="font-medium">{Math.round(stats.learnersCount / 1000)}K+</span>
-            <span>Learners</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Award className="w-4 h-4 text-primary" />
-            <span className="font-medium">{Math.round(stats.certificatesIssued / 1000)}K+</span>
-            <span>Certificates</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-warning" />
-            <span className="font-medium">{stats.instructorsCount}+</span>
-            <span>Instructors</span>
-          </div>
+        {/*
+          HOME-002. The figures, in one treatment.
+
+          "0K+ Learners" came from rounding a count below a thousand into
+          thousands. Anything under a thousand is now shown exactly — 312
+          learners reads as 312, which is both true and more convincing than
+          a rounded "0K+" — and only thousands are abbreviated. The "+" is
+          gone with it: these are counts, not estimates, so claiming "more
+          than" a number we know exactly was never right.
+
+          A figure the API does not report is omitted rather than shown as
+          zero, so the row never states something untrue.
+
+          One icon size and one colour across all four, instead of four
+          colours chosen per stat.
+        */}
+        <div className="mb-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+          {[
+            { icon: BookOpen, value: stats.coursesCount, label: "Courses" },
+            { icon: Users, value: stats.learnersCount, label: "Learners" },
+            { icon: Award, value: stats.certificatesIssued, label: "Certificates" },
+            { icon: TrendingUp, value: stats.instructorsCount, label: "Instructors" },
+          ]
+            .filter((stat) => stat.value > 0)
+            .map((stat) => (
+              <div key={stat.label} className="flex items-center gap-1.5">
+                <stat.icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                <span className="font-semibold text-foreground">
+                  {formatCount(stat.value)}
+                </span>
+                <span className="text-muted-foreground">{stat.label}</span>
+              </div>
+            ))}
         </div>
 
         {/* Action Buttons */}
@@ -894,7 +939,16 @@ function SearchSection() {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="pt-3 border-t border-border"
             >
-              <p className="text-xs text-muted-foreground text-center mb-2">Or continue with</p>
+              {/*
+                HOME-002. "Or continue with" did not say what it would do.
+
+                It now names the outcome. The block is also quieter than the
+                two buttons above it, because signing in is the alternative
+                route rather than the one being offered.
+              */}
+              <p className="mb-2 text-center text-xs text-muted-foreground">
+                Already have an account? Sign in
+              </p>
               <div className="max-w-xs mx-auto">
                 <GoogleLoginButton />
               </div>
@@ -1164,6 +1218,20 @@ function compactCount(value: number): string {
   return (thousands >= 10 ? Math.round(thousands) : Math.round(thousands * 10) / 10) + "K"
 }
 
+/**
+ * A count, written the way a person would read it (HOME-002).
+ *
+ * Below a thousand the exact number, because rounding 312 into thousands
+ * gave "0K+" - a figure that was both wrong and actively discouraging.
+ * At a thousand and above, one decimal place, trimmed when it is a zero.
+ */
+function formatCount(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "0"
+  if (value < 1000) return value.toLocaleString()
+  const thousands = value / 1000
+  const text = thousands >= 10 ? Math.round(thousands).toString() : thousands.toFixed(1)
+  return `${text.replace(/.0$/, "")}K`
+}
 function TopInstructors() {
   const [instructors, setInstructors] = useState<HomepageInstructor[]>([])
   const [isLoading, setIsLoading] = useState(true)
