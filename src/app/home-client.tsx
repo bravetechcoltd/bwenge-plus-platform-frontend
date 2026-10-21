@@ -949,7 +949,19 @@ function SearchSection() {
               <p className="mb-2 text-center text-xs text-muted-foreground">
                 Already have an account? Sign in
               </p>
-              <div className="max-w-xs mx-auto">
+              {/*
+                Centre the button, not a box around it (HOME-006).
+
+                `max-w-xs mx-auto` centred a 320px container, but Google
+                renders its button into an iframe of its own width — about
+                240px — anchored at the start of that container. The result
+                was a button sitting left of centre between two lines of
+                centred text.
+
+                A flex row that centres its child puts the button in the
+                middle whatever width Google gives it.
+              */}
+              <div className="flex justify-center">
                 <GoogleLoginButton />
               </div>
               <p className="text-xs text-muted-foreground text-center mt-2">
