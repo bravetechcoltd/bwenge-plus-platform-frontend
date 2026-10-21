@@ -560,8 +560,21 @@ export default function HomeNavigation() {
             </div>
           </nav>
 
-          {/* User Actions */}
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:ml-0">
+          {/*
+            User Actions, pushed to the right edge at every width (NAV-002).
+
+            This carried `lg:ml-0`, which cancelled the auto margin from the
+            large breakpoint up. Logo, links and actions then packed against
+            the left and every pixel of leftover width collected on the right,
+            so the bar had a 24px gutter on the left and a large empty space
+            on the right — the wider the screen, the worse it looked.
+
+            With the auto margin kept at all widths the actions sit against
+            the right edge, and both gutters are the container padding:
+            16px below `sm`, 24px above it. The search is unaffected; it has
+            its own row below.
+          */}
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
