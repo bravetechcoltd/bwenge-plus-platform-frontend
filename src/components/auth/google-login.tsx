@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { loginWithGoogle } from '@/lib/features/auth/auth-slice'
@@ -74,6 +74,45 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
     toast.error('Google login failed. Please try again.')
   }
 
+  /*
+   * AUTH-GOOG-001. Do not render the viewer's identity into the page.
+   *
+   * Google Identity Services personalises its button by itself: given an
+   * active Google session and a previous consent for this client, it renders
+   * "Continue as <first name>" with the account's email and avatar. On the
+   * homepage that meant a stranger's screen — or a shared machine — showed a
+   * real person's name and address before anyone had asked to sign in.
+   *
+   * `renderButton` has no option for this; the personalisation is decided by
+   * GIS, not by the props below. `disableAutoSelect()` is the documented
+   * lever: it clears the stored "this user is signed in here" state, which is
+   * what the personalised rendering is built on, and also stops silent
+   * auto-sign-in.
+   *
+   * The cost is deliberate and worth stating: a returning user no longer gets
+   * one-tap re-entry and presses the button instead.
+   *
+   * Once per mount, not on every render: the homepage also mounts
+   * GoogleOneTapLogin, which calls `initialize` of its own, and two
+   * components writing GIS state on every render would race.
+   */
+  useEffect(() => {
+    const clear = () => {
+      try {
+        ;(window as any)?.google?.accounts?.id?.disableAutoSelect?.()
+      } catch {
+        // GIS not loaded, or blocked. The button still works; it may simply
+        // render personalised, which is what this tries to avoid rather than
+        // something the page depends on.
+      }
+    }
+
+    // GIS may not have finished loading on the first paint.
+    clear()
+    const retry = window.setTimeout(clear, 600)
+    return () => window.clearTimeout(retry)
+  }, [])
+
   return (
     <div className="relative">
       {isLoading && (
@@ -88,7 +127,8 @@ export function GoogleLoginButton({ onSuccess }: { onSuccess?: (user: any) => vo
         type="standard"
         theme="outline"
         size="large"
-        text="continue_with"
+        // "Sign in with Google", not "Continue with".
+        text="signin_with"
         shape="rectangular"
         logo_alignment="left"
         width="100%"
