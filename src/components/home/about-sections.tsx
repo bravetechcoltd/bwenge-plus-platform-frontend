@@ -313,18 +313,54 @@ function AboutBwengeSection() {
               About <span style={{ color: "var(--bw-primary)" }}>BWENGE+</span>
             </Heading>
 
+            {/*
+              The document's identity line, verbatim. It said "ecosystem"
+              where the document says "platform" — a small word, but the
+              document is the authority for how BWENGE+ describes itself and
+              "platform" is what it says in every other approved sentence.
+            */}
             <p className="mt-4 max-w-[29rem] text-[15px] font-medium leading-[1.55] text-foreground">
-              An inclusive digital learning ecosystem connecting universities, companies,
-              educators, industry experts, and learners across Rwanda.
+              An inclusive digital learning platform connecting universities,
+              companies, educators, industry experts, and learners across Rwanda.
             </p>
 
+            {/* The document's description, verbatim. */}
             <p className="mt-4 max-w-[29rem] text-[12.5px] leading-[1.85] text-muted-foreground">
-              BWENGE+ is an inclusive digital MOOC and SPOC platform designed to promote
-              educational content standardization and collaboration across Rwanda. We connect
-              universities, companies, educators, industry experts, and learners through a
-              shared digital learning environment where knowledge can be developed, delivered,
-              and shared.
+              BWENGE+ offers open online courses and private courses for
+              institutions, supporting collaborative course development, shared
+              teaching, and quality educational content aligned with national
+              standards. Through a shared learning environment, users can build
+              skills, exchange knowledge, and access lifelong learning
+              opportunities.
             </p>
+
+            {/*
+              Section 3 of the document: "Twashyiramo Logo, wenda amagambo
+              akaba MOOC & SPOC" — put the logo in, with the words MOOC &
+              SPOC beside it.
+
+              The two course models are what the sentence above has just
+              described in words (open courses, and private courses for
+              institutions), so the lockup names them and sits directly under
+              it rather than being introduced somewhere unrelated. The mark is
+              the same file and the same treatment as the navigation bar, so
+              the two agree.
+            */}
+            <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-border/70 bg-white/70 py-2 pl-2.5 pr-4 backdrop-blur-sm">
+              {/* A plain img, as everything else in this file uses. */}
+              <img
+                src="/bwenge-plus-mark.png"
+                alt="BWENGE+"
+                className="h-[22px] w-auto object-contain"
+              />
+              <span className="h-4 w-px bg-border" aria-hidden />
+              <span
+                className="text-[12.5px] font-semibold tracking-tight"
+                style={{ color: "var(--bw-primary)" }}
+              >
+                MOOC &amp; SPOC
+              </span>
+            </div>
 
             <a
               href="#who-we-are"
@@ -400,12 +436,19 @@ function AboutBwengeSection() {
    2. Who We Are
    ══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * The five statements from the document, in its order and its words.
+ *
+ * The section already had the right shape — a lead sentence, "We work
+ * together towards a future where:", then five points — so only the wording
+ * needed correcting.
+ */
 const COMMUNITY_POINTS = [
-  "Universities collaborate in developing, standardizing, and sharing quality educational content.",
-  "Educators and industry professionals work together to create courses aligned with national standards and industry needs.",
-  "Learners have inclusive access to relevant knowledge, skills, and learning opportunities.",
-  "Universities and companies collaborate to strengthen teaching, learning, and skills development.",
-  "Education and knowledge sharing contribute to Rwanda's vision of a knowledge-based economy.",
+  "Universities jointly develop, standardize, and share quality educational content.",
+  "Educators and industry professionals create courses aligned with relevant national standards and industry needs.",
+  "Learners from all backgrounds can access relevant knowledge, skills, and learning opportunities.",
+  "Universities and companies collaborate to strengthen teaching and practical skills development.",
+  "Education and knowledge sharing support Rwanda's ambition to build a knowledge-based economy.",
 ]
 
 type Member = { icon: any; title: string; body: string; tint: TintName }
@@ -593,9 +636,11 @@ function WhoWeAreSection() {
           <div>
             <Eyebrow>Our Community</Eyebrow>
             <Heading size="md">Who We Are</Heading>
+            {/* The document's wording, verbatim. */}
             <p className="mt-4 text-[14px] leading-[1.6] text-foreground">
-              We are a collaborative digital learning community committed to making quality
-              education, knowledge sharing, and professional development more accessible.
+              We are a collaborative digital learning community committed to
+              expanding access to quality education, knowledge sharing, and
+              professional development.
             </p>
 
             <p className="mt-6 text-[12px] font-bold text-foreground">
